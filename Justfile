@@ -31,6 +31,10 @@ fixture url name:
 run:
     nix run .
 
+# Paste REVEL_SESSION once into oj/acc stores (atcoder-tui auto-imports on next launch)
+login:
+    aclogin
+
 # Show login-session status (configured? importable from oj/acc?)
 session-status:
     bun run src/index.tsx session status

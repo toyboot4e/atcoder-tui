@@ -60,19 +60,27 @@ Everything is optional; missing pieces degrade to a status-bar hint.
 
 - `userId` — enables the submissions tab.
 - `revelSession` — AtCoder now gates submission listings (and problems of
-  running contests) behind login. The easiest setup:
+  running contests) behind login. **You usually don't have to do anything**:
+  on startup, if no session is configured, the app looks for one in
+  [oj](https://github.com/online-judge-tools/oj) /
+  [acc](https://github.com/Tatamo/atcoder-cli) cookie stores, verifies it
+  against atcoder.jp, adopts it, and reports the result in the status bar
+  (expired sessions are reported too, never silently dropped).
+
+  To (re)establish a session, the devShell bundles
+  [aclogin](https://github.com/key-moon/aclogin) (packaged in this flake):
 
   ```sh
-  just session-import   # copy the cookie from oj / acc, verify, save
-  just session-set      # or paste it manually (verified before saving)
-  just session-status   # see what is configured / importable
+  just login            # aclogin: paste REVEL_SESSION once → saved to oj/acc
+  just dev              # atcoder-tui picks it up automatically
   ```
 
-  (equivalently `atcoder-tui session import|set|status|check`). To get the
-  value manually: browser DevTools → Application/Storage → Cookies →
-  `https://atcoder.jp` → `REVEL_SESSION`. Values are verified against
-  atcoder.jp before saving and only ever displayed masked. When the session
-  expires the app tells you instead of failing silently.
+  Manual alternatives: `just session-import` (explicit import),
+  `just session-set` (paste directly into the app config),
+  `just session-status` / `atcoder-tui session check`. Cookie values are
+  verified before saving and only ever displayed masked. The cookie comes
+  from browser DevTools → Application/Storage → Cookies →
+  `https://atcoder.jp` → `REVEL_SESSION`.
 - `cache` — set `false` to disable the disk cache (`~/.cache/atcoder-tui/`);
   rate limiting still applies.
 

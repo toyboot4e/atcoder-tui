@@ -17,6 +17,26 @@
       packagesFor =
         pkgs:
         let
+          # https://github.com/key-moon/aclogin — paste REVEL_SESSION once,
+          # distribute it to oj/acc cookie stores (which atcoder-tui imports).
+          aclogin = pkgs.python3Packages.buildPythonApplication rec {
+            pname = "aclogin";
+            version = "0.2.1";
+            pyproject = true;
+            src = pkgs.fetchPypi {
+              inherit pname version;
+              hash = "sha256-zUbkSnwDmu1Pz//Zs/vzAYmNhFPzTL78PeXV9CJfdVQ=";
+            };
+            build-system = [ pkgs.python3Packages.setuptools ];
+            dependencies = [ pkgs.python3Packages.appdirs ];
+            doCheck = false;
+            meta = {
+              description = "Distribute an AtCoder REVEL_SESSION cookie to competitive-programming CLI tools";
+              homepage = "https://github.com/key-moon/aclogin";
+              license = pkgs.lib.licenses.mit;
+              mainProgram = "aclogin";
+            };
+          };
           # Runtime node_modules as a fixed-output derivation: one hash to bump
           # whenever bun.lock changes (the build error prints the new hash).
           nodeModules = pkgs.stdenvNoCC.mkDerivation {
@@ -65,6 +85,7 @@
         {
           inherit nodeModules;
           inherit atcoder-tui;
+          inherit aclogin;
           default = atcoder-tui;
         };
     in
@@ -86,6 +107,7 @@
             nodejs_22
             just
             typescript-language-server
+            (packagesFor pkgs).aclogin
           ];
         };
       });
