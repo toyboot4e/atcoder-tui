@@ -129,13 +129,13 @@ export function Dashboard() {
   };
 
   useInput(
-    (input, key) => {
+    (input) => {
       if (input === "/") {
         setFiltering(true);
         dispatch({ type: "setInputActive", value: true });
       } else if (input === "r") {
         refresh();
-      } else if (key.ctrl && input === "f") {
+      } else if (input === "a") {
         loadNextArchivePage();
       } else if (input === "o") {
         const row = rows.find((r) => r.type === "contest" && r.index === clampedSelected);
@@ -146,15 +146,13 @@ export function Dashboard() {
   );
 
   // While filtering, esc clears and closes; enter (TextInput onSubmit) keeps
-  // the filter; ctrl-f still pulls archive pages so old contests can be found.
+  // the filter — press a afterwards to pull archive pages into the results.
   useInput(
     (input, key) => {
       if (key.escape) {
         setFilter("");
         setFiltering(false);
         dispatch({ type: "setInputActive", value: false });
-      } else if (key.ctrl && input === "f") {
-        loadNextArchivePage();
       }
     },
     { isActive: filtering },
@@ -170,7 +168,7 @@ export function Dashboard() {
   const top = Math.max(0, Math.min(selectedRowIdx - Math.floor(height / 2), rows.length - height));
   const visible = rows.slice(top, top + height);
 
-  const hints = `j/k ${t("move", language)} · ⏎ ${t("open", language)} · / ${t("filter", language)} · ^f ${language === "ja" ? "アーカイブ" : "archive"} · t ${t("language", language)} · ? help · q ${t("quit", language)}`;
+  const hints = `j/k ${t("move", language)}   ⏎ ${t("open", language)}   / ${t("filter", language)}   a ${language === "ja" ? "アーカイブ" : "archive"}   t ${t("language", language)}   ? help   q ${t("quit", language)}`;
 
   return (
     <Box flexDirection="column" height={stdout?.rows ?? 24}>

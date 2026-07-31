@@ -28,6 +28,18 @@ export const KEYMAP: KeyBinding[] = [
     ja: "半ページ移動",
   },
   {
+    keys: "ctrl-f / ctrl-b",
+    context: "global",
+    en: "full page down / up",
+    ja: "1ページ移動",
+  },
+  {
+    keys: "ctrl-n / ctrl-p",
+    context: "global",
+    en: "line down / up (emacs)",
+    ja: "1行移動 (emacs)",
+  },
+  {
     keys: "enter / l",
     context: "global",
     en: "open selection",
@@ -61,7 +73,7 @@ export const KEYMAP: KeyBinding[] = [
     ja: "コンテスト絞り込み",
   },
   {
-    keys: "ctrl-f",
+    keys: "a",
     context: "dashboard",
     en: "load next archive page",
     ja: "アーカイブを1ページ読み込む",

@@ -88,7 +88,7 @@ Everything is optional; missing pieces degrade to a status-bar hint.
 Press `?` in the app for the full list. Highlights: `enter`/`l` open,
 `h`/`esc` back, `t` language, `1`/`2`/`3` statement/meta/submissions tabs,
 `J`/`K` next/previous problem, `o` open the current page in your browser,
-`ctrl-f` load an archive page into the dashboard (for contests older than the
+`a` load an archive page into the dashboard (for contests older than the
 front page shows), `r` force-refresh.
 
 ## Load on AtCoder

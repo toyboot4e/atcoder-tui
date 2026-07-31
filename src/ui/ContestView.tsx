@@ -153,8 +153,8 @@ export function ContestView({ contestId, endsAt }: { contestId: string; endsAt: 
 
   const hints =
     focus === "sidebar"
-      ? `j/k ${t("move", language)} · ⏎ ${t("open", language)} · h ${t("back", language)} · t ${t("language", language)} · q ${t("quit", language)}`
-      : `j/k scroll · J/K ${language === "ja" ? "前後の問題" : "prev/next problem"} · 1/2/3 tab · t ${t("language", language)} · q ${t("quit", language)}`;
+      ? `j/k ${t("move", language)}   ⏎ ${t("open", language)}   h ${t("back", language)}   t ${t("language", language)}   q ${t("quit", language)}`
+      : `j/k scroll   J/K ${language === "ja" ? "前後の問題" : "prev/next problem"}   1/2/3 tab   t ${t("language", language)}   q ${t("quit", language)}`;
 
   return (
     <Box flexDirection="column" height={rows}>

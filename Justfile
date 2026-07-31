@@ -15,12 +15,8 @@ default:
 run: build
     ./dist/atcoder-tui
 
-# Run the TUI from source with Bun (fastest iteration)
+# Run the TUI from source, restarting automatically on file changes
 dev:
-    bun run src/index.tsx
-
-# Run from source, restarting automatically on file changes
-watch:
     bun --watch run src/index.tsx
 
 # Run unit tests

@@ -1,0 +1,27 @@
+name: Live HTML check
+on:
+  schedule:
+    # Daily, off-peak for AtCoder (12:34 UTC = 21:34 JST is post-contest lull;
+    # pick an uncommon minute to avoid the top-of-hour cron stampede).
+    - cron: "34 12 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+jobs:
+  live-check:
+    name: parse live AtCoder pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Nix
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31.11.0
+      - name: Install dependencies
+        run: nix develop --command bun install --frozen-lockfile
+      - name: Parse live pages (4 requests, >=1s apart)
+        run: nix develop --command bun run scripts/live-check.ts

@@ -9,8 +9,31 @@ export interface ListNavActions {
 }
 
 /**
- * Vim-style list/scroll navigation over `count` rows with selection at
- * `index`: j/k, gg/G, ctrl-d/ctrl-u. Enter/l select; h/esc back.
+ * Line/page motion shared by lists and scroll panes:
+ * vim  — j/k lines, C-d/C-u half page, C-f/C-b full page;
+ * emacs — C-n/C-p lines.
+ * Returns the delta, or null when the key is not a motion.
+ */
+function motionDelta(input: string, key: Key, pageSize: number): number | null {
+  const half = Math.max(1, Math.floor(pageSize / 2));
+  const full = Math.max(1, pageSize);
+  if (key.ctrl) {
+    if (input === "d") return half;
+    if (input === "u") return -half;
+    if (input === "f") return full;
+    if (input === "b") return -full;
+    if (input === "n") return 1;
+    if (input === "p") return -1;
+    return null;
+  }
+  if (input === "j" || key.downArrow) return 1;
+  if (input === "k" || key.upArrow) return -1;
+  return null;
+}
+
+/**
+ * Vim-style list navigation over `count` rows with selection at `index`:
+ * j/k, gg/G, C-d/C-u, C-f/C-b (+ emacs C-n/C-p). Enter/l select; h/esc back.
  * `active: false` detaches the handler (e.g. while a text input has focus).
  */
 export function useVimNav(
@@ -29,7 +52,7 @@ export function useVimNav(
         if (count > 0) actions.onMove(clamp(i));
       };
 
-      if (input === "g") {
+      if (input === "g" && !key.ctrl) {
         if (pendingG.current) {
           pendingG.current = false;
           move(0);
@@ -40,11 +63,9 @@ export function useVimNav(
       }
       pendingG.current = false;
 
-      if (input === "j" || key.downArrow) move(index + 1);
-      else if (input === "k" || key.upArrow) move(index - 1);
+      const delta = motionDelta(input, key, pageSize);
+      if (delta !== null) move(index + delta);
       else if (input === "G") move(count - 1);
-      else if (key.ctrl && input === "d") move(index + Math.max(1, Math.floor(pageSize / 2)));
-      else if (key.ctrl && input === "u") move(index - Math.max(1, Math.floor(pageSize / 2)));
       else if (key.return || input === "l" || key.rightArrow) actions.onSelect?.();
       else if (input === "h" || key.leftArrow || key.escape) actions.onBack?.();
     },
@@ -53,8 +74,8 @@ export function useVimNav(
 }
 
 /**
- * Vim scroll keys over pre-rendered lines: j/k, ctrl-d/u, g/G. Unhandled
- * keys fall through to `onOther` so callers can layer pane-specific keys.
+ * Scroll keys over pre-rendered lines: the shared motions plus g/G home/end.
+ * Unhandled keys fall through to `onOther` for pane-specific bindings.
  */
 export function useScrollKeys(
   active: boolean,
@@ -67,11 +88,8 @@ export function useScrollKeys(
 ): void {
   useInput(
     (input, key) => {
-      const move = (delta: number) => setScrollTop(clamp(scrollTop + delta, lineCount, height));
-      if (input === "j" || key.downArrow) move(1);
-      else if (input === "k" || key.upArrow) move(-1);
-      else if (key.ctrl && input === "d") move(Math.max(1, Math.floor(height / 2)));
-      else if (key.ctrl && input === "u") move(-Math.max(1, Math.floor(height / 2)));
+      const delta = motionDelta(input, key, height);
+      if (delta !== null) setScrollTop(clamp(scrollTop + delta, lineCount, height));
       else if (input === "G") setScrollTop(clamp(lineCount, lineCount, height));
       else if (input === "g") setScrollTop(0);
       else onOther?.(input, key);
