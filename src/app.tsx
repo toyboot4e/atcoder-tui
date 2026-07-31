@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useApp, useInput } from "ink";
 import { autoImportSession } from "./autoSession.js";
 import { loadState, saveState } from "./state/persist.js";
@@ -34,7 +34,14 @@ function Root() {
   const [showHelp, setShowHelp] = useState(false);
 
   // Persist screen stack + language so the next launch restores both.
+  // Skip the mount-time run: writing what we just loaded is pointless, and
+  // a stray second instance must never clobber the file at boot.
+  const mounted = useRef(false);
   useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
     saveState({ routes, language });
   }, [routes, language]);
 

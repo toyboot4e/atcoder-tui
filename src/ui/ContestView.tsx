@@ -247,7 +247,7 @@ export function ContestView({
   const commonHint = `o ${t("open", language)}   t ${t("language", language)}   q ${t("back", language)}`;
   const hints =
     tab === "ranking"
-      ? `j/k ${t("move", language)}   * ${language === "ja" ? "お気に入り" : "star"}   f ${language === "ja" ? "お気に入りのみ" : "favs only"}   ${tabHint}   ${commonHint}`
+      ? `j/k ${t("move", language)}   * ${language === "ja" ? "お気に入り" : "star"}   f ${language === "ja" ? "お気に入りのみ" : "favs only"}   F ${language === "ja" ? "取込" : "import"}   ${tabHint}   ${commonHint}`
       : tab === "submissions"
         ? `j/k ${t("move", language)}   ⏎ ${t("open", language)}   ${tabHint}   ${commonHint}`
         : `j/k ${language === "ja" ? "前後の問題" : "problem"}   ^e/^y ^d/^u scroll   ${tabHint}   ${commonHint}`;

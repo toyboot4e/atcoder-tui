@@ -4,6 +4,7 @@ import chalk from "chalk";
 import { LoginRequiredError } from "../net/http.js";
 import { formatElapsed, parseStandingsJson, ratingColor } from "../scrape/standings.js";
 import { saveFavorites } from "../config.js";
+import { parseFavList } from "../scrape/fav.js";
 import { useServices } from "../state/services.js";
 import { useAppState } from "../state/store.js";
 import { useData } from "../state/useData.js";
@@ -33,7 +34,7 @@ export function RankingPane({
   active: boolean;
   onBack: () => void;
 }) {
-  const { client, config } = useServices();
+  const { client, config, notices } = useServices();
   const { language } = useAppState();
   const [cursor, setCursorRaw] = useState(rememberedCursor.get(contestId) ?? 0);
   const setCursor = (i: number) => {
@@ -66,14 +67,44 @@ export function RankingPane({
     saveFavorites(next);
   };
   const starred = useMemo(() => new Set(favList.map((f) => f.toLowerCase())), [favList]);
+  // Your own row always stays as the reference point.
+  const isFavRow = (user: string) => starred.has(user.toLowerCase()) || user === config.userId;
   const visibleRows = useMemo(() => {
     if (state.status !== "ready") return [];
     if (!favOnly) return state.data.rows;
-    // Your own row always stays as the reference point.
-    return state.data.rows.filter(
-      (row) => starred.has(row.user.toLowerCase()) || row.user === config.userId,
-    );
+    return state.data.rows.filter((row) => isFavRow(row.user));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, favOnly, starred, config.userId]);
+
+  /** F: pull the server-side favorites registered on atcoder.jp. */
+  const importFavorites = async () => {
+    try {
+      // Personal page: never cached to disk.
+      const { body } = await client.fetch("/settings/fav", {
+        ttl: 0,
+        bypassCache: true,
+        noStore: true,
+      });
+      const imported = parseFavList(body);
+      const known = new Set(favList.map((f) => f.toLowerCase()));
+      const added = imported.filter((u) => !known.has(u.toLowerCase()));
+      const merged = [...favList, ...added];
+      setFavList(merged);
+      config.favorites = merged;
+      saveFavorites(merged);
+      notices.push(
+        language === "ja"
+          ? `お気に入り: AtCoder から ${added.length} 人追加（計 ${merged.length} 人）`
+          : `favorites: imported ${added.length} from AtCoder (${merged.length} total)`,
+      );
+    } catch (error) {
+      notices.push(
+        error instanceof LoginRequiredError
+          ? t("loginRequired", language)
+          : `${t("error", language)}: ${(error as Error).message}`,
+      );
+    }
+  };
 
   const rowCount = visibleRows.length;
   const clampedCursor = Math.max(0, Math.min(rowCount - 1, cursor));
@@ -135,9 +166,21 @@ export function RankingPane({
         const row = visibleRows[clampedCursor];
         if (row !== undefined && row.user !== config.userId) toggleStar(row.user);
       } else if (input === "f") {
-        favoritesOnly = !favOnly;
-        setFavOnly(!favOnly);
-        setCursor(0);
+        // Keep the same user under the cursor across the toggle when
+        // possible; otherwise land on your own row.
+        const nextOn = !favOnly;
+        const rows = state.status === "ready" ? state.data.rows : [];
+        const nextRows = nextOn ? rows.filter((row) => isFavRow(row.user)) : rows;
+        const current = visibleRows[clampedCursor]?.user;
+        let index = current !== undefined ? nextRows.findIndex((r) => r.user === current) : -1;
+        if (index < 0 && config.userId !== undefined) {
+          index = nextRows.findIndex((r) => r.user === config.userId);
+        }
+        favoritesOnly = nextOn;
+        setFavOnly(nextOn);
+        setCursor(Math.max(0, index));
+      } else if (input === "F") {
+        void importFavorites();
       }
     },
     { isActive: active },

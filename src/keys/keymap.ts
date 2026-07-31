@@ -127,6 +127,12 @@ export const KEYMAP: KeyBinding[] = [
     ja: "お気に入りユーザーのみ表示",
   },
   {
+    keys: "F (ranking)",
+    context: "contest",
+    en: "import your favorites registered on atcoder.jp",
+    ja: "AtCoder に登録済みのお気に入りを取り込む",
+  },
+  {
     keys: "enter (submissions)",
     context: "contest",
     en: "open submission source",
