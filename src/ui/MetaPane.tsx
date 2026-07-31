@@ -77,7 +77,7 @@ export function MetaPane({
     clampScroll,
     (input, key) => {
       if (input === "r") refresh();
-      else if (input === "h" || key.escape) onBack();
+      else if (key.escape) onBack();
     },
   );
 

@@ -88,6 +88,7 @@ export function SubmissionsPane({
   );
 
   useVimNav(active, submissions.length, clampedCursor, viewHeight, {
+    handleHorizontal: false, // h/l cycle tabs at the contest level
     onMove: setCursor,
     onSelect: () => {
       const submission = submissions[clampedCursor];

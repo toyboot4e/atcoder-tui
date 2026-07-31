@@ -6,6 +6,11 @@ export interface ListNavActions {
   onMove: (index: number) => void;
   onSelect?: () => void;
   onBack?: () => void;
+  /**
+   * When false, h/l/←/→ are left for the caller (e.g. panes where h/l
+   * cycle tabs); esc still triggers onBack and only enter selects.
+   */
+  handleHorizontal?: boolean;
 }
 
 /**
@@ -63,11 +68,13 @@ export function useVimNav(
       }
       pendingG.current = false;
 
+      const horizontal = actions.handleHorizontal ?? true;
       const delta = motionDelta(input, key, pageSize);
       if (delta !== null) move(index + delta);
       else if (input === "G") move(count - 1);
-      else if (key.return || input === "l" || key.rightArrow) actions.onSelect?.();
-      else if (input === "h" || key.leftArrow || key.escape) actions.onBack?.();
+      else if (key.return || (horizontal && (input === "l" || key.rightArrow)))
+        actions.onSelect?.();
+      else if (key.escape || (horizontal && (input === "h" || key.leftArrow))) actions.onBack?.();
     },
     { isActive: active },
   );

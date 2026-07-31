@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Box, Text, useInput } from "ink";
 import { renderSections } from "../render/lines.js";
 import { parseStatement } from "../scrape/statement.js";
@@ -8,7 +8,7 @@ import { contestPhase, formatStartLine } from "../phase.js";
 import { useServices } from "../state/services.js";
 import { useAppDispatch, useAppState } from "../state/store.js";
 import { useData } from "../state/useData.js";
-import { useScrollKeys, useVimNav } from "../keys/useKeys.js";
+import { useVimNav } from "../keys/useKeys.js";
 import { openInBrowser } from "../platform.js";
 import { useTerminalSize } from "./hooks.js";
 import { MetaPane } from "./MetaPane.js";
@@ -22,6 +22,7 @@ const SIDEBAR_WIDTH = 26;
 const ACTIVE_TTL_MS = 5 * 60 * 1000;
 
 export type ContestTab = "statement" | "meta" | "submissions" | "ranking";
+const TAB_ORDER: ContestTab[] = ["statement", "meta", "submissions", "ranking"];
 
 function describeError(error: Error, phase: string, language: "en" | "ja"): string {
   if (error instanceof LoginRequiredError) return t("loginRequired", language);
@@ -60,6 +61,8 @@ export function ContestView({
   const [focus, setFocus] = useState<"sidebar" | "content">("sidebar");
   const [tab, setTab] = useState<ContestTab>("statement");
   const [scrollTop, setScrollTop] = useState(0);
+  // Per-problem scroll positions, restored when flipping back to a problem.
+  const scrollByTask = useRef(new Map<string, number>());
 
   const tasksData = useData(`tasks-${contestId}-${language}-${phase}`, async (bypassCache) => {
     if (phase === "upcoming") return { data: [], stale: false, fetchedAt: 0 };
@@ -76,12 +79,21 @@ export function ContestView({
   const tasks = tasksData.state.status === "ready" ? tasksData.state.data : [];
   const loadedTask = tasks[Math.min(loadedIndex, Math.max(0, tasks.length - 1))];
 
+  // Debounce: flipping j-j-j through problems fetches only where you settle.
+  const [settledTaskId, setSettledTaskId] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    const id = loadedTask?.id;
+    const timer = setTimeout(() => setSettledTaskId(id), 250);
+    return () => clearTimeout(timer);
+  }, [loadedTask?.id]);
+  const settledTask = tasks.find((task) => task.id === settledTaskId);
+
   // Statement pages embed both languages, so the cache key has no lang.
   const statementData = useData(
-    `statement-${contestId}-${loadedTask?.id ?? "none"}`,
+    `statement-${contestId}-${settledTask?.id ?? "none"}`,
     async (bypassCache) => {
-      if (loadedTask === undefined) return { data: null, stale: false, fetchedAt: 0 };
-      const outcome = await client.fetch(`/contests/${contestId}/tasks/${loadedTask.id}`, {
+      if (settledTask === undefined) return { data: null, stale: false, fetchedAt: 0 };
+      const outcome = await client.fetch(`/contests/${contestId}/tasks/${settledTask.id}`, {
         ttl,
         bypassCache,
       });
@@ -115,35 +127,69 @@ export function ContestView({
   const contentHeight = rows - 3 - noticeRows;
   const clampedScroll = clampScroll(scrollTop, lines.length, contentHeight);
 
-  const openTask = (index: number) => {
-    setLoadedIndex(index);
-    setCursor(index);
-    setScrollTop(0);
-    setFocus("content");
-    setTab("statement");
+  const setStatementScroll = (next: number) => {
+    if (loadedTask !== undefined) scrollByTask.current.set(loadedTask.id, next);
+    setScrollTop(next);
+  };
+
+  const switchTask = (index: number, focusContent: boolean) => {
+    const clamped = Math.max(0, Math.min(tasks.length - 1, index));
+    const task = tasks[clamped];
+    setLoadedIndex(clamped);
+    setCursor(clamped);
+    setScrollTop(task !== undefined ? (scrollByTask.current.get(task.id) ?? 0) : 0);
+    if (focusContent) {
+      setFocus("content");
+      setTab("statement");
+    }
   };
 
   useVimNav(focus === "sidebar" && !inputActive, tasks.length, cursor, contentHeight, {
     onMove: setCursor,
-    onSelect: () => openTask(cursor),
+    onSelect: () => switchTask(cursor, true),
     onBack: () => dispatch({ type: "pop" }),
   });
 
-  // Statement-pane keys: scrolling plus J/K to flip through problems.
-  useScrollKeys(
-    focus === "content" && tab === "statement" && !inputActive,
-    lines.length,
-    contentHeight,
-    clampedScroll,
-    setScrollTop,
-    clampScroll,
+  // Statement pane: j/k flip problems (scroll preserved per problem);
+  // C-e/C-y line, C-d/C-u half page, C-f/C-b full page scroll the statement.
+  useInput(
     (input, key) => {
-      if (input === "J") openTask(Math.min(tasks.length - 1, loadedIndex + 1));
-      else if (input === "K") openTask(Math.max(0, loadedIndex - 1));
+      const scroll = (delta: number) =>
+        setStatementScroll(clampScroll(clampedScroll + delta, lines.length, contentHeight));
+      const half = Math.max(1, Math.floor(contentHeight / 2));
+      if (key.ctrl) {
+        if (input === "e") scroll(1);
+        else if (input === "y") scroll(-1);
+        else if (input === "d") scroll(half);
+        else if (input === "u") scroll(-half);
+        else if (input === "f") scroll(contentHeight);
+        else if (input === "b") scroll(-contentHeight);
+        else if (input === "n") switchTask(loadedIndex + 1, false);
+        else if (input === "p") switchTask(loadedIndex - 1, false);
+        return;
+      }
+      if (input === "j" || input === "J" || key.downArrow) switchTask(loadedIndex + 1, false);
+      else if (input === "k" || input === "K" || key.upArrow) switchTask(loadedIndex - 1, false);
+      else if (input === "G")
+        setStatementScroll(clampScroll(lines.length, lines.length, contentHeight));
+      else if (input === "g") setStatementScroll(0);
       else if (input === "r") statementData.refresh();
-      else if (input === "h" || key.escape) setFocus("sidebar");
+      else if (key.escape) setFocus("sidebar");
     },
+    { isActive: focus === "content" && tab === "statement" && !inputActive },
   );
+
+  // Spatial h/l: sidebar ← statement ↔ meta ↔ submissions ↔ ranking.
+  const cycleTab = (delta: number) => {
+    const index = TAB_ORDER.indexOf(tab) + delta;
+    if (index < 0) {
+      setFocus("sidebar");
+      return;
+    }
+    if (index >= TAB_ORDER.length) return;
+    setTab(TAB_ORDER[index]!);
+    setFocus("content");
+  };
 
   // Contest-level keys, active regardless of focus.
   useInput(
@@ -159,6 +205,10 @@ export function ContestView({
       } else if (input === "4") {
         setTab("ranking");
         setFocus("content");
+      } else if (focus === "content" && (input === "h" || key.leftArrow)) {
+        cycleTab(-1);
+      } else if (focus === "content" && (input === "l" || key.rightArrow)) {
+        cycleTab(1);
       } else if (key.ctrl && input === "o") {
         dispatch({ type: "pop" });
       } else if (input === "o") {
@@ -184,7 +234,7 @@ export function ContestView({
   const hints =
     focus === "sidebar"
       ? `j/k ${t("move", language)}   ⏎ ${t("open", language)}   h ${t("back", language)}   t ${t("language", language)}   q ${t("quit", language)}`
-      : `j/k scroll   J/K ${language === "ja" ? "前後の問題" : "prev/next problem"}   1/2/3/4 tab   t ${t("language", language)}   q ${t("back", language)}`;
+      : `j/k ${language === "ja" ? "前後の問題" : "problem"}   ^e/^y ^d/^u scroll   h/l tab   t ${t("language", language)}   q ${t("back", language)}`;
 
   if (phase === "upcoming") {
     // Lobby: the contest exists but its pages don't yet — zero requests.

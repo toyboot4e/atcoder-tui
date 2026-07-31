@@ -85,10 +85,28 @@ export const KEYMAP: KeyBinding[] = [
     ja: "フォーカス切替",
   },
   {
+    keys: "h / l",
+    context: "contest",
+    en: "previous / next tab",
+    ja: "前 / 次のタブ",
+  },
+  {
     keys: "1 / 2 / 3 / 4",
     context: "contest",
-    en: "statement / meta / submissions / ranking",
-    ja: "問題文 / 情報 / 提出 / 順位表",
+    en: "statement / meta / submissions / ranking (direct)",
+    ja: "問題文 / 情報 / 提出 / 順位表（直接）",
+  },
+  {
+    keys: "j / k",
+    context: "contest",
+    en: "previous / next problem (scroll kept per problem)",
+    ja: "前後の問題（スクロール位置は問題ごとに保持）",
+  },
+  {
+    keys: "ctrl-e / ctrl-y",
+    context: "contest",
+    en: "scroll statement by line",
+    ja: "問題文を1行スクロール",
   },
   {
     keys: "enter (submissions)",
