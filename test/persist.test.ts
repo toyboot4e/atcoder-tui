@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { loadRoutes, saveRoutes } from "../src/state/persist.js";
+import { loadState, saveState } from "../src/state/persist.js";
 import type { Route } from "../src/state/store.js";
 
 const tempFile = () =>
@@ -16,26 +16,26 @@ describe("route persistence", () => {
       { screen: "contest", contestId: "abc300", startsAt: 1, endsAt: 2 },
       { screen: "submission", contestId: "abc300", submissionId: "41039290" },
     ];
-    saveRoutes(routes, file);
-    expect(loadRoutes(file)).toEqual(routes);
+    saveState({ routes, language: "ja" }, file);
+    expect(loadState(file)).toEqual({ routes, language: "ja" });
   });
 
   test("missing file yields null", () => {
-    expect(loadRoutes("/nonexistent/state.json")).toBeNull();
+    expect(loadState("/nonexistent/state.json")).toBeNull();
   });
 
   test("corrupt or foreign shapes yield null", () => {
     const file = tempFile();
     fs.writeFileSync(file, "{nope");
-    expect(loadRoutes(file)).toBeNull();
+    expect(loadState(file)).toBeNull();
     fs.writeFileSync(file, JSON.stringify({ routes: [{ screen: "evil" }] }));
-    expect(loadRoutes(file)).toBeNull();
+    expect(loadState(file)).toBeNull();
     fs.writeFileSync(
       file,
       JSON.stringify({
         routes: [{ screen: "contest", contestId: "x", startsAt: null, endsAt: null }],
       }),
     );
-    expect(loadRoutes(file)).toBeNull(); // stack must be rooted at the dashboard
+    expect(loadState(file)).toBeNull(); // stack must be rooted at the dashboard
   });
 });

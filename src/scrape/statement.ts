@@ -170,11 +170,13 @@ function parseInlines($: cheerio.CheerioAPI, nodes: AnyNode[], verbatim = false)
         inlines.push({ kind: "break" });
         break;
       case "img": {
+        // Terminals can't show the image: fall back to alt text plus the
+        // URL so it can be opened in a browser.
         const alt = $(el).attr("alt");
-        inlines.push({
-          kind: "text",
-          text: alt !== undefined && alt !== "" ? `[img: ${alt}]` : "[img]",
-        });
+        const src = $(el).attr("src") ?? "";
+        const url = src.startsWith("//") ? `https:${src}` : src;
+        const label = alt !== undefined && alt !== "" ? `[img: ${alt}]` : "[img]";
+        inlines.push({ kind: "text", text: url !== "" ? `${label} <${url}>` : label });
         break;
       }
       default:

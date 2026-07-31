@@ -8,7 +8,7 @@ export interface Loaded<T> {
 
 export type DataState<T> =
   | { status: "loading" }
-  | ({ status: "ready" } & Loaded<T>)
+  | ({ status: "ready"; pending?: boolean } & Loaded<T>)
   | { status: "error"; error: Error };
 
 /**
@@ -22,10 +22,14 @@ export function useData<T>(key: string, fetcher: (bypassCache: boolean) => Promi
   const run = useCallback(
     (bypassCache: boolean) => {
       const gen = ++generation.current;
-      setState({ status: "loading" });
+      // Keep showing the previous data while the next load is in flight —
+      // blanking the pane between problem flips reads as screen flashing.
+      setState((prev) =>
+        prev.status === "ready" ? { ...prev, pending: true } : { status: "loading" },
+      );
       fetcher(bypassCache).then(
         (loaded) => {
-          if (generation.current === gen) setState({ status: "ready", ...loaded });
+          if (generation.current === gen) setState({ status: "ready", pending: false, ...loaded });
         },
         (error: unknown) => {
           if (generation.current === gen) {

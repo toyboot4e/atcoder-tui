@@ -12,6 +12,9 @@ import { t } from "./strings.js";
 
 const SUBMISSIONS_TTL_MS = 60 * 1000;
 
+// Cursor per contest, so returning from a submission restores the position.
+const rememberedCursor = new Map<string, number>();
+
 function statusColor(status: string): (s: string) => string {
   if (status === "AC") return chalk.green.bold;
   if (status === "WJ" || /^\d+\/\d+$/.test(status)) return chalk.blue;
@@ -24,7 +27,7 @@ function formatRow(s: Submission, width: number): string {
   const status = statusColor(s.status)(s.status.padEnd(3));
   const score = s.score.padStart(5);
   const task = s.taskLabel.length > 28 ? `${s.taskLabel.slice(0, 27)}…` : s.taskLabel.padEnd(28);
-  const exec = (s.execTime ?? "").padStart(7);
+  const exec = (s.execTime ?? "").padStart(9); // "12345 ms" and beyond
   const lang = s.language;
   const row = `${chalk.dim(time)}  ${status} ${score}  ${task}  ${exec}  ${lang}`;
   return width > 0 ? row : row;
@@ -47,7 +50,11 @@ export function SubmissionsPane({
   const { client, config } = useServices();
   const { language } = useAppState();
   const dispatch = useAppDispatch();
-  const [cursor, setCursor] = useState(0);
+  const [cursor, setCursorRaw] = useState(rememberedCursor.get(contestId) ?? 0);
+  const setCursor = (i: number) => {
+    rememberedCursor.set(contestId, i);
+    setCursorRaw(i);
+  };
   const userId = config.userId;
 
   const { state, refresh } = useData(
@@ -95,7 +102,12 @@ export function SubmissionsPane({
       if (submission?.id != null) {
         dispatch({
           type: "push",
-          route: { screen: "submission", contestId, submissionId: submission.id },
+          route: {
+            screen: "submission",
+            contestId,
+            submissionId: submission.id,
+            summary: submission,
+          },
         });
       }
     },

@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { Box, Text } from "ink";
 import chalk from "chalk";
-import { LoginRequiredError } from "../net/http.js";
+import { HttpError, LoginRequiredError } from "../net/http.js";
 import { parseSubmissionDetail } from "../scrape/submission.js";
+import type { Submission } from "../scrape/submissions.js";
 import { useServices } from "../state/services.js";
 import { useAppDispatch, useAppState } from "../state/store.js";
 import { useData } from "../state/useData.js";
@@ -15,13 +16,20 @@ import { t } from "./strings.js";
 
 const SUBMISSION_TTL_MS = 5 * 60 * 1000;
 
-/** Full-screen source viewer for one submission (login-gated page). */
+/**
+ * Submission screen. The facts come from the list row (always available);
+ * the source code needs /submissions/{id}, which AtCoder shields behind an
+ * AWS-WAF JS challenge (403 for any non-browser client) — when that
+ * happens we say so instead of pretending it's a bug.
+ */
 export function SubmissionView({
   contestId,
   submissionId,
+  summary,
 }: {
   contestId: string;
   submissionId: string;
+  summary?: Submission;
 }) {
   const { client } = useServices();
   const { language, inputActive } = useAppState();
@@ -42,9 +50,25 @@ export function SubmissionView({
     },
   );
 
+  const summaryLines = useMemo(() => {
+    if (summary === undefined) return [];
+    const pairs: Array<[string, string]> = [
+      [language === "ja" ? "提出時刻" : "Time", summary.timeText],
+      [language === "ja" ? "問題" : "Task", summary.taskLabel],
+      [language === "ja" ? "言語" : "Language", summary.language],
+      [language === "ja" ? "結果" : "Status", summary.status],
+      [language === "ja" ? "得点" : "Score", summary.score],
+    ];
+    if (summary.execTime !== null) pairs.push(["Exec", summary.execTime]);
+    if (summary.memory !== null) pairs.push(["Memory", summary.memory]);
+    return pairs.map(([label, value]) => `${chalk.bold(label.padEnd(10))} ${value}`);
+  }, [summary, language]);
+
   const lines = useMemo(() => {
-    if (state.status !== "ready") return [];
-    const out: string[] = [];
+    const out: string[] = [...summaryLines];
+    if (state.status !== "ready") return out;
+    if (out.length > 0) out.push("");
+    // Detail facts the summary lacks (code size etc.), then the code.
     for (const [label, value] of state.data.facts) {
       out.push(`${chalk.bold(label.padEnd(16))} ${value}`);
     }
@@ -58,9 +82,11 @@ export function SubmissionView({
       out.push("", chalk.bold.red("Compile Error"), ...state.data.compileError.split("\n"));
     }
     return out;
-  }, [state]);
+  }, [state, summaryLines]);
 
-  const height = rows - 4 - (state.status !== "ready" || state.stale ? 1 : 0);
+  const wafBlocked =
+    state.status === "error" && state.error instanceof HttpError && state.error.status === 403;
+  const height = rows - 4 - (state.status !== "ready" || state.stale ? (wafBlocked ? 2 : 1) : 0);
   const clamped = clampScroll(scrollTop, lines.length, height);
 
   useScrollKeys(
@@ -84,7 +110,14 @@ export function SubmissionView({
           {language === "ja" ? "提出" : "submission"} #{submissionId}
         </Text>
         {state.status === "loading" && <Text dimColor>{t("loading", language)}</Text>}
-        {state.status === "error" && (
+        {wafBlocked && (
+          <Text color="yellow">
+            {language === "ja"
+              ? "ソースコードはブラウザ限定です（AtCoder の WAF 保護のためツールからは取得できません）— o でブラウザ表示"
+              : "source code is browser-only (AtCoder's WAF challenge blocks tools) — press o to open it in the browser"}
+          </Text>
+        )}
+        {state.status === "error" && !wafBlocked && (
           <Text color="red" wrap="truncate">
             {state.error instanceof LoginRequiredError
               ? t("loginRequired", language)

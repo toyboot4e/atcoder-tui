@@ -4,7 +4,12 @@ import type { Language } from "../config.js";
 export type Route =
   | { screen: "dashboard" }
   | { screen: "contest"; contestId: string; startsAt: number | null; endsAt: number | null }
-  | { screen: "submission"; contestId: string; submissionId: string };
+  | {
+      screen: "submission";
+      contestId: string;
+      submissionId: string;
+      summary?: import("../scrape/submissions.js").Submission;
+    };
 
 export interface AppState {
   /** Navigation stack; the last entry is the visible screen. */

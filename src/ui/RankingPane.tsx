@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Text } from "ink";
 import chalk from "chalk";
 import { LoginRequiredError } from "../net/http.js";
@@ -68,6 +68,20 @@ export function RankingPane({
       : undefined;
 
   const viewHeight = height - 2; // header + notice budget
+
+  // On first load, land on your own row instead of rank 1: standings come
+  // as one document, so this is pure local scrolling — no extra requests.
+  const centered = useRef(false);
+  useEffect(() => {
+    if (centered.current || state.status !== "ready" || config.userId === undefined) return;
+    const index = state.data.rows.findIndex((r) => r.user === config.userId);
+    if (index >= 0) {
+      setScrollTop(
+        clampScroll(index - Math.floor(viewHeight / 2), state.data.rows.length, viewHeight),
+      );
+    }
+    centered.current = true;
+  }, [state, config.userId, viewHeight]);
   const clamped = clampScroll(scrollTop, lines.length, viewHeight);
 
   useScrollKeys(

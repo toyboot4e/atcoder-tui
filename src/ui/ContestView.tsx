@@ -21,6 +21,17 @@ import { t } from "./strings.js";
 const SIDEBAR_WIDTH = 26;
 const ACTIVE_TTL_MS = 5 * 60 * 1000;
 
+interface RememberedContest {
+  cursor: number;
+  loadedIndex: number;
+  focus: "sidebar" | "content";
+  tab: ContestTab;
+  scrollByTask: Map<string, number>;
+}
+// Per-contest UI state, so returning from a submission (or relaunching the
+// same contest) restores tab/cursor/scroll instead of resetting.
+const rememberedContest = new Map<string, RememberedContest>();
+
 export type ContestTab = "statement" | "meta" | "submissions" | "ranking";
 const TAB_ORDER: ContestTab[] = ["statement", "meta", "submissions", "ranking"];
 
@@ -56,13 +67,40 @@ export function ContestView({
   // Ended contests are immutable: fetched once, cached forever (r bypasses).
   const ttl = phase === "ended" ? ("infinite" as const) : ACTIVE_TTL_MS;
 
-  const [cursor, setCursor] = useState(0);
-  const [loadedIndex, setLoadedIndex] = useState(0);
-  const [focus, setFocus] = useState<"sidebar" | "content">("sidebar");
-  const [tab, setTab] = useState<ContestTab>("statement");
-  const [scrollTop, setScrollTop] = useState(0);
+  const saved = rememberedContest.get(contestId);
+  const [cursor, setCursorRaw] = useState(saved?.cursor ?? 0);
+  const [loadedIndex, setLoadedIndexRaw] = useState(saved?.loadedIndex ?? 0);
+  const [focus, setFocusRaw] = useState<"sidebar" | "content">(saved?.focus ?? "sidebar");
+  const [tab, setTabRaw] = useState<ContestTab>(saved?.tab ?? "statement");
   // Per-problem scroll positions, restored when flipping back to a problem.
-  const scrollByTask = useRef(new Map<string, number>());
+  const scrollByTask = useRef(saved?.scrollByTask ?? new Map<string, number>());
+  const remember = (patch: Partial<RememberedContest>) => {
+    rememberedContest.set(contestId, {
+      cursor,
+      loadedIndex,
+      focus,
+      tab,
+      scrollByTask: scrollByTask.current,
+      ...patch,
+    });
+  };
+  const setCursor = (v: number) => {
+    remember({ cursor: v });
+    setCursorRaw(v);
+  };
+  const setLoadedIndex = (v: number) => {
+    remember({ loadedIndex: v });
+    setLoadedIndexRaw(v);
+  };
+  const setFocus = (v: "sidebar" | "content") => {
+    remember({ focus: v });
+    setFocusRaw(v);
+  };
+  const setTab = (v: ContestTab) => {
+    remember({ tab: v });
+    setTabRaw(v);
+  };
+  const [scrollTop, setScrollTop] = useState(0);
 
   const tasksData = useData(`tasks-${contestId}-${language}-${phase}`, async (bypassCache) => {
     if (phase === "upcoming") return { data: [], stale: false, fetchedAt: 0 };
@@ -83,7 +121,7 @@ export function ContestView({
   const [settledTaskId, setSettledTaskId] = useState<string | undefined>(undefined);
   useEffect(() => {
     const id = loadedTask?.id;
-    const timer = setTimeout(() => setSettledTaskId(id), 250);
+    const timer = setTimeout(() => setSettledTaskId(id), 150);
     return () => clearTimeout(timer);
   }, [loadedTask?.id]);
   const settledTask = tasks.find((task) => task.id === settledTaskId);
@@ -121,6 +159,8 @@ export function ContestView({
   // overflows its box (Ink clipping corrupts leading CJK characters).
   const noticeRows =
     (loadedTask !== undefined ? 1 : 0) + // title header row
+    (tasksData.state.status === "error" ? 2 : 0) + // full-width error text
+    (tasksData.state.status === "ready" && tasks.length === 0 ? 2 : 0) + // empty-tasks notice
     (fallbackNotice ? 1 : 0) +
     (statementData.state.status === "loading" || statementData.state.status === "error" ? 1 : 0) +
     (statementData.state.status === "ready" && statementData.state.stale ? 1 : 0);
@@ -280,7 +320,7 @@ export function ContestView({
           {tasksData.state.status === "loading" && <Text dimColor>{t("loading", language)}</Text>}
           {tasksData.state.status === "error" && (
             <Text color="red" wrap="truncate">
-              {describeError(tasksData.state.error, phase, language)}
+              {t("error", language)} →
             </Text>
           )}
           {tasks.map((task, index) => (
@@ -305,6 +345,19 @@ export function ContestView({
         >
           {tab === "statement" && (
             <>
+              {tasksData.state.status === "error" && (
+                <Text color="red">
+                  {describeError(tasksData.state.error, phase, language)} —{" "}
+                  {t("retryHint", language)}
+                </Text>
+              )}
+              {tasksData.state.status === "ready" && tasks.length === 0 && (
+                <Text color="yellow">
+                  {language === "ja"
+                    ? "問題が見つかりません — 未登録の開催中コンテストの可能性があります（o でブラウザ表示、r で再試行）"
+                    : "no visible tasks — you may not be registered for this running contest (o opens the browser, r retries)"}
+                </Text>
+              )}
               {loadedTask !== undefined && (
                 <Text bold color="cyan" wrap="truncate">
                   {loadedTask.letter} — {loadedTask.title}
