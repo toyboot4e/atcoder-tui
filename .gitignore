@@ -8,5 +8,5 @@ result-*
 # Logged-in fixture recordings must never be committed
 test/fixtures/private/
 
-# Bun writes its cache here if XDG_CACHE_HOME is set-but-empty (bun bug)
+# Bun's transpiler cache can land here when XDG_CACHE_HOME is set but empty
 /bun/

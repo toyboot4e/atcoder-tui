@@ -27,9 +27,11 @@
           programs.nixfmt.enable = true;
           programs.oxfmt.enable = true;
           programs.yamlfmt.enable = true;
-          settings.global.excludes = [
+          # Tracked files oxfmt would otherwise match (gitignored paths are
+          # already skipped by the git walker): fixture whitespace is
+          # load-bearing for parser tests; prose stays hand-formatted.
+          settings.formatter.oxfmt.excludes = [
             "test/fixtures/*"
-            "bun.lock"
             "*.md"
             "*.org"
           ];
@@ -38,26 +40,7 @@
       packagesFor =
         pkgs:
         let
-          # https://github.com/key-moon/aclogin — paste REVEL_SESSION once,
-          # distribute it to oj/acc cookie stores (which atcoder-tui imports).
-          aclogin = pkgs.python3Packages.buildPythonApplication rec {
-            pname = "aclogin";
-            version = "0.2.1";
-            pyproject = true;
-            src = pkgs.fetchPypi {
-              inherit pname version;
-              hash = "sha256-zUbkSnwDmu1Pz//Zs/vzAYmNhFPzTL78PeXV9CJfdVQ=";
-            };
-            build-system = [ pkgs.python3Packages.setuptools ];
-            dependencies = [ pkgs.python3Packages.appdirs ];
-            doCheck = false;
-            meta = {
-              description = "Distribute an AtCoder REVEL_SESSION cookie to competitive-programming CLI tools";
-              homepage = "https://github.com/key-moon/aclogin";
-              license = pkgs.lib.licenses.mit;
-              mainProgram = "aclogin";
-            };
-          };
+          aclogin = pkgs.callPackage ./nix/aclogin.nix { };
 
           # Full node_modules (incl. dev deps, so nix flake check can run
           # tests/typecheck) as a fixed-output derivation: one hash to bump
@@ -167,7 +150,7 @@
           packages = with pkgs; [
             bun
             typescript
-            nodejs_22
+            nodejs
             just
             oxlint
             pinact

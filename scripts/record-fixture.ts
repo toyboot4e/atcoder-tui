@@ -39,7 +39,7 @@ if (!response.ok) {
 let body = await response.text();
 
 // Scrub session-adjacent tokens regardless of destination.
-body = body.replace(/(var csrfToken = "SCRUBBED"]*(")/g, "$1SCRUBBED$2");
+body = body.replace(/(var csrfToken = ")[^"]*(")/g, "$1SCRUBBED$2");
 body = body.replace(/(name="csrf_token"\s+value=")[^"]*(")/g, "$1SCRUBBED$2");
 
 const loggedIn = /userScreenName = "[^"]/.test(body);
