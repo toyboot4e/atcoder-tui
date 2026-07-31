@@ -30,3 +30,15 @@ fixture url name:
 # Run the packaged app via Nix
 run:
     nix run .
+
+# Show login-session status (configured? importable from oj/acc?)
+session-status:
+    bun run src/index.tsx session status
+
+# Import REVEL_SESSION from oj / acc and verify it
+session-import:
+    bun run src/index.tsx session import
+
+# Paste and verify a REVEL_SESSION value
+session-set:
+    bun run src/index.tsx session set
