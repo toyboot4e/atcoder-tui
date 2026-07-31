@@ -1,6 +1,11 @@
 import readline from "node:readline";
 import { loadConfig } from "./config.js";
-import { checkSession, findSessionCandidates, maskSession, saveSession } from "./session.js";
+import {
+  checkSession,
+  findSessionCandidates,
+  maskSession,
+  saveSession,
+} from "./session.js";
 
 const HELP = `atcoder-tui session — manage the AtCoder login cookie
 
@@ -16,7 +21,10 @@ browser DevTools -> Application/Storage -> Cookies -> https://atcoder.jp
 
 function promptHidden(question: string): Promise<string> {
   return new Promise((resolve) => {
-    const rl = readline.createInterface({ input: process.stdin, output: process.stderr });
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stderr,
+    });
     rl.question(question, (answer) => {
       rl.close();
       resolve(answer.trim());
@@ -39,17 +47,26 @@ export async function runCli(args: string[]): Promise<boolean> {
     case "status": {
       const { config, path } = loadConfig();
       if (config.revelSession !== undefined) {
-        console.log(`session configured: ${maskSession(config.revelSession)}  [${path}]`);
-        console.log("run `atcoder-tui session check` to verify it against atcoder.jp");
+        console.log(
+          `session configured: ${maskSession(config.revelSession)}  [${path}]`,
+        );
+        console.log(
+          "run `atcoder-tui session check` to verify it against atcoder.jp",
+        );
       } else {
         console.log(`no session configured  [${path}]`);
         const found = findSessionCandidates();
         if (found.length > 0) {
           console.log(`found importable sessions:`);
-          for (const c of found) console.log(`  - ${c.source}${c.expires !== undefined ? ` (expires ${c.expires})` : ""}`);
+          for (const c of found)
+            console.log(
+              `  - ${c.source}${c.expires !== undefined ? ` (expires ${c.expires})` : ""}`,
+            );
           console.log("run `atcoder-tui session import` to use one");
         } else {
-          console.log("run `atcoder-tui session set` to paste one (see --help)");
+          console.log(
+            "run `atcoder-tui session set` to paste one (see --help)",
+          );
         }
       }
       return true;
@@ -57,24 +74,31 @@ export async function runCli(args: string[]): Promise<boolean> {
     case "import": {
       const found = findSessionCandidates();
       if (found.length === 0) {
-        console.error("no oj/acc session found; use `atcoder-tui session set` instead");
+        console.error(
+          "no oj/acc session found; use `atcoder-tui session set` instead",
+        );
         process.exitCode = 1;
         return true;
       }
       const chosen = found[0]!;
       const ok = await checkSession(chosen.value);
       if (!ok) {
-        console.error(`session from ${chosen.source} is expired/invalid — log in with that tool again, or use \`session set\``);
+        console.error(
+          `session from ${chosen.source} is expired/invalid — log in with that tool again, or use \`session set\``,
+        );
         process.exitCode = 1;
         return true;
       }
       const file = saveSession(chosen.value);
-      console.log(`imported ${maskSession(chosen.value)} from ${chosen.source}`);
+      console.log(
+        `imported ${maskSession(chosen.value)} from ${chosen.source}`,
+      );
       console.log(`verified against atcoder.jp and saved to ${file}`);
       return true;
     }
     case "set": {
-      const value = args[2] ?? (await promptHidden("paste REVEL_SESSION value: "));
+      const value =
+        args[2] ?? (await promptHidden("paste REVEL_SESSION value: "));
       if (value === "") {
         console.error("empty value; aborted");
         process.exitCode = 1;
@@ -82,7 +106,9 @@ export async function runCli(args: string[]): Promise<boolean> {
       }
       const ok = await checkSession(value);
       if (!ok) {
-        console.error("that value does not authenticate against atcoder.jp (expired or truncated?) — not saved");
+        console.error(
+          "that value does not authenticate against atcoder.jp (expired or truncated?) — not saved",
+        );
         process.exitCode = 1;
         return true;
       }

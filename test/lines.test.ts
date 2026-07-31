@@ -25,14 +25,21 @@ describe("renderSections", () => {
     for (const line of lines) {
       expect(stringWidth(strip(line))).toBeLessThanOrEqual(30);
     }
-    expect(lines.filter((l) => strip(l).includes("word")).length).toBeGreaterThan(1);
+    expect(
+      lines.filter((l) => strip(l).includes("word")).length,
+    ).toBeGreaterThan(1);
   });
 
   test("wraps CJK full-width text correctly", () => {
     const sections: Section[] = [
       {
         title: "問題文",
-        blocks: [{ kind: "paragraph", inlines: [{ kind: "text", text: "高橋君は".repeat(20) }] }],
+        blocks: [
+          {
+            kind: "paragraph",
+            inlines: [{ kind: "text", text: "高橋君は".repeat(20) }],
+          },
+        ],
       },
     ];
     const lines = renderSections(sections, 20);
@@ -44,7 +51,12 @@ describe("renderSections", () => {
   test("pre blocks are never wrapped and keep a gutter", () => {
     const long = "1 ".repeat(40).trim();
     const sections: Section[] = [
-      { title: "Sample Input 1", blocks: [{ kind: "pre", inlines: [{ kind: "text", text: `${long}\n2 3\n` }] }] },
+      {
+        title: "Sample Input 1",
+        blocks: [
+          { kind: "pre", inlines: [{ kind: "text", text: `${long}\n2 3\n` }] },
+        ],
+      },
     ];
     const lines = renderSections(sections, 20).map(strip);
     const preLines = lines.filter((l) => l.startsWith("│ "));
@@ -96,7 +108,10 @@ describe("renderSections", () => {
   });
 
   test("renders a real statement end to end", () => {
-    const html = fs.readFileSync(path.join(import.meta.dir, "fixtures", "abc300_a.html"), "utf8");
+    const html = fs.readFileSync(
+      path.join(import.meta.dir, "fixtures", "abc300_a.html"),
+      "utf8",
+    );
     const statement = parseStatement(html);
     const lines = renderSections(statement.en!, 78).map(strip);
     const text = lines.join("\n");

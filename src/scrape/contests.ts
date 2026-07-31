@@ -24,7 +24,10 @@ export interface ContestSection {
 
 function parseStart(text: string): number | null {
   // "2026-07-31 19:00:00+0900" -> ISO 8601
-  const iso = text.trim().replace(" ", "T").replace(/([+-]\d{2})(\d{2})$/, "$1:$2");
+  const iso = text
+    .trim()
+    .replace(" ", "T")
+    .replace(/([+-]\d{2})(\d{2})$/, "$1:$2");
   const ms = Date.parse(iso);
   return Number.isNaN(ms) ? null : ms;
 }
@@ -47,7 +50,12 @@ function parseRow($: cheerio.CheerioAPI, tr: AnyNode): ContestListItem | null {
   const contestId = href.replace("/contests/", "").split(/[/?#]/)[0]!;
 
   const marker = nameTd.find("span[data-toggle='tooltip']").attr("title") ?? "";
-  const kind = marker === "Algorithm" ? "algorithm" : marker === "Heuristic" ? "heuristic" : null;
+  const kind =
+    marker === "Algorithm"
+      ? "algorithm"
+      : marker === "Heuristic"
+        ? "heuristic"
+        : null;
 
   const durationText = hasTime ? tds.eq(2).text().trim() : null;
   return {
@@ -56,7 +64,10 @@ function parseRow($: cheerio.CheerioAPI, tr: AnyNode): ContestListItem | null {
     startsAt: hasTime ? parseStart(tds.eq(0).find("time").text()) : null,
     durationText,
     durationMin: durationText === null ? null : parseDuration(durationText),
-    ratedRange: tds.eq(hasTime ? 3 : 1).text().trim(),
+    ratedRange: tds
+      .eq(hasTime ? 3 : 1)
+      .text()
+      .trim(),
     kind,
   };
 }

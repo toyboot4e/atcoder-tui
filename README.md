@@ -72,14 +72,13 @@ Everything is optional; missing pieces degrade to a status-bar hint.
 
   ```sh
   just login            # aclogin: paste REVEL_SESSION once → saved to oj/acc
-  just dev              # atcoder-tui picks it up automatically
+  just run              # atcoder-tui picks it up automatically
   ```
 
-  Manual alternatives: `just session-import` (explicit import),
-  `just session-set` (paste directly into the app config),
-  `just session-status` / `atcoder-tui session check`. Cookie values are
-  verified before saving and only ever displayed masked. The cookie comes
-  from browser DevTools → Application/Storage → Cookies →
+  Manual alternatives: `just session-set` (paste directly into the app
+  config), `just session-status` / `atcoder-tui session check`. Cookie
+  values are verified before saving and only ever displayed masked. The
+  cookie comes from browser DevTools → Application/Storage → Cookies →
   `https://atcoder.jp` → `REVEL_SESSION`.
 - `cache` — set `false` to disable the disk cache (`~/.cache/atcoder-tui/`);
   rate limiting still applies.

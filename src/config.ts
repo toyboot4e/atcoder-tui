@@ -71,9 +71,15 @@ export function loadConfig(filePath: string = configFilePath()): LoadedConfig {
   if (typeof obj["cache"] === "boolean") {
     config.cache = obj["cache"];
   }
-  if (typeof obj["requestsPerMinute"] === "number" && obj["requestsPerMinute"] >= 1) {
+  if (
+    typeof obj["requestsPerMinute"] === "number" &&
+    obj["requestsPerMinute"] >= 1
+  ) {
     // Never allow a config mistake to raise the budget above sanity.
-    config.requestsPerMinute = Math.min(30, Math.floor(obj["requestsPerMinute"]));
+    config.requestsPerMinute = Math.min(
+      30,
+      Math.floor(obj["requestsPerMinute"]),
+    );
   }
 
   return { config, warnings, path: filePath };

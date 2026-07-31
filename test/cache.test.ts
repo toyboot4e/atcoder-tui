@@ -51,7 +51,8 @@ describe("DiskCache", () => {
     const dir = tempDir();
     const cache = new DiskCache(dir);
     cache.put("https://x/a", "A");
-    for (const f of fs.readdirSync(dir)) fs.writeFileSync(path.join(dir, f), "garbage");
+    for (const f of fs.readdirSync(dir))
+      fs.writeFileSync(path.join(dir, f), "garbage");
     expect(cache.get("https://x/a", "infinite")).toBeNull();
   });
 });

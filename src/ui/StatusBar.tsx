@@ -40,8 +40,12 @@ export function StatusBar({ hints }: { hints: string }) {
   const net =
     `net ${stats.sessionRequests}req/${formatBytes(stats.sessionBytes)}` +
     ` · today ${stats.todayRequests}req/${formatBytes(stats.todayBytes)}` +
-    (stats.cacheHits > 0 ? ` · cache ${(stats.cacheHitRatio * 100).toFixed(0)}%` : "");
-  const activity = stats.inFlight ? ` ⇄${stats.queued > 1 ? `×${stats.queued}` : ""}` : "";
+    (stats.cacheHits > 0
+      ? ` · cache ${(stats.cacheHitRatio * 100).toFixed(0)}%`
+      : "");
+  const activity = stats.inFlight
+    ? ` ⇄${stats.queued > 1 ? `×${stats.queued}` : ""}`
+    : "";
 
   return (
     <Box flexDirection="column">
@@ -56,7 +60,11 @@ export function StatusBar({ hints }: { hints: string }) {
             <Text color="cyan" bold>
               [{language}]
             </Text>
-            {notice !== null ? <Text color="yellow"> {notice}</Text> : <Text dimColor> {hints}</Text>}
+            {notice !== null ? (
+              <Text color="yellow"> {notice}</Text>
+            ) : (
+              <Text dimColor> {hints}</Text>
+            )}
           </Text>
         </Box>
         <Box flexShrink={0} marginLeft={1}>

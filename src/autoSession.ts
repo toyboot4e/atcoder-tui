@@ -32,9 +32,15 @@ export async function autoImportSession(deps: AutoImportDeps): Promise<void> {
     deps.client.setCookie(candidate.value);
     try {
       // /settings is login-gated: 200 = session works, 302→/login = expired.
-      await deps.client.fetch("/settings", { ttl: 0, bypassCache: true, noStore: true });
+      await deps.client.fetch("/settings", {
+        ttl: 0,
+        bypassCache: true,
+        noStore: true,
+      });
       saveSession(candidate.value, deps.configPath ?? configFilePath());
-      deps.notices.push(`session: imported from ${sourceName(candidate.source)} ✓ (saved to config)`);
+      deps.notices.push(
+        `session: imported from ${sourceName(candidate.source)} ✓ (saved to config)`,
+      );
       return;
     } catch (error) {
       deps.client.setCookie(previous);

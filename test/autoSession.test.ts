@@ -15,7 +15,10 @@ function homeWithAccSession(value: string): string {
   const home = tempDir("atui-auto-home-");
   const accDir = path.join(home, ".config", "atcoder-cli-nodejs");
   fs.mkdirSync(accDir, { recursive: true });
-  fs.writeFileSync(accDir + "/session.json", `{"cookies":["REVEL_SESSION=${value}; Path=/; Secure"]}`);
+  fs.writeFileSync(
+    accDir + "/session.json",
+    `{"cookies":["REVEL_SESSION=${value}; Path=/; Secure"]}`,
+  );
   return home;
 }
 
@@ -35,7 +38,10 @@ function makeClient(validCookie: string | null) {
       if (validCookie !== null && cookie === `REVEL_SESSION=${validCookie}`) {
         return new Response("settings page", { status: 200 });
       }
-      return new Response(null, { status: 302, headers: { location: "https://atcoder.jp/login" } });
+      return new Response(null, {
+        status: 302,
+        headers: { location: "https://atcoder.jp/login" },
+      });
     },
   });
   return { client, seen };
@@ -50,10 +56,18 @@ describe("autoImportSession", () => {
     const messages: string[] = [];
     notices.subscribe((m) => messages.push(m));
 
-    await autoImportSession({ client, notices, configuredSession: undefined, home, configPath });
+    await autoImportSession({
+      client,
+      notices,
+      configuredSession: undefined,
+      home,
+      configPath,
+    });
 
     expect(client.getCookie()).toBe("goodcookie123");
-    expect(JSON.parse(fs.readFileSync(configPath, "utf8"))).toEqual({ revelSession: "goodcookie123" });
+    expect(JSON.parse(fs.readFileSync(configPath, "utf8"))).toEqual({
+      revelSession: "goodcookie123",
+    });
     expect(messages).toHaveLength(1);
     expect(messages[0]).toContain("imported from acc");
   });
@@ -64,7 +78,13 @@ describe("autoImportSession", () => {
     const { client } = makeClient(null);
     const notices = new Notices();
 
-    await autoImportSession({ client, notices, configuredSession: undefined, home, configPath });
+    await autoImportSession({
+      client,
+      notices,
+      configuredSession: undefined,
+      home,
+      configPath,
+    });
 
     expect(client.getCookie()).toBeUndefined(); // reverted
     expect(fs.existsSync(configPath)).toBe(false);
@@ -76,7 +96,12 @@ describe("autoImportSession", () => {
     const { client, seen } = makeClient(null);
     const notices = new Notices();
 
-    await autoImportSession({ client, notices, configuredSession: "configured", home });
+    await autoImportSession({
+      client,
+      notices,
+      configuredSession: "configured",
+      home,
+    });
 
     expect(seen).toHaveLength(0); // no network traffic at all
     expect(notices.latest).toBeNull();
@@ -99,7 +124,13 @@ describe("autoImportSession", () => {
     });
     const notices = new Notices();
 
-    await autoImportSession({ client, notices, configuredSession: undefined, home, configPath });
+    await autoImportSession({
+      client,
+      notices,
+      configuredSession: undefined,
+      home,
+      configPath,
+    });
 
     expect(notices.latest).toBeNull();
     expect(fs.existsSync(configPath)).toBe(false);
@@ -108,7 +139,12 @@ describe("autoImportSession", () => {
   test("silent when nothing is importable", async () => {
     const { client, seen } = makeClient(null);
     const notices = new Notices();
-    await autoImportSession({ client, notices, configuredSession: undefined, home: tempDir("atui-empty-") });
+    await autoImportSession({
+      client,
+      notices,
+      configuredSession: undefined,
+      home: tempDir("atui-empty-"),
+    });
     expect(seen).toHaveLength(0);
     expect(notices.latest).toBeNull();
   });

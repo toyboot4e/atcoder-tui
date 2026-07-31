@@ -1,18 +1,40 @@
 {
   description = "atcoder-tui — a read-only AtCoder terminal viewer";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    # x86_64/aarch64 × linux/darwin — exactly Bun's supported platforms,
+    # and overridable via --override-input systems.
+    systems.url = "github:nix-systems/default";
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
 
   outputs =
-    { self, nixpkgs }:
+    {
+      self,
+      nixpkgs,
+      systems,
+      treefmt-nix,
+    }:
     let
-      systems = [
-        "x86_64-linux"
-        "aarch64-linux"
-        "x86_64-darwin"
-        "aarch64-darwin"
-      ];
-      forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
+      forAllSystems =
+        f: nixpkgs.lib.genAttrs (import systems) (system: f nixpkgs.legacyPackages.${system});
+
+      treefmtFor =
+        pkgs:
+        treefmt-nix.lib.evalModule pkgs {
+          projectRootFile = "flake.nix";
+          programs.nixfmt.enable = true;
+          programs.prettier.enable = true;
+          settings.global.excludes = [
+            "test/fixtures/*"
+            "bun.lock"
+            "*.md"
+          ];
+        };
 
       packagesFor =
         pkgs:
@@ -37,14 +59,21 @@
               mainProgram = "aclogin";
             };
           };
-          # Runtime node_modules as a fixed-output derivation: one hash to bump
+
+          # Full node_modules (incl. dev deps, so nix flake check can run
+          # tests/typecheck) as a fixed-output derivation: one hash to bump
           # whenever bun.lock changes (the build error prints the new hash).
           nodeModules = pkgs.stdenvNoCC.mkDerivation {
             pname = "atcoder-tui-node-modules";
             version = "0.1.0";
             src = pkgs.lib.cleanSourceWith {
               src = ./.;
-              filter = path: _type: builtins.elem (baseNameOf path) [ "package.json" "bun.lock" ];
+              filter =
+                path: _type:
+                builtins.elem (baseNameOf path) [
+                  "package.json"
+                  "bun.lock"
+                ];
             };
             nativeBuildInputs = [ pkgs.bun ];
             dontConfigure = true;
@@ -52,7 +81,7 @@
             buildPhase = ''
               export HOME=$TMPDIR
               export BUN_INSTALL_CACHE_DIR=$TMPDIR/bun-cache
-              bun install --frozen-lockfile --production --no-progress --backend=copyfile
+              bun install --frozen-lockfile --no-progress --backend=copyfile
             '';
             installPhase = ''
               mkdir -p $out
@@ -60,7 +89,7 @@
             '';
             outputHashAlgo = "sha256";
             outputHashMode = "recursive";
-            outputHash = "sha256-LD4+mspqYQ3AnHAJhw3oFO6iXEls+qda6bFx8ApiCuA=";
+            outputHash = "sha256-MZXotalyCcwprzC1ramo9SlpKoquWFdeFLxaMdkcLFs=";
           };
 
           atcoder-tui = pkgs.stdenvNoCC.mkDerivation {
@@ -98,6 +127,36 @@
           program = "${(packagesFor pkgs).atcoder-tui}/bin/atcoder-tui";
         };
       });
+
+      formatter = forAllSystems (pkgs: (treefmtFor pkgs).config.build.wrapper);
+
+      checks = forAllSystems (
+        pkgs:
+        let
+          packages = packagesFor pkgs;
+        in
+        {
+          formatting = (treefmtFor pkgs).config.build.check self;
+          build = packages.atcoder-tui;
+          # Offline by construction: tests run against committed fixtures.
+          tests = pkgs.stdenvNoCC.mkDerivation {
+            name = "atcoder-tui-tests";
+            src = ./.;
+            nativeBuildInputs = [
+              pkgs.bun
+              pkgs.typescript
+            ];
+            dontConfigure = true;
+            buildPhase = ''
+              export HOME=$TMPDIR
+              ln -s ${packages.nodeModules}/node_modules node_modules
+              tsc --noEmit
+              bun test
+            '';
+            installPhase = "touch $out";
+          };
+        }
+      );
 
       devShells = forAllSystems (pkgs: {
         default = pkgs.mkShell {

@@ -1,12 +1,22 @@
 # atcoder-tui — human entry points
 
+alias r := run
+alias t := test
+alias c := check
+alias f := fmt
+alias l := login
+alias s := session-status
+
 # List recipes
 default:
     @just --list
 
-# Run the TUI with Bun
-dev:
+# Run the TUI with Bun (no Nix involved)
+run:
     bun run src/index.tsx
+
+# Alias of run, for muscle memory
+dev: run
 
 # Run the TUI under Node (fallback if Bun tty raw mode misbehaves)
 dev-node:
@@ -23,13 +33,17 @@ typecheck:
 # Type-check and test
 check: typecheck test
 
+# Format the whole tree (treefmt: nixfmt + prettier)
+fmt:
+    nix fmt
+
+# Full repo gate: formatting, build, typecheck, tests
+flake-check:
+    nix flake check
+
 # Record an HTML fixture: just fixture https://atcoder.jp/contests/abc300/tasks/abc300_a abc300_a
 fixture url name:
     bun run scripts/record-fixture.ts {{url}} {{name}}
-
-# Run the packaged app via Nix
-run:
-    nix run .
 
 # Paste REVEL_SESSION once into oj/acc stores (atcoder-tui auto-imports on next launch)
 login:
@@ -39,10 +53,6 @@ login:
 session-status:
     bun run src/index.tsx session status
 
-# Import REVEL_SESSION from oj / acc and verify it
-session-import:
-    bun run src/index.tsx session import
-
-# Paste and verify a REVEL_SESSION value
+# Paste and verify a REVEL_SESSION value directly into the app config
 session-set:
     bun run src/index.tsx session set

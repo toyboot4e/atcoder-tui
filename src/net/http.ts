@@ -80,12 +80,14 @@ export class AtcoderClient {
     this.cache = opts.cache;
     this.baseUrl = opts.baseUrl ?? "https://atcoder.jp";
     this.cookie = opts.cookie;
-    this.userAgent = opts.userAgent ?? "atcoder-tui/0.1 (read-only terminal viewer)";
+    this.userAgent =
+      opts.userAgent ?? "atcoder-tui/0.1 (read-only terminal viewer)";
     this.minIntervalMs = opts.minIntervalMs ?? 1000;
     this.requestsPerMinute = opts.requestsPerMinute ?? 20;
     this.fetchImpl = opts.fetchImpl ?? fetch;
     this.clock = opts.clock ?? Date.now;
-    this.sleep = opts.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
+    this.sleep =
+      opts.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
   }
 
   /** Swap the session cookie at runtime (auto-import, expiry recovery). */
@@ -101,17 +103,28 @@ export class AtcoderClient {
   fetch(pathname: string, opts: FetchOptions): Promise<FetchOutcome> {
     const url = this.baseUrl + pathname;
 
-    if (this.cache !== null && opts.bypassCache !== true && opts.noStore !== true) {
+    if (
+      this.cache !== null &&
+      opts.bypassCache !== true &&
+      opts.noStore !== true
+    ) {
       const hit = this.cache.get(url, opts.ttl);
       if (hit !== null) {
         this.meter.recordCacheHit();
-        return Promise.resolve({ body: hit.body, fromCache: true, stale: false, fetchedAt: hit.fetchedAt });
+        return Promise.resolve({
+          body: hit.body,
+          fromCache: true,
+          stale: false,
+          fetchedAt: hit.fetchedAt,
+        });
       }
     }
 
     this.queued += 1;
     this.meter.setActivity(true, this.queued);
-    const result = this.tail.then(() => this.performFetch(url, opts.noStore === true));
+    const result = this.tail.then(() =>
+      this.performFetch(url, opts.noStore === true),
+    );
     // The chain must survive failures, or one error would wedge the queue.
     this.tail = result.then(
       () => {},
@@ -137,7 +150,10 @@ export class AtcoderClient {
     }
   }
 
-  private async performFetch(url: string, noStore: boolean): Promise<FetchOutcome> {
+  private async performFetch(
+    url: string,
+    noStore: boolean,
+  ): Promise<FetchOutcome> {
     await this.waitForBudget();
     this.lastRequestAt = this.clock();
 
@@ -181,6 +197,11 @@ export class AtcoderClient {
   private staleFallback(url: string): FetchOutcome | null {
     const entry = this.cache?.getStale(url) ?? null;
     if (entry === null) return null;
-    return { body: entry.body, fromCache: true, stale: true, fetchedAt: entry.fetchedAt };
+    return {
+      body: entry.body,
+      fromCache: true,
+      stale: true,
+      fetchedAt: entry.fetchedAt,
+    };
   }
 }

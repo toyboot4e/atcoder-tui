@@ -3,7 +3,12 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { DiskCache } from "../src/cache.js";
-import { AtcoderClient, HttpError, LoginRequiredError, type ClientOptions } from "../src/net/http.js";
+import {
+  AtcoderClient,
+  HttpError,
+  LoginRequiredError,
+  type ClientOptions,
+} from "../src/net/http.js";
 import { LoadMeter } from "../src/net/load.js";
 
 interface Recorded {
@@ -29,12 +34,12 @@ function makeHarness(
     sleep: async (ms) => {
       now += ms;
     },
-    fetchImpl: (async (input: string | URL | Request, init?: RequestInit) => {
+    fetchImpl: async (input: string | URL | Request, init?: RequestInit) => {
       const url = String(input);
       const headers = new Headers(init?.headers);
       calls.push({ url, at: now, cookie: headers.get("cookie") });
       return respond(url);
-    }),
+    },
     ...overrides,
     ...(overrides.meter === undefined ? { meter } : {}),
   });
@@ -65,12 +70,19 @@ describe("AtcoderClient", () => {
 
   test("serializes requests with 1s min spacing", async () => {
     const { client, calls } = makeHarness(() => ok("x"));
-    await Promise.all([client.fetch("/a", { ttl: 0 }), client.fetch("/b", { ttl: 0 }), client.fetch("/c", { ttl: 0 })]);
+    await Promise.all([
+      client.fetch("/a", { ttl: 0 }),
+      client.fetch("/b", { ttl: 0 }),
+      client.fetch("/c", { ttl: 0 }),
+    ]);
     expect(calls.map((c) => c.at)).toEqual([1_000_000, 1_001_000, 1_002_000]);
   });
 
   test("rolling-window budget delays past the window", async () => {
-    const { client, calls } = makeHarness(() => ok("x"), { requestsPerMinute: 3, minIntervalMs: 0 });
+    const { client, calls } = makeHarness(() => ok("x"), {
+      requestsPerMinute: 3,
+      minIntervalMs: 0,
+    });
     for (let i = 0; i < 4; i++) {
       await client.fetch(`/p${i}`, { ttl: 0 });
     }
@@ -108,10 +120,10 @@ describe("AtcoderClient", () => {
       minIntervalMs: 0,
       clock,
       sleep,
-      fetchImpl: (async () => {
+      fetchImpl: async () => {
         calls.push(now);
         return ok("x");
-      }),
+      },
     });
     await second.fetch("/c", { ttl: 0 });
     expect(calls[0]! - 1_000_000).toBeGreaterThanOrEqual(60_000);
@@ -132,7 +144,10 @@ describe("AtcoderClient", () => {
     let n = 0;
     const { client, calls } = makeHarness(() => ok(`v${n++}`), { cache });
     await client.fetch("/a", { ttl: "infinite" });
-    const refreshed = await client.fetch("/a", { ttl: "infinite", bypassCache: true });
+    const refreshed = await client.fetch("/a", {
+      ttl: "infinite",
+      bypassCache: true,
+    });
     expect(refreshed.body).toBe("v1");
     expect(calls).toHaveLength(2);
     const cached = await client.fetch("/a", { ttl: "infinite" });
@@ -141,9 +156,15 @@ describe("AtcoderClient", () => {
 
   test("302 to /login raises LoginRequiredError", async () => {
     const { client } = makeHarness(
-      () => new Response(null, { status: 302, headers: { location: "https://atcoder.jp/login" } }),
+      () =>
+        new Response(null, {
+          status: 302,
+          headers: { location: "https://atcoder.jp/login" },
+        }),
     );
-    expect(client.fetch("/contests/x/tasks", { ttl: 0 })).rejects.toBeInstanceOf(LoginRequiredError);
+    expect(
+      client.fetch("/contests/x/tasks", { ttl: 0 }),
+    ).rejects.toBeInstanceOf(LoginRequiredError);
   });
 
   test("server error with stale cache serves stale", async () => {
@@ -151,7 +172,10 @@ describe("AtcoderClient", () => {
     const cache = new DiskCache(tempDir(), () => cacheNow);
     cache.put("https://atcoder.jp/a", "old");
     cacheNow = 1_000_000;
-    const { client } = makeHarness(() => new Response("boom", { status: 500 }), { cache });
+    const { client } = makeHarness(
+      () => new Response("boom", { status: 500 }),
+      { cache },
+    );
     const outcome = await client.fetch("/a", { ttl: 0 });
     expect(outcome.stale).toBe(true);
     expect(outcome.body).toBe("old");
@@ -167,9 +191,12 @@ describe("AtcoderClient", () => {
     const cache = new DiskCache(tempDir(), () => cacheNow);
     cache.put("https://atcoder.jp/a", "old");
     cacheNow = 1_000_000;
-    const { client } = makeHarness(() => {
-      throw new Error("offline");
-    }, { cache });
+    const { client } = makeHarness(
+      () => {
+        throw new Error("offline");
+      },
+      { cache },
+    );
     const outcome = await client.fetch("/a", { ttl: 0 });
     expect(outcome.stale).toBe(true);
   });

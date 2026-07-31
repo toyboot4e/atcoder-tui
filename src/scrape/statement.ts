@@ -38,7 +38,8 @@ function parseSections($: cheerio.CheerioAPI, container: Cheerio): Section[] {
   const sections: Section[] = [];
   let current: Section = { title: "", blocks: [] };
   const flush = () => {
-    if (current.title !== "" || current.blocks.length > 0) sections.push(current);
+    if (current.title !== "" || current.blocks.length > 0)
+      sections.push(current);
   };
 
   const walk = (nodes: AnyNode[]) => {
@@ -46,7 +47,11 @@ function parseSections($: cheerio.CheerioAPI, container: Cheerio): Section[] {
       if (node.type !== "tag") {
         // Loose top-level text (rare); fold into the current section.
         const text = $(node).text().trim();
-        if (text !== "") current.blocks.push({ kind: "paragraph", inlines: [{ kind: "text", text }] });
+        if (text !== "")
+          current.blocks.push({
+            kind: "paragraph",
+            inlines: [{ kind: "text", text }],
+          });
         continue;
       }
       const el = node as Element;
@@ -77,7 +82,12 @@ function parseBlock($: cheerio.CheerioAPI, el: Element): Block[] | null {
       return inlines.length > 0 ? [{ kind: "paragraph", inlines }] : null;
     }
     case "pre":
-      return [{ kind: "pre", inlines: parseInlines($, $(el).contents().toArray(), true) }];
+      return [
+        {
+          kind: "pre",
+          inlines: parseInlines($, $(el).contents().toArray(), true),
+        },
+      ];
     case "ul":
     case "ol": {
       const items: Inline[][] = [];
@@ -90,7 +100,13 @@ function parseBlock($: cheerio.CheerioAPI, el: Element): Block[] | null {
     }
     case "h4":
     case "h5":
-      return [{ kind: "heading", level: name === "h4" ? 4 : 5, text: $(el).text().trim() }];
+      return [
+        {
+          kind: "heading",
+          level: name === "h4" ? 4 : 5,
+          text: $(el).text().trim(),
+        },
+      ];
     case "hr":
       return [{ kind: "rule" }];
     case "blockquote":
@@ -106,7 +122,14 @@ function parseBlock($: cheerio.CheerioAPI, el: Element): Block[] | null {
     }
     case "table":
       // Rare in statements; degrade to text so nothing is silently dropped.
-      return [{ kind: "paragraph", inlines: [{ kind: "text", text: $(el).text().replace(/\s+/g, " ").trim() }] }];
+      return [
+        {
+          kind: "paragraph",
+          inlines: [
+            { kind: "text", text: $(el).text().replace(/\s+/g, " ").trim() },
+          ],
+        },
+      ];
     case "script":
     case "style":
       return null;
@@ -118,7 +141,11 @@ function parseBlock($: cheerio.CheerioAPI, el: Element): Block[] | null {
 }
 
 /** `verbatim` preserves whitespace/newlines (inside <pre>). */
-function parseInlines($: cheerio.CheerioAPI, nodes: AnyNode[], verbatim = false): Inline[] {
+function parseInlines(
+  $: cheerio.CheerioAPI,
+  nodes: AnyNode[],
+  verbatim = false,
+): Inline[] {
   const inlines: Inline[] = [];
   for (const node of nodes) {
     if (node.type === "text") {
@@ -130,7 +157,8 @@ function parseInlines($: cheerio.CheerioAPI, nodes: AnyNode[], verbatim = false)
     if (node.type !== "tag") continue;
     const el = node as Element;
     const name = el.tagName.toLowerCase();
-    const children = () => parseInlines($, $(el).contents().toArray(), verbatim);
+    const children = () =>
+      parseInlines($, $(el).contents().toArray(), verbatim);
     switch (name) {
       case "var":
         inlines.push({ kind: "math", latex: $(el).text().trim() });
@@ -151,7 +179,10 @@ function parseInlines($: cheerio.CheerioAPI, nodes: AnyNode[], verbatim = false)
         break;
       case "img": {
         const alt = $(el).attr("alt");
-        inlines.push({ kind: "text", text: alt !== undefined && alt !== "" ? `[img: ${alt}]` : "[img]" });
+        inlines.push({
+          kind: "text",
+          text: alt !== undefined && alt !== "" ? `[img: ${alt}]` : "[img]",
+        });
         break;
       }
       default:
@@ -160,7 +191,11 @@ function parseInlines($: cheerio.CheerioAPI, nodes: AnyNode[], verbatim = false)
   }
   // Trim leading/trailing pure-whitespace runs in prose context.
   if (!verbatim) {
-    while (inlines.length > 0 && inlines[0]!.kind === "text" && (inlines[0] as { text: string }).text.trim() === "") {
+    while (
+      inlines.length > 0 &&
+      inlines[0]!.kind === "text" &&
+      (inlines[0] as { text: string }).text.trim() === ""
+    ) {
       inlines.shift();
     }
     while (

@@ -46,7 +46,8 @@ export function parseSubmissionsPage(html: string): SubmissionsPage {
     // size, 6 status; full rows append 7 exec time and 8 memory.
     const full = tds.length >= 9;
     submissions.push({
-      id: detailHref !== undefined ? detailHref.split("/submissions/")[1]! : null,
+      id:
+        detailHref !== undefined ? detailHref.split("/submissions/")[1]! : null,
       timeText: tds.eq(0).find("time").text().trim() || tds.eq(0).text().trim(),
       taskId: taskHref.split("/tasks/")[1]?.split(/[/?#]/)[0] ?? null,
       taskLabel: taskLink.text().trim(),

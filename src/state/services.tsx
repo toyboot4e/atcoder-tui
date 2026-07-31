@@ -30,12 +30,23 @@ export function buildServices(): Services {
 
 const ServicesContext = createContext<Services | null>(null);
 
-export function ServicesProvider({ services, children }: { services: Services; children: ReactNode }) {
-  return <ServicesContext.Provider value={services}>{children}</ServicesContext.Provider>;
+export function ServicesProvider({
+  services,
+  children,
+}: {
+  services: Services;
+  children: ReactNode;
+}) {
+  return (
+    <ServicesContext.Provider value={services}>
+      {children}
+    </ServicesContext.Provider>
+  );
 }
 
 export function useServices(): Services {
   const services = useContext(ServicesContext);
-  if (services === null) throw new Error("useServices outside ServicesProvider");
+  if (services === null)
+    throw new Error("useServices outside ServicesProvider");
   return services;
 }

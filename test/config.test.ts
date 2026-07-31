@@ -46,14 +46,18 @@ describe("loadConfig", () => {
   });
 
   test("bad language warns, other fields still apply", () => {
-    const { config, warnings } = loadConfig(tempConfig(JSON.stringify({ language: "fr", userId: "x" })));
+    const { config, warnings } = loadConfig(
+      tempConfig(JSON.stringify({ language: "fr", userId: "x" })),
+    );
     expect(config.language).toBe("en");
     expect(config.userId).toBe("x");
     expect(warnings).toHaveLength(1);
   });
 
   test("requestsPerMinute is clamped to a sane ceiling", () => {
-    const { config } = loadConfig(tempConfig(JSON.stringify({ requestsPerMinute: 100000 })));
+    const { config } = loadConfig(
+      tempConfig(JSON.stringify({ requestsPerMinute: 100000 })),
+    );
     expect(config.requestsPerMinute).toBe(30);
   });
 });

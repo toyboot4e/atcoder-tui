@@ -38,8 +38,13 @@ function renderBlock(block: Block, width: number): string[] {
       block.items.forEach((item, index) => {
         const marker = block.ordered ? `${index + 1}. ` : "• ";
         const indent = " ".repeat(marker.length);
-        const wrapped = wrap(renderInlines(item), Math.max(10, width - marker.length));
-        wrapped.forEach((line, i) => lines.push((i === 0 ? marker : indent) + line));
+        const wrapped = wrap(
+          renderInlines(item),
+          Math.max(10, width - marker.length),
+        );
+        wrapped.forEach((line, i) =>
+          lines.push((i === 0 ? marker : indent) + line),
+        );
       });
       lines.push("");
       return lines;
@@ -67,7 +72,9 @@ export function renderInlines(inlines: Inline[]): string {
           const converted = latexToUnicode(inline.latex);
           // Unconvertible math stays raw LaTeX, marked yellow so it is
           // recognizable as source rather than a rendering bug.
-          return converted.exact ? converted.text : chalk.yellow(converted.text);
+          return converted.exact
+            ? converted.text
+            : chalk.yellow(converted.text);
         }
         case "code":
           return chalk.cyan(inline.text);

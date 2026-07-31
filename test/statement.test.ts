@@ -4,7 +4,11 @@ import path from "node:path";
 import { inlineText, type Block } from "../src/render/ast.js";
 import { parseStatement } from "../src/scrape/statement.js";
 
-const fixture = (name: string) => fs.readFileSync(path.join(import.meta.dir, "fixtures", `${name}.html`), "utf8");
+const fixture = (name: string) =>
+  fs.readFileSync(
+    path.join(import.meta.dir, "fixtures", `${name}.html`),
+    "utf8",
+  );
 
 const blockText = (block: Block): string => {
   switch (block.kind) {
@@ -51,7 +55,9 @@ describe("parseStatement: abc300_a (modern bilingual)", () => {
     const problem = statement.en!.find((s) => s.title === "Problem Statement")!;
     const para = problem.blocks[0]!;
     expect(para.kind).toBe("paragraph");
-    expect(para.kind === "paragraph" && para.inlines.some((i) => i.kind === "math")).toBe(true);
+    expect(
+      para.kind === "paragraph" && para.inlines.some((i) => i.kind === "math"),
+    ).toBe(true);
   });
 
   test("sample input is a verbatim pre block", () => {
@@ -64,7 +70,9 @@ describe("parseStatement: abc300_a (modern bilingual)", () => {
   test("input format pre keeps embedded math", () => {
     const input = statement.en!.find((s) => s.title === "Input")!;
     const pre = input.blocks.find((b) => b.kind === "pre")!;
-    expect(pre.kind === "pre" && pre.inlines.some((i) => i.kind === "math")).toBe(true);
+    expect(
+      pre.kind === "pre" && pre.inlines.some((i) => i.kind === "math"),
+    ).toBe(true);
   });
 });
 

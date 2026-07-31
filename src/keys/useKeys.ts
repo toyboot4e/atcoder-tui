@@ -43,9 +43,12 @@ export function useVimNav(
       if (input === "j" || key.downArrow) move(index + 1);
       else if (input === "k" || key.upArrow) move(index - 1);
       else if (input === "G") move(count - 1);
-      else if (key.ctrl && input === "d") move(index + Math.max(1, Math.floor(pageSize / 2)));
-      else if (key.ctrl && input === "u") move(index - Math.max(1, Math.floor(pageSize / 2)));
-      else if (key.return || input === "l" || key.rightArrow) actions.onSelect?.();
+      else if (key.ctrl && input === "d")
+        move(index + Math.max(1, Math.floor(pageSize / 2)));
+      else if (key.ctrl && input === "u")
+        move(index - Math.max(1, Math.floor(pageSize / 2)));
+      else if (key.return || input === "l" || key.rightArrow)
+        actions.onSelect?.();
       else if (input === "h" || key.leftArrow || key.escape) actions.onBack?.();
     },
     { isActive: active },
@@ -67,11 +70,14 @@ export function useScrollKeys(
 ): void {
   useInput(
     (input, key) => {
-      const move = (delta: number) => setScrollTop(clamp(scrollTop + delta, lineCount, height));
+      const move = (delta: number) =>
+        setScrollTop(clamp(scrollTop + delta, lineCount, height));
       if (input === "j" || key.downArrow) move(1);
       else if (input === "k" || key.upArrow) move(-1);
-      else if (key.ctrl && input === "d") move(Math.max(1, Math.floor(height / 2)));
-      else if (key.ctrl && input === "u") move(-Math.max(1, Math.floor(height / 2)));
+      else if (key.ctrl && input === "d")
+        move(Math.max(1, Math.floor(height / 2)));
+      else if (key.ctrl && input === "u")
+        move(-Math.max(1, Math.floor(height / 2)));
       else if (input === "G") setScrollTop(clamp(lineCount, lineCount, height));
       else if (input === "g") setScrollTop(0);
       else onOther?.(input, key);

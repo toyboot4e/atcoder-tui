@@ -3,7 +3,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { parseContestsPage } from "../src/scrape/contests.js";
 
-const fixture = (name: string) => fs.readFileSync(path.join(import.meta.dir, "fixtures", `${name}.html`), "utf8");
+const fixture = (name: string) =>
+  fs.readFileSync(
+    path.join(import.meta.dir, "fixtures", `${name}.html`),
+    "utf8",
+  );
 
 describe("parseContestsPage", () => {
   const sections = parseContestsPage(fixture("contests_front_en"));
