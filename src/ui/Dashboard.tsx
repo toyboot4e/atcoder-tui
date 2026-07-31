@@ -21,7 +21,7 @@ function formatStart(startsAt: number | null): string {
 }
 
 export function Dashboard() {
-  const { client } = useServices();
+  const { client, warnings } = useServices();
   const { language, inputActive } = useAppState();
   const dispatch = useAppDispatch();
   const { stdout } = useStdout();
@@ -62,13 +62,19 @@ export function Dashboard() {
 
   const clampedSelected = Math.max(0, Math.min(contestCount - 1, selected));
 
-  const height = (stdout?.rows ?? 24) - 4;
+  // Never overflow the terminal: Ink clipping corrupts leading CJK chars.
+  const extraRows =
+    (state.status === "ready" && state.stale ? 1 : 0) + (filtering ? 1 : 0) + warnings.length;
+  const height = (stdout?.rows ?? 24) - 4 - extraRows;
   useVimNav(!filtering && !inputActive, contestCount, clampedSelected, height, {
     onMove: setSelected,
     onSelect: () => {
       const row = rows.find((r) => r.type === "contest" && r.index === clampedSelected);
       if (row?.type === "contest") {
-        dispatch({ type: "push", route: { screen: "contest", contestId: row.contest.id } });
+        const { startsAt, durationMin } = row.contest;
+        // endsAt lets the contest view choose immutable caching for ended contests.
+        const endsAt = startsAt !== null && durationMin !== null ? startsAt + durationMin * 60_000 : null;
+        dispatch({ type: "push", route: { screen: "contest", contestId: row.contest.id, endsAt } });
       }
     },
   });

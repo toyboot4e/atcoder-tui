@@ -1,10 +1,9 @@
-import { Box, Text, useApp, useInput } from "ink";
+import { useApp, useInput } from "ink";
 import type { Services } from "./state/services.js";
 import { ServicesProvider } from "./state/services.js";
 import { StoreProvider, useAppDispatch, useAppState, useCurrentRoute } from "./state/store.js";
+import { ContestView } from "./ui/ContestView.js";
 import { Dashboard } from "./ui/Dashboard.js";
-import { StatusBar } from "./ui/StatusBar.js";
-import { t } from "./ui/strings.js";
 
 export function App({ services }: { services: Services }) {
   return (
@@ -34,28 +33,6 @@ function Root() {
     case "dashboard":
       return <Dashboard />;
     case "contest":
-      return <ContestStub contestId={route.contestId} />;
+      return <ContestView key={route.contestId} contestId={route.contestId} endsAt={route.endsAt} />;
   }
-}
-
-/** Placeholder until milestone 6 lands the real contest view. */
-function ContestStub({ contestId }: { contestId: string }) {
-  const { language } = useAppState();
-  const dispatch = useAppDispatch();
-  useInput(
-    (input, key) => {
-      if (input === "h" || key.escape || (key.ctrl && input === "o")) dispatch({ type: "pop" });
-    },
-    { isActive: true },
-  );
-  return (
-    <Box flexDirection="column">
-      <Box borderStyle="round" paddingX={1} flexGrow={1}>
-        <Text>
-          contest: <Text bold color="cyan">{contestId}</Text> (view coming soon)
-        </Text>
-      </Box>
-      <StatusBar hints={`h ${t("back", language)} · q ${t("quit", language)}`} />
-    </Box>
-  );
 }

@@ -1,7 +1,9 @@
 import { createContext, useContext, useReducer, type Dispatch, type ReactNode } from "react";
 import type { Language } from "../config.js";
 
-export type Route = { screen: "dashboard" } | { screen: "contest"; contestId: string };
+export type Route =
+  | { screen: "dashboard" }
+  | { screen: "contest"; contestId: string; endsAt: number | null };
 
 export interface AppState {
   /** Navigation stack; the last entry is the visible screen. */
