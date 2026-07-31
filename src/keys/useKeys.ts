@@ -52,4 +52,32 @@ export function useVimNav(
   );
 }
 
+/**
+ * Vim scroll keys over pre-rendered lines: j/k, ctrl-d/u, g/G. Unhandled
+ * keys fall through to `onOther` so callers can layer pane-specific keys.
+ */
+export function useScrollKeys(
+  active: boolean,
+  lineCount: number,
+  height: number,
+  scrollTop: number,
+  setScrollTop: (next: number) => void,
+  clamp: (scrollTop: number, lineCount: number, height: number) => number,
+  onOther?: (input: string, key: Key) => void,
+): void {
+  useInput(
+    (input, key) => {
+      const move = (delta: number) => setScrollTop(clamp(scrollTop + delta, lineCount, height));
+      if (input === "j" || key.downArrow) move(1);
+      else if (input === "k" || key.upArrow) move(-1);
+      else if (key.ctrl && input === "d") move(Math.max(1, Math.floor(height / 2)));
+      else if (key.ctrl && input === "u") move(-Math.max(1, Math.floor(height / 2)));
+      else if (input === "G") setScrollTop(clamp(lineCount, lineCount, height));
+      else if (input === "g") setScrollTop(0);
+      else onOther?.(input, key);
+    },
+    { isActive: active },
+  );
+}
+
 export type { Key };

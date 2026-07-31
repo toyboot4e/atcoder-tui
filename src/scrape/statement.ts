@@ -26,6 +26,12 @@ export function parseStatement(html: string): Statement {
   };
 }
 
+/** Parses a loose HTML fragment (e.g. #contest-statement) into sections. */
+export function parseFragmentSections(html: string): Section[] {
+  const $ = cheerio.load(`<div id="__fragment_root">${html}</div>`);
+  return parseSections($, $("#__fragment_root"));
+}
+
 type Cheerio = ReturnType<cheerio.CheerioAPI>;
 
 function parseSections($: cheerio.CheerioAPI, container: Cheerio): Section[] {

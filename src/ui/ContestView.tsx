@@ -7,10 +7,12 @@ import { LoginRequiredError } from "../net/http.js";
 import { useServices } from "../state/services.js";
 import { useAppDispatch, useAppState } from "../state/store.js";
 import { useData } from "../state/useData.js";
-import { useVimNav } from "../keys/useKeys.js";
+import { useScrollKeys, useVimNav } from "../keys/useKeys.js";
 import { useTerminalSize } from "./hooks.js";
+import { MetaPane } from "./MetaPane.js";
 import { ScrollView, clampScroll } from "./ScrollView.js";
 import { StatusBar } from "./StatusBar.js";
+import { SubmissionsPane } from "./SubmissionsPane.js";
 import { t } from "./strings.js";
 
 const SIDEBAR_WIDTH = 26;
@@ -80,21 +82,20 @@ export function ContestView({ contestId, endsAt }: { contestId: string; endsAt: 
     onBack: () => dispatch({ type: "pop" }),
   });
 
-  // Content-pane keys: scrolling plus J/K to flip through problems.
-  useInput(
+  // Statement-pane keys: scrolling plus J/K to flip through problems.
+  useScrollKeys(
+    focus === "content" && tab === "statement" && !inputActive,
+    lines.length,
+    contentHeight,
+    clampedScroll,
+    setScrollTop,
+    clampScroll,
     (input, key) => {
-      const move = (delta: number) => setScrollTop(clampScroll(clampedScroll + delta, lines.length, contentHeight));
-      if (input === "j" || key.downArrow) move(1);
-      else if (input === "k" || key.upArrow) move(-1);
-      else if (key.ctrl && input === "d") move(Math.floor(contentHeight / 2));
-      else if (key.ctrl && input === "u") move(-Math.floor(contentHeight / 2));
-      else if (input === "G") setScrollTop(clampScroll(lines.length, lines.length, contentHeight));
-      else if (input === "g") setScrollTop(0); // gg simplified: single g in content scrolls home
-      else if (input === "J") openTask(Math.min(tasks.length - 1, loadedIndex + 1));
+      if (input === "J") openTask(Math.min(tasks.length - 1, loadedIndex + 1));
       else if (input === "K") openTask(Math.max(0, loadedIndex - 1));
+      else if (input === "r") statementData.refresh();
       else if (input === "h" || key.escape) setFocus("sidebar");
     },
-    { isActive: focus === "content" && tab === "statement" && !inputActive },
   );
 
   // Contest-level keys, active regardless of focus.
@@ -102,11 +103,12 @@ export function ContestView({ contestId, endsAt }: { contestId: string; endsAt: 
     (input, key) => {
       if (key.tab) setFocus(focus === "sidebar" ? "content" : "sidebar");
       else if (input === "1") setTab("statement");
-      else if (input === "2") setTab("meta");
-      else if (input === "3") setTab("submissions");
-      else if (input === "r") {
-        tasksData.refresh();
-        if (tab === "statement") statementData.refresh();
+      else if (input === "2") {
+        setTab("meta");
+        setFocus("content");
+      } else if (input === "3") {
+        setTab("submissions");
+        setFocus("content");
       } else if (key.ctrl && input === "o") {
         dispatch({ type: "pop" });
       }
@@ -182,8 +184,25 @@ export function ContestView({ contestId, endsAt }: { contestId: string; endsAt: 
               <ScrollView lines={lines} height={contentHeight} scrollTop={clampedScroll} />
             </>
           )}
-          {tab === "meta" && <Text dimColor>meta — milestone 7</Text>}
-          {tab === "submissions" && <Text dimColor>submissions — milestone 7</Text>}
+          {tab === "meta" && (
+            <MetaPane
+              contestId={contestId}
+              ttl={ttl}
+              width={contentWidth}
+              height={rows - 3}
+              active={focus === "content" && !inputActive}
+              onBack={() => setFocus("sidebar")}
+            />
+          )}
+          {tab === "submissions" && (
+            <SubmissionsPane
+              contestId={contestId}
+              width={contentWidth}
+              height={rows - 3}
+              active={focus === "content" && !inputActive}
+              onBack={() => setFocus("sidebar")}
+            />
+          )}
         </Box>
       </Box>
       <StatusBar hints={hints} />
