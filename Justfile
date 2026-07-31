@@ -41,6 +41,14 @@ fmt:
 flake-check:
     nix flake check
 
+# Update ALL dependencies to the latest: npm packages (incl. majors), flake inputs, pinned GitHub Actions — then refresh the node_modules FOD hash
+update:
+    bun update --latest
+    nix flake update
+    pinact run --update
+    ./scripts/update-node-modules-hash.sh
+    @echo "review with: git diff — then run: just check && just flake-check"
+
 # Record an HTML fixture: just fixture https://atcoder.jp/contests/abc300/tasks/abc300_a abc300_a
 fixture url name:
     bun run scripts/record-fixture.ts {{url}} {{name}}

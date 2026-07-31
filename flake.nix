@@ -31,6 +31,7 @@
             "test/fixtures/*"
             "bun.lock"
             "*.md"
+            "*.org"
           ];
         };
 
@@ -169,6 +170,7 @@
             nodejs_22
             just
             oxlint
+            pinact
             typescript-language-server
             (packagesFor pkgs).aclogin
           ];
