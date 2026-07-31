@@ -67,37 +67,38 @@ export function ContestView({
   // Ended contests are immutable: fetched once, cached forever (r bypasses).
   const ttl = phase === "ended" ? ("infinite" as const) : ACTIVE_TTL_MS;
 
-  const saved = rememberedContest.get(contestId);
-  const [cursor, setCursorRaw] = useState(saved?.cursor ?? 0);
-  const [loadedIndex, setLoadedIndexRaw] = useState(saved?.loadedIndex ?? 0);
-  const [focus, setFocusRaw] = useState<"sidebar" | "content">(saved?.focus ?? "sidebar");
-  const [tab, setTabRaw] = useState<ContestTab>(saved?.tab ?? "statement");
-  // Per-problem scroll positions, restored when flipping back to a problem.
-  const scrollByTask = useRef(saved?.scrollByTask ?? new Map<string, number>());
-  const remember = (patch: Partial<RememberedContest>) => {
-    rememberedContest.set(contestId, {
-      cursor,
-      loadedIndex,
-      focus,
-      tab,
-      scrollByTask: scrollByTask.current,
-      ...patch,
-    });
-  };
+  // A single mutable record backs the write-through setters: reading React
+  // state here would capture stale closure values when setters run in
+  // sequence (setTab + setFocus in one handler), corrupting the memory.
+  const mem = useRef<RememberedContest>(
+    rememberedContest.get(contestId) ?? {
+      cursor: 1, // row 0 is the contest itself; default on the first problem
+      loadedIndex: 0,
+      focus: "content", // land ready to read: j/k flip problems immediately
+      tab: "statement",
+      scrollByTask: new Map<string, number>(),
+    },
+  );
+  rememberedContest.set(contestId, mem.current);
+  const [cursor, setCursorRaw] = useState(mem.current.cursor);
+  const [loadedIndex, setLoadedIndexRaw] = useState(mem.current.loadedIndex);
+  const [focus, setFocusRaw] = useState<"sidebar" | "content">(mem.current.focus);
+  const [tab, setTabRaw] = useState<ContestTab>(mem.current.tab);
+  const scrollByTask = useRef(mem.current.scrollByTask);
   const setCursor = (v: number) => {
-    remember({ cursor: v });
+    mem.current.cursor = v;
     setCursorRaw(v);
   };
   const setLoadedIndex = (v: number) => {
-    remember({ loadedIndex: v });
+    mem.current.loadedIndex = v;
     setLoadedIndexRaw(v);
   };
   const setFocus = (v: "sidebar" | "content") => {
-    remember({ focus: v });
+    mem.current.focus = v;
     setFocusRaw(v);
   };
   const setTab = (v: ContestTab) => {
-    remember({ tab: v });
+    mem.current.tab = v;
     setTabRaw(v);
   };
   const [scrollTop, setScrollTop] = useState(0);
@@ -176,7 +177,7 @@ export function ContestView({
     const clamped = Math.max(0, Math.min(tasks.length - 1, index));
     const task = tasks[clamped];
     setLoadedIndex(clamped);
-    setCursor(clamped);
+    setCursor(clamped + 1); // sidebar row 0 is the contest itself
     setScrollTop(task !== undefined ? (scrollByTask.current.get(task.id) ?? 0) : 0);
     if (focusContent) {
       setFocus("content");
@@ -184,9 +185,18 @@ export function ContestView({
     }
   };
 
-  useVimNav(focus === "sidebar" && !inputActive, tasks.length, cursor, contentHeight, {
+  // Sidebar row 0 = the contest itself (opens the detail/meta pane);
+  // rows 1..n are the problems.
+  useVimNav(focus === "sidebar" && !inputActive, tasks.length + 1, cursor, contentHeight, {
     onMove: setCursor,
-    onSelect: () => switchTask(cursor, true),
+    onSelect: () => {
+      if (cursor === 0) {
+        setTab("meta");
+        setFocus("content");
+      } else {
+        switchTask(cursor - 1, true);
+      }
+    },
     onBack: () => dispatch({ type: "pop" }),
   });
 
@@ -314,7 +324,13 @@ export function ContestView({
           borderColor={focus === "sidebar" ? "cyan" : "gray"}
           paddingX={1}
         >
-          <Text bold wrap="truncate">
+          <Text
+            bold
+            color={cursor === 0 && focus === "sidebar" ? "cyan" : undefined}
+            wrap="truncate"
+          >
+            {cursor === 0 && focus === "sidebar" ? "❯" : " "}
+            {tab === "meta" ? "•" : " "}
             {contestId}
           </Text>
           {tasksData.state.status === "loading" && <Text dimColor>{t("loading", language)}</Text>}
@@ -326,12 +342,12 @@ export function ContestView({
           {tasks.map((task, index) => (
             <Text
               key={task.id}
-              color={index === cursor && focus === "sidebar" ? "cyan" : undefined}
+              color={index + 1 === cursor && focus === "sidebar" ? "cyan" : undefined}
               bold={index === loadedIndex}
               wrap="truncate"
             >
-              {index === cursor && focus === "sidebar" ? "❯" : " "}
-              {index === loadedIndex ? "•" : " "}
+              {index + 1 === cursor && focus === "sidebar" ? "❯" : " "}
+              {index === loadedIndex && tab === "statement" ? "•" : " "}
               {task.letter} {task.title}
             </Text>
           ))}
