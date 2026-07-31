@@ -3,7 +3,7 @@ import type { Language } from "../config.js";
 
 export type Route =
   | { screen: "dashboard" }
-  | { screen: "contest"; contestId: string; endsAt: number | null };
+  | { screen: "contest"; contestId: string; startsAt: number | null; endsAt: number | null };
 
 export interface AppState {
   /** Navigation stack; the last entry is the visible screen. */

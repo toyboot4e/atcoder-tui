@@ -97,7 +97,7 @@ export function Dashboard() {
           startsAt !== null && durationMin !== null ? startsAt + durationMin * 60_000 : null;
         dispatch({
           type: "push",
-          route: { screen: "contest", contestId: row.contest.id, endsAt },
+          route: { screen: "contest", contestId: row.contest.id, startsAt, endsAt },
         });
       }
     },

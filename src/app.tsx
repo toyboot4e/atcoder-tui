@@ -66,7 +66,12 @@ function Root() {
       return <Dashboard />;
     case "contest":
       return (
-        <ContestView key={route.contestId} contestId={route.contestId} endsAt={route.endsAt} />
+        <ContestView
+          key={route.contestId}
+          contestId={route.contestId}
+          startsAt={route.startsAt}
+          endsAt={route.endsAt}
+        />
       );
   }
 }
