@@ -1,0 +1,27 @@
+* atcoder-tui
+
+=atcoder-tui= is an *unofficial* TUI for AtCoder.
+
+** Quick start
+
+#+BEGIN_SRC sh
+nix run github:toyboot4e/atcoder-tui
+#+END_SRC
+
+** Configuration
+
+Check =~/.config/atcoder-tui/config.json= (Windows: =%APPDATA%\atcoder-tui\=):
+
+#+BEGIN_SRC json
+{
+  "userId": "your_atcoder_id",
+  "language": "en",
+  "revelSession": "<REVEL_SESSION cookie value>",
+}
+#+END_SRC
+
+** Etiquette
+
+- Rate-limited
+- Aggressive caching
+- Descriptive User-Agent
