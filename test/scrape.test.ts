@@ -56,7 +56,7 @@ describe("parseArchivePage", () => {
 });
 
 describe("parseSubmissionsPage", () => {
-  const page = parseSubmissionsPage(fixture("submissions_synthetic"));
+  const page = parseSubmissionsPage(fixture("submissions_sample"));
 
   test("full AC row", () => {
     expect(page.submissions).toHaveLength(3);
@@ -66,7 +66,7 @@ describe("parseSubmissionsPage", () => {
       timeText: "2023-04-29 21:02:32+0900",
       taskId: "abc300_a",
       taskLabel: "A - N-choice question",
-      user: "example_user",
+      user: "sample_user",
       language: "Haskell (GHC 9.4.5)",
       score: "100",
       status: "AC",
@@ -85,5 +85,27 @@ describe("parseSubmissionsPage", () => {
 
   test("pagination", () => {
     expect(page.maxPage).toBe(3);
+  });
+});
+
+// Logged-in recordings live in test/fixtures/private/ (gitignored, recorded
+// via `just fixture-private`); when present, every submissions_*.html there
+// is parsed and sanity-checked. CI has none — these run only for the user.
+describe("parseSubmissionsPage: private recordings", () => {
+  const privateDir = path.join(import.meta.dir, "fixtures", "private");
+  const files = fs.existsSync(privateDir)
+    ? fs.readdirSync(privateDir).filter((f) => f.startsWith("submissions_") && f.endsWith(".html"))
+    : [];
+  test.skipIf(files.length === 0)("all private submissions fixtures parse", () => {
+    for (const file of files) {
+      const page = parseSubmissionsPage(fs.readFileSync(path.join(privateDir, file), "utf8"));
+      expect(page.submissions.length).toBeGreaterThan(0);
+      for (const s of page.submissions) {
+        expect(s.timeText).not.toBe("");
+        expect(s.taskId).not.toBeNull();
+        expect(s.status).not.toBe("");
+        expect(s.user).not.toBe("");
+      }
+    }
   });
 });

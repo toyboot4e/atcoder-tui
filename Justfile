@@ -58,6 +58,10 @@ update:
 fixture url name:
     bun run scripts/record-fixture.ts {{url}} {{name}}
 
+# Record a LOGGED-IN fixture into test/fixtures/private/ (gitignored, never committed)
+fixture-private url name:
+    bun run scripts/record-fixture.ts --session {{url}} {{name}}
+
 # Paste REVEL_SESSION once into oj/acc stores (atcoder-tui auto-imports on next launch)
 login:
     aclogin

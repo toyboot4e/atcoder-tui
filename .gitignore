@@ -4,3 +4,6 @@ result
 result-*
 *.log
 .direnv/
+
+# Logged-in fixture recordings must never be committed
+test/fixtures/private/
