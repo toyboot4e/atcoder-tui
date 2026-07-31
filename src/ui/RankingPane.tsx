@@ -4,6 +4,7 @@ import chalk from "chalk";
 import { LoginRequiredError } from "../net/http.js";
 import { formatElapsed, parseStandingsJson, ratingColor } from "../scrape/standings.js";
 import { saveFavorites } from "../config.js";
+import { loadServerFavs, saveServerFavs } from "../favstore.js";
 import { parseFavList } from "../scrape/fav.js";
 import { useServices } from "../state/services.js";
 import { useAppState } from "../state/store.js";
@@ -58,9 +59,10 @@ export function RankingPane({
   });
 
   const [favOnly, setFavOnly] = useState(favoritesOnly);
-  // Local copy so starring re-renders; kept in sync with the shared config
-  // object and persisted to config.json on every change.
+  // Manual stars (config-owned) and the cached atcoder.jp import are kept
+  // separate; they merge only for display.
   const [favList, setFavList] = useState(config.favorites);
+  const [serverFavs, setServerFavs] = useState(() => loadServerFavs());
   const toggleStar = (user: string) => {
     const next = favList.some((f) => f.toLowerCase() === user.toLowerCase())
       ? favList.filter((f) => f.toLowerCase() !== user.toLowerCase())
@@ -69,7 +71,10 @@ export function RankingPane({
     config.favorites = next;
     saveFavorites(next);
   };
-  const starred = useMemo(() => new Set(favList.map((f) => f.toLowerCase())), [favList]);
+  const starred = useMemo(
+    () => new Set([...favList, ...(serverFavs?.users ?? [])].map((f) => f.toLowerCase())),
+    [favList, serverFavs],
+  );
   // Your own row always stays as the reference point.
   const isFavRow = (user: string) => starred.has(user.toLowerCase()) || user === config.userId;
   const visibleRows = useMemo(() => {
@@ -89,18 +94,16 @@ export function RankingPane({
         noStore: true,
       });
       const imported = parseFavList(body);
-      const known = new Set(favList.map((f) => f.toLowerCase()));
-      const added = imported.filter((u) => !known.has(u.toLowerCase()));
-      const merged = [...favList, ...added];
-      setFavList(merged);
-      config.favorites = merged;
-      config.favoritesSyncedAt = Date.now();
-      saveFavorites(merged, config.favoritesSyncedAt);
-      if (announce || added.length > 0) {
+      const previous = new Set((serverFavs?.users ?? []).map((u) => u.toLowerCase()));
+      const added = imported.filter((u) => !previous.has(u.toLowerCase())).length;
+      const next = { users: imported, syncedAt: Date.now() };
+      setServerFavs(next);
+      saveServerFavs(next);
+      if (announce || added > 0) {
         notices.push(
           language === "ja"
-            ? `お気に入り: AtCoder から ${added.length} 人追加（計 ${merged.length} 人）`
-            : `favorites: imported ${added.length} from AtCoder (${merged.length} total)`,
+            ? `お気に入り: AtCoder から同期（新規 ${added} 人・計 ${imported.length} 人）`
+            : `favorites: synced from AtCoder (${added} new, ${imported.length} total)`,
         );
       }
     } catch (error) {
@@ -120,7 +123,7 @@ export function RankingPane({
   // no-idle-traffic rule while keeping browser-starred rivals fresh.
   useEffect(() => {
     if (favSyncInFlight || config.revelSession === undefined) return;
-    const last = config.favoritesSyncedAt ?? 0;
+    const last = serverFavs?.syncedAt ?? 0;
     if (Date.now() - last < FAV_SYNC_INTERVAL_MS) return;
     favSyncInFlight = true;
     void importFavorites(false).finally(() => {
@@ -137,7 +140,9 @@ export function RankingPane({
     for (const row of visibleRows) {
       const color = ratingColor(row.rating);
       const user = row.user.length > 18 ? `${row.user.slice(0, 17)}…` : row.user.padEnd(18);
-      const styledUser = color !== null ? chalk.hex(color)(user) : user;
+      let styledUser = color !== null ? chalk.hex(color)(user) : user;
+      // Favorites stay visible even in the full standings.
+      if (starred.has(row.user.toLowerCase())) styledUser = chalk.underline.bold(styledUser);
       const elapsed =
         row.elapsedSec !== null ? formatElapsed(row.elapsedSec).padStart(8) : "       -";
       const penalty = row.penalty > 0 ? chalk.red(`(${row.penalty})`) : "   ";

@@ -14,10 +14,8 @@ export interface Config {
   cache: boolean;
   /** Rolling-window request budget toward atcoder.jp. */
   requestsPerMinute: number;
-  /** User ids highlighted/filterable in the ranking tab (f toggles). */
+  /** Manually starred user ids (imported atcoder.jp favs live in the cache). */
   favorites: string[];
-  /** Last automatic favorites sync from atcoder.jp (epoch ms). */
-  favoritesSyncedAt?: number;
 }
 
 export const DEFAULT_CONFIG: Config = {
@@ -73,9 +71,6 @@ export function loadConfig(filePath: string = configFilePath()): LoadedConfig {
   if (typeof obj["revelSession"] === "string" && obj["revelSession"] !== "") {
     config.revelSession = obj["revelSession"];
   }
-  if (typeof obj["favoritesSyncedAt"] === "number") {
-    config.favoritesSyncedAt = obj["favoritesSyncedAt"];
-  }
   if (Array.isArray(obj["favorites"])) {
     config.favorites = obj["favorites"].filter(
       (name): name is string => typeof name === "string" && name !== "",
@@ -93,11 +88,7 @@ export function loadConfig(filePath: string = configFilePath()): LoadedConfig {
 }
 
 /** Persists the favorites list into the config file, preserving other fields. */
-export function saveFavorites(
-  favorites: string[],
-  syncedAt?: number,
-  filePath: string = configFilePath(),
-): void {
+export function saveFavorites(favorites: string[], filePath: string = configFilePath()): void {
   let raw: Record<string, unknown> = {};
   try {
     const parsed: unknown = JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -106,7 +97,6 @@ export function saveFavorites(
     // missing or corrupt — start fresh
   }
   raw["favorites"] = favorites;
-  if (syncedAt !== undefined) raw["favoritesSyncedAt"] = syncedAt;
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, JSON.stringify(raw, null, 2) + "\n");
 }

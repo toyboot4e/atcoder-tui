@@ -70,13 +70,11 @@ test("favorites keeps only non-empty strings", () => {
 
 test("saveFavorites persists and preserves other fields", () => {
   const file = tempConfig(JSON.stringify({ userId: "example_user", language: "ja" }));
-  saveFavorites(["rival"], 1234, file);
+  saveFavorites(["rival"], file);
   expect(JSON.parse(fs.readFileSync(file, "utf8"))).toEqual({
     userId: "example_user",
     language: "ja",
     favorites: ["rival"],
-    favoritesSyncedAt: 1234,
   });
   expect(loadConfig(file).config.favorites).toEqual(["rival"]);
-  expect(loadConfig(file).config.favoritesSyncedAt).toBe(1234);
 });
