@@ -10,13 +10,7 @@ export function HelpOverlay() {
   const contexts = ["global", "dashboard", "contest"] as const;
 
   return (
-    <Box
-      flexDirection="column"
-      height={rows}
-      borderStyle="round"
-      paddingX={2}
-      paddingY={1}
-    >
+    <Box flexDirection="column" height={rows} borderStyle="round" paddingX={2} paddingY={1}>
       <Text bold color="cyan">
         atcoder-tui — {language === "ja" ? "キー一覧" : "key bindings"}
       </Text>
@@ -36,9 +30,7 @@ export function HelpOverlay() {
       ))}
       <Box marginTop={1}>
         <Text dimColor>
-          {language === "ja"
-            ? "何かキーを押すと閉じます"
-            : "press any key to close"}
+          {language === "ja" ? "何かキーを押すと閉じます" : "press any key to close"}
         </Text>
       </Box>
     </Box>

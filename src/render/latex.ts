@@ -406,23 +406,14 @@ class Parser {
       name = this.src[this.pos]!;
       this.pos += 1;
     } else {
-      while (
-        this.pos < this.src.length &&
-        /[a-zA-Z]/.test(this.src[this.pos]!)
-      ) {
+      while (this.pos < this.src.length && /[a-zA-Z]/.test(this.src[this.pos]!)) {
         name += this.src[this.pos]!;
         this.pos += 1;
       }
     }
     if (name === "") throw new Unsupported("lone backslash");
 
-    if (
-      name === "," ||
-      name === ";" ||
-      name === ":" ||
-      name === "!" ||
-      name === " "
-    )
+    if (name === "," || name === ";" || name === ":" || name === "!" || name === " ")
       return name === "!" ? "" : " ";
     if (IGNORED.has(name)) return "";
     if (name in SYMBOLS) {
@@ -455,11 +446,7 @@ class Parser {
   }
 }
 
-function mapScript(
-  content: string,
-  table: Record<string, string>,
-  sigil: "^" | "_",
-): string {
+function mapScript(content: string, table: Record<string, string>, sigil: "^" | "_"): string {
   const mapped = [...content].map((ch) => table[ch]);
   if (content.length > 0 && mapped.every((ch) => ch !== undefined)) {
     return mapped.join("");

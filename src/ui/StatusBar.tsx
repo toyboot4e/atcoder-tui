@@ -40,12 +40,8 @@ export function StatusBar({ hints }: { hints: string }) {
   const net =
     `net ${stats.sessionRequests}req/${formatBytes(stats.sessionBytes)}` +
     ` · today ${stats.todayRequests}req/${formatBytes(stats.todayBytes)}` +
-    (stats.cacheHits > 0
-      ? ` · cache ${(stats.cacheHitRatio * 100).toFixed(0)}%`
-      : "");
-  const activity = stats.inFlight
-    ? ` ⇄${stats.queued > 1 ? `×${stats.queued}` : ""}`
-    : "";
+    (stats.cacheHits > 0 ? ` · cache ${(stats.cacheHitRatio * 100).toFixed(0)}%` : "");
+  const activity = stats.inFlight ? ` ⇄${stats.queued > 1 ? `×${stats.queued}` : ""}` : "";
 
   return (
     <Box flexDirection="column">

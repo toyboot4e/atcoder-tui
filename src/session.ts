@@ -14,30 +14,19 @@ export interface SessionCandidate {
  * Looks for an existing AtCoder REVEL_SESSION in the cookie stores of
  * common CLI tools (online-judge-tools, atcoder-cli). Read-only.
  */
-export function findSessionCandidates(
-  home: string = os.homedir(),
-): SessionCandidate[] {
+export function findSessionCandidates(home: string = os.homedir()): SessionCandidate[] {
   const candidates: SessionCandidate[] = [];
 
   // oj (online-judge-tools): LWP cookie jar.
   for (const jar of [
     path.join(home, ".local", "share", "online-judge-tools", "cookie.jar"),
-    path.join(
-      home,
-      "AppData",
-      "Local",
-      "online-judge-tools",
-      "online-judge-tools",
-      "cookie.jar",
-    ),
+    path.join(home, "AppData", "Local", "online-judge-tools", "online-judge-tools", "cookie.jar"),
   ]) {
     try {
       const text = fs.readFileSync(jar, "utf8");
       const m = /REVEL_SESSION="((?:\\.|[^"\\])*)"/.exec(text);
       if (m !== null) {
-        const expires = /REVEL_SESSION="[^\n]*?expires="([^"]*)"/.exec(
-          text,
-        )?.[1];
+        const expires = /REVEL_SESSION="[^\n]*?expires="([^"]*)"/.exec(text)?.[1];
         candidates.push({
           source: `oj (${jar})`,
           value: m[1]!.replace(/\\(.)/g, "$1"),
@@ -69,15 +58,11 @@ export function findSessionCandidates(
 }
 
 /** Writes revelSession into the config file, preserving other fields. */
-export function saveSession(
-  value: string,
-  filePath: string = configFilePath(),
-): string {
+export function saveSession(value: string, filePath: string = configFilePath()): string {
   let config: Record<string, unknown> = {};
   try {
     const parsed: unknown = JSON.parse(fs.readFileSync(filePath, "utf8"));
-    if (typeof parsed === "object" && parsed !== null)
-      config = parsed as Record<string, unknown>;
+    if (typeof parsed === "object" && parsed !== null) config = parsed as Record<string, unknown>;
   } catch {
     // missing or corrupt — start fresh
   }

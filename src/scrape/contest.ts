@@ -30,12 +30,7 @@ export function parseContestTop(html: string): ContestMeta {
   const ja = statement.find("span.lang-ja").first();
   const en = statement.find("span.lang-en").first();
   const statementHtml = {
-    ja:
-      ja.length > 0
-        ? ja.html()
-        : statement.length > 0
-          ? statement.html()
-          : null,
+    ja: ja.length > 0 ? ja.html() : statement.length > 0 ? statement.html() : null,
     en: en.length > 0 ? en.html() : null,
   };
 

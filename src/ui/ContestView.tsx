@@ -21,13 +21,7 @@ const ACTIVE_TTL_MS = 5 * 60 * 1000;
 
 export type ContestTab = "statement" | "meta" | "submissions";
 
-export function ContestView({
-  contestId,
-  endsAt,
-}: {
-  contestId: string;
-  endsAt: number | null;
-}) {
+export function ContestView({ contestId, endsAt }: { contestId: string; endsAt: number | null }) {
   const { client, config } = useServices();
   const { language, inputActive } = useAppState();
   const dispatch = useAppDispatch();
@@ -43,34 +37,29 @@ export function ContestView({
   const [tab, setTab] = useState<ContestTab>("statement");
   const [scrollTop, setScrollTop] = useState(0);
 
-  const tasksData = useData(
-    `tasks-${contestId}-${language}`,
-    async (bypassCache) => {
-      const outcome = await client.fetch(
-        `/contests/${contestId}/tasks?lang=${language}`,
-        { ttl, bypassCache },
-      );
-      return {
-        data: parseTasksPage(outcome.body),
-        stale: outcome.stale,
-        fetchedAt: outcome.fetchedAt,
-      };
-    },
-  );
+  const tasksData = useData(`tasks-${contestId}-${language}`, async (bypassCache) => {
+    const outcome = await client.fetch(`/contests/${contestId}/tasks?lang=${language}`, {
+      ttl,
+      bypassCache,
+    });
+    return {
+      data: parseTasksPage(outcome.body),
+      stale: outcome.stale,
+      fetchedAt: outcome.fetchedAt,
+    };
+  });
   const tasks = tasksData.state.status === "ready" ? tasksData.state.data : [];
-  const loadedTask =
-    tasks[Math.min(loadedIndex, Math.max(0, tasks.length - 1))];
+  const loadedTask = tasks[Math.min(loadedIndex, Math.max(0, tasks.length - 1))];
 
   // Statement pages embed both languages, so the cache key has no lang.
   const statementData = useData(
     `statement-${contestId}-${loadedTask?.id ?? "none"}`,
     async (bypassCache) => {
-      if (loadedTask === undefined)
-        return { data: null, stale: false, fetchedAt: 0 };
-      const outcome = await client.fetch(
-        `/contests/${contestId}/tasks/${loadedTask.id}`,
-        { ttl, bypassCache },
-      );
+      if (loadedTask === undefined) return { data: null, stale: false, fetchedAt: 0 };
+      const outcome = await client.fetch(`/contests/${contestId}/tasks/${loadedTask.id}`, {
+        ttl,
+        bypassCache,
+      });
       return {
         data: parseStatement(outcome.body),
         stale: outcome.stale,
@@ -80,14 +69,11 @@ export function ContestView({
   );
 
   const contentWidth = columns - SIDEBAR_WIDTH - 3;
-  const statement =
-    statementData.state.status === "ready" ? statementData.state.data : null;
+  const statement = statementData.state.status === "ready" ? statementData.state.data : null;
   const englishMissing = statement !== null && statement.en === null;
   const { lines, fallbackNotice } = useMemo(() => {
-    if (statement === null)
-      return { lines: [] as string[], fallbackNotice: false };
-    const sections =
-      language === "en" ? (statement.en ?? statement.ja) : statement.ja;
+    if (statement === null) return { lines: [] as string[], fallbackNotice: false };
+    const sections = language === "en" ? (statement.en ?? statement.ja) : statement.ja;
     return {
       lines: renderSections(sections, contentWidth),
       fallbackNotice: language === "en" && englishMissing,
@@ -98,13 +84,8 @@ export function ContestView({
   // overflows its box (Ink clipping corrupts leading CJK characters).
   const noticeRows =
     (fallbackNotice ? 1 : 0) +
-    (statementData.state.status === "loading" ||
-    statementData.state.status === "error"
-      ? 1
-      : 0) +
-    (statementData.state.status === "ready" && statementData.state.stale
-      ? 1
-      : 0);
+    (statementData.state.status === "loading" || statementData.state.status === "error" ? 1 : 0) +
+    (statementData.state.status === "ready" && statementData.state.stale ? 1 : 0);
   const contentHeight = rows - 3 - noticeRows;
   const clampedScroll = clampScroll(scrollTop, lines.length, contentHeight);
 
@@ -116,17 +97,11 @@ export function ContestView({
     setTab("statement");
   };
 
-  useVimNav(
-    focus === "sidebar" && !inputActive,
-    tasks.length,
-    cursor,
-    contentHeight,
-    {
-      onMove: setCursor,
-      onSelect: () => openTask(cursor),
-      onBack: () => dispatch({ type: "pop" }),
-    },
-  );
+  useVimNav(focus === "sidebar" && !inputActive, tasks.length, cursor, contentHeight, {
+    onMove: setCursor,
+    onSelect: () => openTask(cursor),
+    onBack: () => dispatch({ type: "pop" }),
+  });
 
   // Statement-pane keys: scrolling plus J/K to flip through problems.
   useScrollKeys(
@@ -168,9 +143,7 @@ export function ContestView({
     if (tab === "meta") return `/contests/${contestId}`;
     if (tab === "submissions") {
       const user =
-        config.userId !== undefined
-          ? `?f.User=${encodeURIComponent(config.userId)}`
-          : "";
+        config.userId !== undefined ? `?f.User=${encodeURIComponent(config.userId)}` : "";
       return `/contests/${contestId}/submissions${user}`;
     }
     return loadedTask !== undefined
@@ -196,9 +169,7 @@ export function ContestView({
           <Text bold wrap="truncate">
             {contestId}
           </Text>
-          {tasksData.state.status === "loading" && (
-            <Text dimColor>{t("loading", language)}</Text>
-          )}
+          {tasksData.state.status === "loading" && <Text dimColor>{t("loading", language)}</Text>}
           {tasksData.state.status === "error" && (
             <Text color="red" wrap="truncate">
               {tasksData.state.error instanceof LoginRequiredError
@@ -209,9 +180,7 @@ export function ContestView({
           {tasks.map((task, index) => (
             <Text
               key={task.id}
-              color={
-                index === cursor && focus === "sidebar" ? "cyan" : undefined
-              }
+              color={index === cursor && focus === "sidebar" ? "cyan" : undefined}
               bold={index === loadedIndex}
               wrap="truncate"
             >
@@ -232,9 +201,7 @@ export function ContestView({
             <>
               {fallbackNotice && (
                 <Text color="yellow">
-                  {language === "en"
-                    ? "English not available — showing Japanese"
-                    : ""}
+                  {language === "en" ? "English not available — showing Japanese" : ""}
                 </Text>
               )}
               {statementData.state.status === "loading" && (
@@ -248,15 +215,10 @@ export function ContestView({
                   — {t("retryHint", language)}
                 </Text>
               )}
-              {statementData.state.status === "ready" &&
-                statementData.state.stale && (
-                  <Text color="yellow">[{t("stale", language)}]</Text>
-                )}
-              <ScrollView
-                lines={lines}
-                height={contentHeight}
-                scrollTop={clampedScroll}
-              />
+              {statementData.state.status === "ready" && statementData.state.stale && (
+                <Text color="yellow">[{t("stale", language)}]</Text>
+              )}
+              <ScrollView lines={lines} height={contentHeight} scrollTop={clampedScroll} />
             </>
           )}
           {tab === "meta" && (

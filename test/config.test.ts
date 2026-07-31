@@ -55,9 +55,7 @@ describe("loadConfig", () => {
   });
 
   test("requestsPerMinute is clamped to a sane ceiling", () => {
-    const { config } = loadConfig(
-      tempConfig(JSON.stringify({ requestsPerMinute: 100000 })),
-    );
+    const { config } = loadConfig(tempConfig(JSON.stringify({ requestsPerMinute: 100000 })));
     expect(config.requestsPerMinute).toBe(30);
   });
 });

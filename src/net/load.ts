@@ -72,8 +72,7 @@ export class LoadMeter {
       fs.mkdirSync(path.dirname(this.journalPath!), { recursive: true });
       fs.writeFileSync(
         this.journalPath!,
-        events.map((e) => JSON.stringify(e)).join("\n") +
-          (events.length > 0 ? "\n" : ""),
+        events.map((e) => JSON.stringify(e)).join("\n") + (events.length > 0 ? "\n" : ""),
       );
     } catch {
       // Metering must never break the app.

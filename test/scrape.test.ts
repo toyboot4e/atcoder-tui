@@ -7,10 +7,7 @@ import { parseSubmissionsPage } from "../src/scrape/submissions.js";
 import { parseTasksPage } from "../src/scrape/tasks.js";
 
 const fixture = (name: string) =>
-  fs.readFileSync(
-    path.join(import.meta.dir, "fixtures", `${name}.html`),
-    "utf8",
-  );
+  fs.readFileSync(path.join(import.meta.dir, "fixtures", `${name}.html`), "utf8");
 
 describe("parseTasksPage", () => {
   const tasks = parseTasksPage(fixture("abc300_tasks"));

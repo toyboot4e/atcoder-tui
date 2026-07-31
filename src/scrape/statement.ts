@@ -38,8 +38,7 @@ function parseSections($: cheerio.CheerioAPI, container: Cheerio): Section[] {
   const sections: Section[] = [];
   let current: Section = { title: "", blocks: [] };
   const flush = () => {
-    if (current.title !== "" || current.blocks.length > 0)
-      sections.push(current);
+    if (current.title !== "" || current.blocks.length > 0) sections.push(current);
   };
 
   const walk = (nodes: AnyNode[]) => {
@@ -125,9 +124,7 @@ function parseBlock($: cheerio.CheerioAPI, el: Element): Block[] | null {
       return [
         {
           kind: "paragraph",
-          inlines: [
-            { kind: "text", text: $(el).text().replace(/\s+/g, " ").trim() },
-          ],
+          inlines: [{ kind: "text", text: $(el).text().replace(/\s+/g, " ").trim() }],
         },
       ];
     case "script":
@@ -141,11 +138,7 @@ function parseBlock($: cheerio.CheerioAPI, el: Element): Block[] | null {
 }
 
 /** `verbatim` preserves whitespace/newlines (inside <pre>). */
-function parseInlines(
-  $: cheerio.CheerioAPI,
-  nodes: AnyNode[],
-  verbatim = false,
-): Inline[] {
+function parseInlines($: cheerio.CheerioAPI, nodes: AnyNode[], verbatim = false): Inline[] {
   const inlines: Inline[] = [];
   for (const node of nodes) {
     if (node.type === "text") {
@@ -157,8 +150,7 @@ function parseInlines(
     if (node.type !== "tag") continue;
     const el = node as Element;
     const name = el.tagName.toLowerCase();
-    const children = () =>
-      parseInlines($, $(el).contents().toArray(), verbatim);
+    const children = () => parseInlines($, $(el).contents().toArray(), verbatim);
     switch (name) {
       case "var":
         inlines.push({ kind: "math", latex: $(el).text().trim() });

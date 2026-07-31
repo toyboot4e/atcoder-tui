@@ -6,7 +6,9 @@ import { renderSections } from "../src/render/lines.js";
 import { parseStatement } from "../src/scrape/statement.js";
 import type { Section } from "../src/render/ast.js";
 
-const strip = (line: string) => line.replace(/\x1b\[[0-9;]*m/g, "");
+// Intentional control character: strips ANSI SGR sequences from chalk output.
+// eslint-disable-next-line no-control-regex
+const strip = (line: string) => line.replace(/\u001B\[[0-9;]*m/g, "");
 
 describe("renderSections", () => {
   test("wraps prose to width", () => {
@@ -25,9 +27,7 @@ describe("renderSections", () => {
     for (const line of lines) {
       expect(stringWidth(strip(line))).toBeLessThanOrEqual(30);
     }
-    expect(
-      lines.filter((l) => strip(l).includes("word")).length,
-    ).toBeGreaterThan(1);
+    expect(lines.filter((l) => strip(l).includes("word")).length).toBeGreaterThan(1);
   });
 
   test("wraps CJK full-width text correctly", () => {
@@ -53,9 +53,7 @@ describe("renderSections", () => {
     const sections: Section[] = [
       {
         title: "Sample Input 1",
-        blocks: [
-          { kind: "pre", inlines: [{ kind: "text", text: `${long}\n2 3\n` }] },
-        ],
+        blocks: [{ kind: "pre", inlines: [{ kind: "text", text: `${long}\n2 3\n` }] }],
       },
     ];
     const lines = renderSections(sections, 20).map(strip);
@@ -108,10 +106,7 @@ describe("renderSections", () => {
   });
 
   test("renders a real statement end to end", () => {
-    const html = fs.readFileSync(
-      path.join(import.meta.dir, "fixtures", "abc300_a.html"),
-      "utf8",
-    );
+    const html = fs.readFileSync(path.join(import.meta.dir, "fixtures", "abc300_a.html"), "utf8");
     const statement = parseStatement(html);
     const lines = renderSections(statement.en!, 78).map(strip);
     const text = lines.join("\n");

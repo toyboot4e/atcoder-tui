@@ -30,8 +30,7 @@ export class DiskCache {
     }
     try {
       const entry = JSON.parse(raw) as CacheEntry;
-      if (typeof entry.fetchedAt !== "number" || typeof entry.body !== "string")
-        return null;
+      if (typeof entry.fetchedAt !== "number" || typeof entry.body !== "string") return null;
       return entry;
     } catch {
       return null;

@@ -48,13 +48,6 @@ export function viewportSize(lineCount: number, height: number): number {
   return lineCount <= height ? height : Math.max(1, height - 1);
 }
 
-export function clampScroll(
-  scrollTop: number,
-  lineCount: number,
-  height: number,
-): number {
-  return Math.max(
-    0,
-    Math.min(scrollTop, lineCount - viewportSize(lineCount, height)),
-  );
+export function clampScroll(scrollTop: number, lineCount: number, height: number): number {
+  return Math.max(0, Math.min(scrollTop, lineCount - viewportSize(lineCount, height)));
 }

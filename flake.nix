@@ -25,7 +25,8 @@
         treefmt-nix.lib.evalModule pkgs {
           projectRootFile = "flake.nix";
           programs.nixfmt.enable = true;
-          programs.prettier.enable = true;
+          programs.oxfmt.enable = true;
+          programs.yamlfmt.enable = true;
           settings.global.excludes = [
             "test/fixtures/*"
             "bun.lock"
@@ -78,7 +79,10 @@
             buildPhase = ''
               export HOME=$TMPDIR
               export BUN_INSTALL_CACHE_DIR=$TMPDIR/bun-cache
-              bun install --frozen-lockfile --no-progress --backend=copyfile
+              # --omit=optional keeps node_modules platform-independent
+              # (typescript 7 ships per-platform native binaries as optional
+              # deps); checks typecheck with nixpkgs' typescript instead.
+              bun install --frozen-lockfile --no-progress --backend=copyfile --omit=optional
             '';
             installPhase = ''
               mkdir -p $out
@@ -86,7 +90,7 @@
             '';
             outputHashAlgo = "sha256";
             outputHashMode = "recursive";
-            outputHash = "sha256-MZXotalyCcwprzC1ramo9SlpKoquWFdeFLxaMdkcLFs=";
+            outputHash = "sha256-JkG9TpQwiMkb1m5kCMufL71N8cbjRw0LdsuAgx7NXP8=";
           };
 
           atcoder-tui = pkgs.stdenvNoCC.mkDerivation {
@@ -142,11 +146,13 @@
             nativeBuildInputs = [
               pkgs.bun
               pkgs.typescript
+              pkgs.oxlint
             ];
             dontConfigure = true;
             buildPhase = ''
               export HOME=$TMPDIR
               ln -s ${packages.nodeModules}/node_modules node_modules
+              oxlint --deny-warnings .
               tsc --noEmit
               bun test
             '';
@@ -162,6 +168,7 @@
             typescript
             nodejs_22
             just
+            oxlint
             typescript-language-server
             (packagesFor pkgs).aclogin
           ];

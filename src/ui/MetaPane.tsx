@@ -31,20 +31,17 @@ export function MetaPane({
   const { language } = useAppState();
   const [scrollTop, setScrollTop] = useState(0);
 
-  const { state, refresh } = useData(
-    `meta-${contestId}-${language}`,
-    async (bypassCache) => {
-      const outcome = await client.fetch(
-        `/contests/${contestId}?lang=${language}`,
-        { ttl, bypassCache },
-      );
-      return {
-        data: parseContestTop(outcome.body),
-        stale: outcome.stale,
-        fetchedAt: outcome.fetchedAt,
-      };
-    },
-  );
+  const { state, refresh } = useData(`meta-${contestId}-${language}`, async (bypassCache) => {
+    const outcome = await client.fetch(`/contests/${contestId}?lang=${language}`, {
+      ttl,
+      bypassCache,
+    });
+    return {
+      data: parseContestTop(outcome.body),
+      stale: outcome.stale,
+      fetchedAt: outcome.fetchedAt,
+    };
+  });
 
   const lines = useMemo(() => {
     if (state.status !== "ready") return [];
@@ -55,17 +52,13 @@ export function MetaPane({
       out.push(`${meta.startText}  →  ${meta.endText ?? "?"}`);
     }
     for (const fact of meta.headerFacts) out.push(fact);
-    if (meta.writers.length > 0)
-      out.push(`${chalk.bold("Writer:")} ${meta.writers.join(", ")}`);
-    if (meta.testers.length > 0)
-      out.push(`${chalk.bold("Tester:")} ${meta.testers.join(", ")}`);
+    if (meta.writers.length > 0) out.push(`${chalk.bold("Writer:")} ${meta.writers.join(", ")}`);
+    if (meta.testers.length > 0) out.push(`${chalk.bold("Tester:")} ${meta.testers.join(", ")}`);
     out.push("");
     // The contest statement itself often carries writer/announcement info the
     // structured fields miss (e.g. abc300 publishes no writer list at all).
     const html =
-      language === "en"
-        ? (meta.statementHtml.en ?? meta.statementHtml.ja)
-        : meta.statementHtml.ja;
+      language === "en" ? (meta.statementHtml.en ?? meta.statementHtml.ja) : meta.statementHtml.ja;
     if (html !== null) {
       out.push(...renderSections(parseFragmentSections(html), width));
     }
@@ -90,13 +83,10 @@ export function MetaPane({
 
   return (
     <>
-      {state.status === "loading" && (
-        <Text dimColor>{t("loading", language)}</Text>
-      )}
+      {state.status === "loading" && <Text dimColor>{t("loading", language)}</Text>}
       {state.status === "error" && (
         <Text color="red" wrap="truncate">
-          {t("error", language)}: {state.error.message} —{" "}
-          {t("retryHint", language)}
+          {t("error", language)}: {state.error.message} — {t("retryHint", language)}
         </Text>
       )}
       {state.status === "ready" && state.stale && (

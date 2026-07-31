@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useReducer,
-  type Dispatch,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useReducer, type Dispatch, type ReactNode } from "react";
 import type { Language } from "../config.js";
 
 export type Route =
@@ -30,9 +24,7 @@ function reducer(state: AppState, action: AppAction): AppState {
     case "push":
       return { ...state, routes: [...state.routes, action.route] };
     case "pop":
-      return state.routes.length > 1
-        ? { ...state, routes: state.routes.slice(0, -1) }
-        : state;
+      return state.routes.length > 1 ? { ...state, routes: state.routes.slice(0, -1) } : state;
     case "toggleLanguage":
       return { ...state, language: state.language === "en" ? "ja" : "en" };
     case "setInputActive":
@@ -43,13 +35,7 @@ function reducer(state: AppState, action: AppAction): AppState {
 const StateContext = createContext<AppState | null>(null);
 const DispatchContext = createContext<Dispatch<AppAction> | null>(null);
 
-export function StoreProvider({
-  language,
-  children,
-}: {
-  language: Language;
-  children: ReactNode;
-}) {
+export function StoreProvider({ language, children }: { language: Language; children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, {
     routes: [{ screen: "dashboard" }],
     language,
@@ -57,9 +43,7 @@ export function StoreProvider({
   });
   return (
     <StateContext.Provider value={state}>
-      <DispatchContext.Provider value={dispatch}>
-        {children}
-      </DispatchContext.Provider>
+      <DispatchContext.Provider value={dispatch}>{children}</DispatchContext.Provider>
     </StateContext.Provider>
   );
 }
@@ -72,8 +56,7 @@ export function useAppState(): AppState {
 
 export function useAppDispatch(): Dispatch<AppAction> {
   const dispatch = useContext(DispatchContext);
-  if (dispatch === null)
-    throw new Error("useAppDispatch outside StoreProvider");
+  if (dispatch === null) throw new Error("useAppDispatch outside StoreProvider");
   return dispatch;
 }
 

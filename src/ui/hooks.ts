@@ -10,8 +10,7 @@ export function useTerminalSize(): { columns: number; rows: number } {
 
   useEffect(() => {
     if (stdout === undefined) return;
-    const onResize = () =>
-      setSize({ columns: stdout.columns, rows: stdout.rows });
+    const onResize = () => setSize({ columns: stdout.columns, rows: stdout.rows });
     stdout.on("resize", onResize);
     return () => {
       stdout.off("resize", onResize);

@@ -2,11 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { Box, Text, useInput, useStdout } from "ink";
 import TextInput from "ink-text-input";
 import { openInBrowser } from "../platform.js";
-import {
-  parseArchivePage,
-  parseContestsPage,
-  type ContestListItem,
-} from "../scrape/contests.js";
+import { parseArchivePage, parseContestsPage, type ContestListItem } from "../scrape/contests.js";
 import { useServices } from "../state/services.js";
 import { useAppDispatch, useAppState } from "../state/store.js";
 import { useData } from "../state/useData.js";
@@ -42,20 +38,17 @@ export function Dashboard() {
   const archiveMax = useRef<number | null>(null);
   const archiveLoading = useRef(false);
 
-  const { state, refresh } = useData(
-    `contests-${language}`,
-    async (bypassCache) => {
-      const outcome = await client.fetch(`/contests/?lang=${language}`, {
-        ttl: FRONT_PAGE_TTL_MS,
-        bypassCache,
-      });
-      return {
-        data: parseContestsPage(outcome.body),
-        stale: outcome.stale,
-        fetchedAt: outcome.fetchedAt,
-      };
-    },
-  );
+  const { state, refresh } = useData(`contests-${language}`, async (bypassCache) => {
+    const outcome = await client.fetch(`/contests/?lang=${language}`, {
+      ttl: FRONT_PAGE_TTL_MS,
+      bypassCache,
+    });
+    return {
+      data: parseContestsPage(outcome.body),
+      stale: outcome.stale,
+      fetchedAt: outcome.fetchedAt,
+    };
+  });
 
   const { rows, contestCount } = useMemo(() => {
     if (state.status !== "ready") return { rows: [] as Row[], contestCount: 0 };
@@ -75,8 +68,7 @@ export function Dashboard() {
         index += 1;
       }
     };
-    for (const section of state.data)
-      pushSection(section.title, section.contests);
+    for (const section of state.data) pushSection(section.title, section.contests);
     if (archive.length > 0) {
       pushSection(
         language === "ja"
@@ -92,23 +84,17 @@ export function Dashboard() {
 
   // Never overflow the terminal: Ink clipping corrupts leading CJK chars.
   const extraRows =
-    (state.status === "ready" && state.stale ? 1 : 0) +
-    (filtering ? 1 : 0) +
-    warnings.length;
+    (state.status === "ready" && state.stale ? 1 : 0) + (filtering ? 1 : 0) + warnings.length;
   const height = (stdout?.rows ?? 24) - 4 - extraRows;
   useVimNav(!filtering && !inputActive, contestCount, clampedSelected, height, {
     onMove: setSelected,
     onSelect: () => {
-      const row = rows.find(
-        (r) => r.type === "contest" && r.index === clampedSelected,
-      );
+      const row = rows.find((r) => r.type === "contest" && r.index === clampedSelected);
       if (row?.type === "contest") {
         const { startsAt, durationMin } = row.contest;
         // endsAt lets the contest view choose immutable caching for ended contests.
         const endsAt =
-          startsAt !== null && durationMin !== null
-            ? startsAt + durationMin * 60_000
-            : null;
+          startsAt !== null && durationMin !== null ? startsAt + durationMin * 60_000 : null;
         dispatch({
           type: "push",
           route: { screen: "contest", contestId: row.contest.id, endsAt },
@@ -119,11 +105,7 @@ export function Dashboard() {
 
   const loadNextArchivePage = () => {
     if (archiveLoading.current) return;
-    if (
-      archiveMax.current !== null &&
-      archivePage.current >= archiveMax.current
-    )
-      return;
+    if (archiveMax.current !== null && archivePage.current >= archiveMax.current) return;
     archiveLoading.current = true;
     const page = archivePage.current + 1;
     // Page 1 shifts as contests end; deeper pages are effectively immutable.
@@ -156,11 +138,8 @@ export function Dashboard() {
       } else if (key.ctrl && input === "f") {
         loadNextArchivePage();
       } else if (input === "o") {
-        const row = rows.find(
-          (r) => r.type === "contest" && r.index === clampedSelected,
-        );
-        if (row?.type === "contest")
-          openInBrowser(`https://atcoder.jp/contests/${row.contest.id}`);
+        const row = rows.find((r) => r.type === "contest" && r.index === clampedSelected);
+        if (row?.type === "contest") openInBrowser(`https://atcoder.jp/contests/${row.contest.id}`);
       }
     },
     { isActive: !filtering && !inputActive },
@@ -187,13 +166,8 @@ export function Dashboard() {
   };
 
   // Keep the selected row in view.
-  const selectedRowIdx = rows.findIndex(
-    (r) => r.type === "contest" && r.index === clampedSelected,
-  );
-  const top = Math.max(
-    0,
-    Math.min(selectedRowIdx - Math.floor(height / 2), rows.length - height),
-  );
+  const selectedRowIdx = rows.findIndex((r) => r.type === "contest" && r.index === clampedSelected);
+  const top = Math.max(0, Math.min(selectedRowIdx - Math.floor(height / 2), rows.length - height));
   const visible = rows.slice(top, top + height);
 
   const hints = `j/k ${t("move", language)} · ⏎ ${t("open", language)} · / ${t("filter", language)} · ^f ${language === "ja" ? "アーカイブ" : "archive"} · t ${t("language", language)} · ? help · q ${t("quit", language)}`;
@@ -201,13 +175,10 @@ export function Dashboard() {
   return (
     <Box flexDirection="column" height={stdout?.rows ?? 24}>
       <Box flexDirection="column" flexGrow={1}>
-        {state.status === "loading" && (
-          <Text dimColor>{t("loading", language)}</Text>
-        )}
+        {state.status === "loading" && <Text dimColor>{t("loading", language)}</Text>}
         {state.status === "error" && (
           <Text color="red">
-            {t("error", language)}: {state.error.message} —{" "}
-            {t("retryHint", language)}
+            {t("error", language)}: {state.error.message} — {t("retryHint", language)}
           </Text>
         )}
         {state.status === "ready" &&
@@ -234,12 +205,8 @@ export function Dashboard() {
                     : "·"}{" "}
                 {row.contest.title}
                 <Text dimColor>
-                  {row.contest.durationText !== null
-                    ? `  ${row.contest.durationText}`
-                    : ""}
-                  {row.contest.ratedRange !== ""
-                    ? `  [${row.contest.ratedRange}]`
-                    : ""}
+                  {row.contest.durationText !== null ? `  ${row.contest.durationText}` : ""}
+                  {row.contest.ratedRange !== "" ? `  [${row.contest.ratedRange}]` : ""}
                 </Text>
               </Text>
             ),
@@ -251,11 +218,7 @@ export function Dashboard() {
       {filtering && (
         <Box>
           <Text color="cyan">/</Text>
-          <TextInput
-            value={filter}
-            onChange={setFilter}
-            onSubmit={closeFilter}
-          />
+          <TextInput value={filter} onChange={setFilter} onSubmit={closeFilter} />
         </Box>
       )}
       <StatusBar hints={hints} />

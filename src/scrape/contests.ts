@@ -50,12 +50,7 @@ function parseRow($: cheerio.CheerioAPI, tr: AnyNode): ContestListItem | null {
   const contestId = href.replace("/contests/", "").split(/[/?#]/)[0]!;
 
   const marker = nameTd.find("span[data-toggle='tooltip']").attr("title") ?? "";
-  const kind =
-    marker === "Algorithm"
-      ? "algorithm"
-      : marker === "Heuristic"
-        ? "heuristic"
-        : null;
+  const kind = marker === "Algorithm" ? "algorithm" : marker === "Heuristic" ? "heuristic" : null;
 
   const durationText = hasTime ? tds.eq(2).text().trim() : null;
   return {

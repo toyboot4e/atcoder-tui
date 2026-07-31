@@ -3,12 +3,7 @@ import { useApp, useInput } from "ink";
 import { autoImportSession } from "./autoSession.js";
 import type { Services } from "./state/services.js";
 import { ServicesProvider, useServices } from "./state/services.js";
-import {
-  StoreProvider,
-  useAppDispatch,
-  useAppState,
-  useCurrentRoute,
-} from "./state/store.js";
+import { StoreProvider, useAppDispatch, useAppState, useCurrentRoute } from "./state/store.js";
 import { ContestView } from "./ui/ContestView.js";
 import { Dashboard } from "./ui/Dashboard.js";
 import { HelpOverlay } from "./ui/HelpOverlay.js";
@@ -39,8 +34,7 @@ function Root() {
       notices: services.notices,
       configuredSession: services.config.revelSession,
     }).then(() => {
-      services.config.revelSession =
-        services.client.getCookie() ?? services.config.revelSession;
+      services.config.revelSession = services.client.getCookie() ?? services.config.revelSession;
     });
   }, [services]);
 
@@ -72,11 +66,7 @@ function Root() {
       return <Dashboard />;
     case "contest":
       return (
-        <ContestView
-          key={route.contestId}
-          contestId={route.contestId}
-          endsAt={route.endsAt}
-        />
+        <ContestView key={route.contestId} contestId={route.contestId} endsAt={route.endsAt} />
       );
   }
 }

@@ -11,8 +11,7 @@ if (url === undefined || name === undefined) {
 
 const response = await fetch(url, {
   headers: {
-    "User-Agent":
-      "atcoder-tui-fixture-recorder/0.1 (read-only terminal viewer, dev)",
+    "User-Agent": "atcoder-tui-fixture-recorder/0.1 (read-only terminal viewer, dev)",
   },
 });
 if (!response.ok) {

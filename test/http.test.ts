@@ -162,9 +162,9 @@ describe("AtcoderClient", () => {
           headers: { location: "https://atcoder.jp/login" },
         }),
     );
-    expect(
-      client.fetch("/contests/x/tasks", { ttl: 0 }),
-    ).rejects.toBeInstanceOf(LoginRequiredError);
+    expect(client.fetch("/contests/x/tasks", { ttl: 0 })).rejects.toBeInstanceOf(
+      LoginRequiredError,
+    );
   });
 
   test("server error with stale cache serves stale", async () => {
@@ -172,10 +172,7 @@ describe("AtcoderClient", () => {
     const cache = new DiskCache(tempDir(), () => cacheNow);
     cache.put("https://atcoder.jp/a", "old");
     cacheNow = 1_000_000;
-    const { client } = makeHarness(
-      () => new Response("boom", { status: 500 }),
-      { cache },
-    );
+    const { client } = makeHarness(() => new Response("boom", { status: 500 }), { cache });
     const outcome = await client.fetch("/a", { ttl: 0 });
     expect(outcome.stale).toBe(true);
     expect(outcome.body).toBe("old");

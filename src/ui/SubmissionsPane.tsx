@@ -1,12 +1,8 @@
 import { useMemo, useState } from "react";
 import { Text } from "ink";
 import chalk from "chalk";
-import type { Ttl } from "../cache.js";
 import { LoginRequiredError } from "../net/http.js";
-import {
-  parseSubmissionsPage,
-  type Submission,
-} from "../scrape/submissions.js";
+import { parseSubmissionsPage, type Submission } from "../scrape/submissions.js";
 import { useServices } from "../state/services.js";
 import { useAppState } from "../state/store.js";
 import { useData } from "../state/useData.js";
@@ -27,10 +23,7 @@ function formatRow(s: Submission, width: number): string {
   const time = s.timeText.replace(/\+\d{4}$/, "").slice(5, 16); // "MM-DD HH:MM"
   const status = statusColor(s.status)(s.status.padEnd(3));
   const score = s.score.padStart(5);
-  const task =
-    s.taskLabel.length > 28
-      ? `${s.taskLabel.slice(0, 27)}…`
-      : s.taskLabel.padEnd(28);
+  const task = s.taskLabel.length > 28 ? `${s.taskLabel.slice(0, 27)}…` : s.taskLabel.padEnd(28);
   const exec = (s.execTime ?? "").padStart(7);
   const lang = s.language;
   const row = `${chalk.dim(time)}  ${status} ${score}  ${task}  ${exec}  ${lang}`;
@@ -59,8 +52,7 @@ export function SubmissionsPane({
   const { state, refresh } = useData(
     `submissions-${contestId}-${userId ?? "anon"}`,
     async (bypassCache) => {
-      if (userId === undefined)
-        return { data: null, stale: false, fetchedAt: 0 };
+      if (userId === undefined) return { data: null, stale: false, fetchedAt: 0 };
       const outcome = await client.fetch(
         `/contests/${contestId}/submissions?f.User=${encodeURIComponent(userId)}`,
         { ttl: SUBMISSIONS_TTL_MS, bypassCache },
@@ -76,9 +68,7 @@ export function SubmissionsPane({
   const lines = useMemo(() => {
     if (state.status !== "ready" || state.data === null) return [];
     if (state.data.submissions.length === 0) {
-      return [
-        chalk.dim(language === "ja" ? "提出はありません" : "no submissions"),
-      ];
+      return [chalk.dim(language === "ja" ? "提出はありません" : "no submissions")];
     }
     return state.data.submissions.map((s) => formatRow(s, width));
   }, [state, width, language]);
@@ -111,9 +101,7 @@ export function SubmissionsPane({
 
   return (
     <>
-      {state.status === "loading" && (
-        <Text dimColor>{t("loading", language)}</Text>
-      )}
+      {state.status === "loading" && <Text dimColor>{t("loading", language)}</Text>}
       {state.status === "error" && (
         <Text color="red" wrap="truncate">
           {state.error instanceof LoginRequiredError

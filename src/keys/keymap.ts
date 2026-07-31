@@ -86,10 +86,7 @@ export const KEYMAP: KeyBinding[] = [
   },
 ];
 
-export const CONTEXT_LABELS: Record<
-  KeyBinding["context"],
-  Record<Language, string>
-> = {
+export const CONTEXT_LABELS: Record<KeyBinding["context"], Record<Language, string>> = {
   global: { en: "Everywhere", ja: "全画面" },
   dashboard: { en: "Dashboard", ja: "ダッシュボード" },
   contest: { en: "Contest view", ja: "コンテスト画面" },

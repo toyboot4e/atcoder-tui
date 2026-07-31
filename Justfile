@@ -26,8 +26,12 @@ test:
 typecheck:
     bunx tsc --noEmit
 
-# Type-check and test
-check: typecheck test
+# Lint with oxlint
+lint:
+    oxlint --deny-warnings .
+
+# Lint, type-check and test
+check: lint typecheck test
 
 # Format the whole tree (treefmt: nixfmt + prettier)
 fmt:
