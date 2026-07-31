@@ -91,7 +91,7 @@
             '';
             outputHashAlgo = "sha256";
             outputHashMode = "recursive";
-            outputHash = "sha256-JkG9TpQwiMkb1m5kCMufL71N8cbjRw0LdsuAgx7NXP8=";
+            outputHash = "sha256-eUm5hWHCdH2jTPReLGZKuOmckMSkqxoJi8/jk3KiGik=";
           };
 
           atcoder-tui = pkgs.stdenvNoCC.mkDerivation {

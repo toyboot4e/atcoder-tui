@@ -37,6 +37,10 @@ check: lint typecheck test
 fmt:
     nix fmt
 
+# Compile a standalone single-file binary (embeds the Bun runtime) into dist/
+build:
+    bun build --compile src/index.tsx --outfile dist/atcoder-tui
+
 # Full repo gate: formatting, build, typecheck, tests
 flake-check:
     nix flake check
