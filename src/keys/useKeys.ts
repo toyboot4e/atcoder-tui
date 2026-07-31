@@ -84,6 +84,16 @@ export function useVimNav(
  * Scroll keys over pre-rendered lines: the shared motions plus g/G home/end.
  * Unhandled keys fall through to `onOther` for pane-specific bindings.
  */
+export interface ScrollKeyOptions {
+  /**
+   * When false, line motions (j/k, arrows, C-n/C-p) are NOT consumed here
+   * and fall through to onOther — used by panes embedded under a cursor
+   * that owns those keys (e.g. the contest problem cursor). Page motions,
+   * C-e/C-y and g/G always scroll.
+   */
+  lineMotions?: boolean;
+}
+
 export function useScrollKeys(
   active: boolean,
   lineCount: number,
@@ -92,13 +102,19 @@ export function useScrollKeys(
   setScrollTop: (next: number) => void,
   clamp: (scrollTop: number, lineCount: number, height: number) => number,
   onOther?: (input: string, key: Key) => void,
+  options?: ScrollKeyOptions,
 ): void {
+  const lineMotions = options?.lineMotions ?? true;
   useInput(
     (input, key) => {
+      const scroll = (delta: number) => setScrollTop(clamp(scrollTop + delta, lineCount, height));
+      if (key.ctrl && input === "e") return scroll(1);
+      if (key.ctrl && input === "y") return scroll(-1);
       const delta = motionDelta(input, key, height);
-      if (delta !== null) setScrollTop(clamp(scrollTop + delta, lineCount, height));
+      const isLineMotion = delta === 1 || delta === -1;
+      if (delta !== null && (lineMotions || !isLineMotion)) scroll(delta);
       else if (input === "G") setScrollTop(clamp(lineCount, lineCount, height));
-      else if (input === "g") setScrollTop(0);
+      else if (input === "g" && !key.ctrl) setScrollTop(0);
       else onOther?.(input, key);
     },
     { isActive: active },

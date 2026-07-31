@@ -8,7 +8,6 @@ import { contestPhase, formatStartLine } from "../phase.js";
 import { useServices } from "../state/services.js";
 import { useAppDispatch, useAppState } from "../state/store.js";
 import { useData } from "../state/useData.js";
-import { useVimNav } from "../keys/useKeys.js";
 import { openInBrowser } from "../platform.js";
 import { useTerminalSize } from "./hooks.js";
 import { MetaPane } from "./MetaPane.js";
@@ -23,8 +22,6 @@ const ACTIVE_TTL_MS = 5 * 60 * 1000;
 
 interface RememberedContest {
   cursor: number;
-  loadedIndex: number;
-  focus: "sidebar" | "content";
   tab: ContestTab;
   scrollByTask: Map<string, number>;
 }
@@ -67,35 +64,24 @@ export function ContestView({
   // Ended contests are immutable: fetched once, cached forever (r bypasses).
   const ttl = phase === "ended" ? ("infinite" as const) : ACTIVE_TTL_MS;
 
-  // A single mutable record backs the write-through setters: reading React
-  // state here would capture stale closure values when setters run in
-  // sequence (setTab + setFocus in one handler), corrupting the memory.
+  // One cursor, no focus modes: row 0 = the contest itself (detail pane),
+  // rows 1..n = problems; moving the cursor IS navigation. A mutable record
+  // backs the setters (React state in closures goes stale when setters run
+  // in sequence).
   const mem = useRef<RememberedContest>(
     rememberedContest.get(contestId) ?? {
-      cursor: 1, // row 0 is the contest itself; default on the first problem
-      loadedIndex: 0,
-      focus: "content", // land ready to read: j/k flip problems immediately
+      cursor: 1, // land on the first problem, ready to read
       tab: "statement",
       scrollByTask: new Map<string, number>(),
     },
   );
   rememberedContest.set(contestId, mem.current);
   const [cursor, setCursorRaw] = useState(mem.current.cursor);
-  const [loadedIndex, setLoadedIndexRaw] = useState(mem.current.loadedIndex);
-  const [focus, setFocusRaw] = useState<"sidebar" | "content">(mem.current.focus);
   const [tab, setTabRaw] = useState<ContestTab>(mem.current.tab);
   const scrollByTask = useRef(mem.current.scrollByTask);
   const setCursor = (v: number) => {
     mem.current.cursor = v;
     setCursorRaw(v);
-  };
-  const setLoadedIndex = (v: number) => {
-    mem.current.loadedIndex = v;
-    setLoadedIndexRaw(v);
-  };
-  const setFocus = (v: "sidebar" | "content") => {
-    mem.current.focus = v;
-    setFocusRaw(v);
   };
   const setTab = (v: ContestTab) => {
     mem.current.tab = v;
@@ -116,7 +102,9 @@ export function ContestView({
     };
   });
   const tasks = tasksData.state.status === "ready" ? tasksData.state.data : [];
-  const loadedTask = tasks[Math.min(loadedIndex, Math.max(0, tasks.length - 1))];
+  // Cursor 0 is the contest detail; problems start at 1.
+  const contestSelected = cursor === 0;
+  const loadedTask = contestSelected ? undefined : tasks[Math.min(cursor - 1, tasks.length - 1)];
 
   // Debounce: flipping j-j-j through problems fetches only where you settle.
   const [settledTaskId, setSettledTaskId] = useState<string | undefined>(undefined);
@@ -173,103 +161,71 @@ export function ContestView({
     setScrollTop(next);
   };
 
-  const switchTask = (index: number, focusContent: boolean) => {
-    const clamped = Math.max(0, Math.min(tasks.length - 1, index));
-    const task = tasks[clamped];
-    setLoadedIndex(clamped);
-    setCursor(clamped + 1); // sidebar row 0 is the contest itself
+  /** Move the cursor: content follows immediately (scroll kept per problem). */
+  const moveCursor = (index: number) => {
+    const clamped = Math.max(0, Math.min(tasks.length, index));
+    const task = clamped >= 1 ? tasks[clamped - 1] : undefined;
+    setCursor(clamped);
     setScrollTop(task !== undefined ? (scrollByTask.current.get(task.id) ?? 0) : 0);
-    if (focusContent) {
-      setFocus("content");
-      setTab("statement");
-    }
   };
 
-  // Sidebar row 0 = the contest itself (opens the detail/meta pane);
-  // rows 1..n are the problems.
-  useVimNav(focus === "sidebar" && !inputActive, tasks.length + 1, cursor, contentHeight, {
-    onMove: setCursor,
-    onSelect: () => {
-      if (cursor === 0) {
-        setTab("meta");
-        setFocus("content");
-      } else {
-        switchTask(cursor - 1, true);
-      }
-    },
-    onBack: () => dispatch({ type: "pop" }),
-  });
-
-  // Statement pane: j/k flip problems (scroll preserved per problem);
-  // C-e/C-y line, C-d/C-u half page, C-f/C-b full page scroll the statement.
+  // Statement context: j/k (arrows, C-n/C-p, J/K) move the cursor — row 0
+  // shows the contest detail, the rest show statements; C-e/C-y, C-d/C-u,
+  // C-f/C-b and g/G scroll the statement. No enter, no focus modes.
   useInput(
     (input, key) => {
       const scroll = (delta: number) =>
         setStatementScroll(clampScroll(clampedScroll + delta, lines.length, contentHeight));
       const half = Math.max(1, Math.floor(contentHeight / 2));
       if (key.ctrl) {
+        if (input === "n") return moveCursor(cursor + 1);
+        if (input === "p") return moveCursor(cursor - 1);
+        if (contestSelected) return; // detail pane owns its own scrolling
         if (input === "e") scroll(1);
         else if (input === "y") scroll(-1);
         else if (input === "d") scroll(half);
         else if (input === "u") scroll(-half);
         else if (input === "f") scroll(contentHeight);
         else if (input === "b") scroll(-contentHeight);
-        else if (input === "n") switchTask(loadedIndex + 1, false);
-        else if (input === "p") switchTask(loadedIndex - 1, false);
         return;
       }
-      if (input === "j" || input === "J" || key.downArrow) switchTask(loadedIndex + 1, false);
-      else if (input === "k" || input === "K" || key.upArrow) switchTask(loadedIndex - 1, false);
+      if (input === "j" || input === "J" || key.downArrow) moveCursor(cursor + 1);
+      else if (input === "k" || input === "K" || key.upArrow) moveCursor(cursor - 1);
+      else if (contestSelected)
+        return; // g/G/r belong to the detail pane
       else if (input === "G")
         setStatementScroll(clampScroll(lines.length, lines.length, contentHeight));
       else if (input === "g") setStatementScroll(0);
       else if (input === "r") statementData.refresh();
-      else if (key.escape) setFocus("sidebar");
     },
-    { isActive: focus === "content" && tab === "statement" && !inputActive },
+    { isActive: tab === "statement" && !inputActive },
   );
 
-  // Spatial h/l: sidebar ← statement ↔ meta ↔ submissions ↔ ranking.
+  // h/l walk the tabs: statement ↔ meta ↔ submissions ↔ ranking.
   const cycleTab = (delta: number) => {
     const index = TAB_ORDER.indexOf(tab) + delta;
-    if (index < 0) {
-      setFocus("sidebar");
-      return;
-    }
-    if (index >= TAB_ORDER.length) return;
+    if (index < 0 || index >= TAB_ORDER.length) return;
     setTab(TAB_ORDER[index]!);
-    setFocus("content");
   };
 
-  // Contest-level keys, active regardless of focus.
+  // Contest-level keys.
   useInput(
     (input, key) => {
-      if (key.tab) setFocus(focus === "sidebar" ? "content" : "sidebar");
+      if (key.tab) cycleTab(key.shift ? -1 : 1);
       else if (input === "1") setTab("statement");
-      else if (input === "2") {
-        setTab("meta");
-        setFocus("content");
-      } else if (input === "3") {
-        setTab("submissions");
-        setFocus("content");
-      } else if (input === "4") {
-        setTab("ranking");
-        setFocus("content");
-      } else if (focus === "content" && (input === "h" || key.leftArrow)) {
-        cycleTab(-1);
-      } else if (focus === "content" && (input === "l" || key.rightArrow)) {
-        cycleTab(1);
-      } else if (key.ctrl && input === "o") {
-        dispatch({ type: "pop" });
-      } else if (input === "o") {
-        openInBrowser(`https://atcoder.jp${currentPagePath()}`);
-      }
+      else if (input === "2") setTab("meta");
+      else if (input === "3") setTab("submissions");
+      else if (input === "4") setTab("ranking");
+      else if (input === "h" || key.leftArrow) cycleTab(-1);
+      else if (input === "l" || key.rightArrow) cycleTab(1);
+      else if (key.ctrl && input === "o") dispatch({ type: "pop" });
+      else if (input === "o") openInBrowser(`https://atcoder.jp${currentPagePath()}`);
     },
     { isActive: !inputActive },
   );
 
   function currentPagePath(): string {
-    if (phase === "upcoming" || tab === "meta") return `/contests/${contestId}`;
+    if (phase === "upcoming" || tab === "meta" || contestSelected) return `/contests/${contestId}`;
     if (tab === "ranking") return `/contests/${contestId}/standings`;
     if (tab === "submissions") {
       const user =
@@ -281,10 +237,7 @@ export function ContestView({
       : `/contests/${contestId}/tasks`;
   }
 
-  const hints =
-    focus === "sidebar"
-      ? `j/k ${t("move", language)}   ⏎ ${t("open", language)}   h ${t("back", language)}   t ${t("language", language)}   q ${t("quit", language)}`
-      : `j/k ${language === "ja" ? "前後の問題" : "problem"}   ^e/^y ^d/^u scroll   h/l tab   t ${t("language", language)}   q ${t("back", language)}`;
+  const hints = `j/k ${language === "ja" ? "前後の問題" : "problem"}   h/l tab   ^e/^y ^d/^u scroll   o ${t("open", language)}   t ${t("language", language)}   q ${t("back", language)}`;
 
   if (phase === "upcoming") {
     // Lobby: the contest exists but its pages don't yet — zero requests.
@@ -321,16 +274,11 @@ export function ContestView({
           flexDirection="column"
           width={SIDEBAR_WIDTH}
           borderStyle="round"
-          borderColor={focus === "sidebar" ? "cyan" : "gray"}
+          borderColor="gray"
           paddingX={1}
         >
-          <Text
-            bold
-            color={cursor === 0 && focus === "sidebar" ? "cyan" : undefined}
-            wrap="truncate"
-          >
-            {cursor === 0 && focus === "sidebar" ? "❯" : " "}
-            {tab === "meta" ? "•" : " "}
+          <Text bold color={contestSelected ? "cyan" : undefined} wrap="truncate">
+            {contestSelected ? "❯ " : "  "}
             {contestId}
           </Text>
           {tasksData.state.status === "loading" && <Text dimColor>{t("loading", language)}</Text>}
@@ -342,12 +290,11 @@ export function ContestView({
           {tasks.map((task, index) => (
             <Text
               key={task.id}
-              color={index + 1 === cursor && focus === "sidebar" ? "cyan" : undefined}
-              bold={index === loadedIndex}
+              color={index + 1 === cursor ? "cyan" : undefined}
+              bold={index + 1 === cursor}
               wrap="truncate"
             >
-              {index + 1 === cursor && focus === "sidebar" ? "❯" : " "}
-              {index === loadedIndex && tab === "statement" ? "•" : " "}
+              {index + 1 === cursor ? "❯ " : "  "}
               {task.letter} {task.title}
             </Text>
           ))}
@@ -356,10 +303,10 @@ export function ContestView({
           flexDirection="column"
           flexGrow={1}
           borderStyle="round"
-          borderColor={focus === "content" ? "cyan" : "gray"}
+          borderColor="cyan"
           paddingX={1}
         >
-          {tab === "statement" && (
+          {tab === "statement" && !contestSelected && (
             <>
               {tasksData.state.status === "error" && (
                 <Text color="red">
@@ -403,14 +350,15 @@ export function ContestView({
               <ScrollView lines={lines} height={contentHeight} scrollTop={clampedScroll} />
             </>
           )}
-          {tab === "meta" && (
+          {(tab === "meta" || (tab === "statement" && contestSelected)) && (
             <MetaPane
               contestId={contestId}
               ttl={ttl}
               width={contentWidth}
               height={rows - 3}
-              active={focus === "content" && !inputActive}
-              onBack={() => setFocus("sidebar")}
+              active={!inputActive}
+              lineMotions={tab === "meta"}
+              onBack={() => dispatch({ type: "pop" })}
             />
           )}
           {tab === "ranking" && (
@@ -419,8 +367,8 @@ export function ContestView({
               ended={phase === "ended"}
               width={contentWidth}
               height={rows - 3}
-              active={focus === "content" && !inputActive}
-              onBack={() => setFocus("sidebar")}
+              active={!inputActive}
+              onBack={() => dispatch({ type: "pop" })}
             />
           )}
           {tab === "submissions" && (
@@ -428,8 +376,8 @@ export function ContestView({
               contestId={contestId}
               width={contentWidth}
               height={rows - 3}
-              active={focus === "content" && !inputActive}
-              onBack={() => setFocus("sidebar")}
+              active={!inputActive}
+              onBack={() => dispatch({ type: "pop" })}
             />
           )}
         </Box>

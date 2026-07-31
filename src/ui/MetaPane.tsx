@@ -18,6 +18,7 @@ export function MetaPane({
   width,
   height,
   active,
+  lineMotions,
   onBack,
 }: {
   contestId: string;
@@ -25,6 +26,8 @@ export function MetaPane({
   width: number;
   height: number;
   active: boolean;
+  /** False when embedded under the contest cursor (j/k belong outside). */
+  lineMotions?: boolean;
   onBack: () => void;
 }) {
   const { client } = useServices();
@@ -79,6 +82,7 @@ export function MetaPane({
       if (input === "r") refresh();
       else if (key.escape) onBack();
     },
+    { lineMotions: lineMotions ?? true },
   );
 
   return (
