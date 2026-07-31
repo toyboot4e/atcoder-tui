@@ -86,3 +86,17 @@ export function loadConfig(filePath: string = configFilePath()): LoadedConfig {
 
   return { config, warnings, path: filePath };
 }
+
+/** Persists the favorites list into the config file, preserving other fields. */
+export function saveFavorites(favorites: string[], filePath: string = configFilePath()): void {
+  let raw: Record<string, unknown> = {};
+  try {
+    const parsed: unknown = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    if (typeof parsed === "object" && parsed !== null) raw = parsed as Record<string, unknown>;
+  } catch {
+    // missing or corrupt — start fresh
+  }
+  raw["favorites"] = favorites;
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, JSON.stringify(raw, null, 2) + "\n");
+}

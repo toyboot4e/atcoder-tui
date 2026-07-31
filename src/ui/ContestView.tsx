@@ -243,7 +243,14 @@ export function ContestView({
       : `/contests/${contestId}/tasks`;
   }
 
-  const hints = `j/k ${language === "ja" ? "前後の問題" : "problem"}   h/l 1/2/3 ${language === "ja" ? "タブ" : "tab"}   ^e/^y ^d/^u scroll   o ${t("open", language)}   t ${t("language", language)}   q ${t("back", language)}`;
+  const tabHint = `h/l 1/2/3 ${language === "ja" ? "タブ" : "tab"}`;
+  const commonHint = `o ${t("open", language)}   t ${t("language", language)}   q ${t("back", language)}`;
+  const hints =
+    tab === "ranking"
+      ? `j/k ${t("move", language)}   * ${language === "ja" ? "お気に入り" : "star"}   f ${language === "ja" ? "お気に入りのみ" : "favs only"}   ${tabHint}   ${commonHint}`
+      : tab === "submissions"
+        ? `j/k ${t("move", language)}   ⏎ ${t("open", language)}   ${tabHint}   ${commonHint}`
+        : `j/k ${language === "ja" ? "前後の問題" : "problem"}   ^e/^y ^d/^u scroll   ${tabHint}   ${commonHint}`;
 
   if (phase === "upcoming") {
     // Lobby: the contest exists but its pages don't yet — zero requests.

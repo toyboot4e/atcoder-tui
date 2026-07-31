@@ -115,10 +115,16 @@ export const KEYMAP: KeyBinding[] = [
     ja: "問題文を1行スクロール",
   },
   {
+    keys: "* (ranking)",
+    context: "contest",
+    en: "star/unstar the user under the cursor (saved to config)",
+    ja: "カーソル行のユーザーをお気に入り登録／解除（config に保存）",
+  },
+  {
     keys: "f (ranking)",
     context: "contest",
-    en: "toggle favorites-only standings (config: favorites)",
-    ja: "お気に入りユーザーのみ表示（config の favorites）",
+    en: "toggle favorites-only standings",
+    ja: "お気に入りユーザーのみ表示",
   },
   {
     keys: "enter (submissions)",

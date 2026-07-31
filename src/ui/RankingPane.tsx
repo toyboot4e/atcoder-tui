@@ -3,6 +3,7 @@ import { Text, useInput } from "ink";
 import chalk from "chalk";
 import { LoginRequiredError } from "../net/http.js";
 import { formatElapsed, parseStandingsJson, ratingColor } from "../scrape/standings.js";
+import { saveFavorites } from "../config.js";
 import { useServices } from "../state/services.js";
 import { useAppState } from "../state/store.js";
 import { useData } from "../state/useData.js";
@@ -53,15 +54,26 @@ export function RankingPane({
   });
 
   const [favOnly, setFavOnly] = useState(favoritesOnly);
-  const favorites = useMemo(
-    () => new Set([...config.favorites, ...(config.userId !== undefined ? [config.userId] : [])]),
-    [config.favorites, config.userId],
-  );
+  // Local copy so starring re-renders; kept in sync with the shared config
+  // object and persisted to config.json on every change.
+  const [favList, setFavList] = useState(config.favorites);
+  const toggleStar = (user: string) => {
+    const next = favList.some((f) => f.toLowerCase() === user.toLowerCase())
+      ? favList.filter((f) => f.toLowerCase() !== user.toLowerCase())
+      : [...favList, user];
+    setFavList(next);
+    config.favorites = next;
+    saveFavorites(next);
+  };
+  const starred = useMemo(() => new Set(favList.map((f) => f.toLowerCase())), [favList]);
   const visibleRows = useMemo(() => {
     if (state.status !== "ready") return [];
     if (!favOnly) return state.data.rows;
-    return state.data.rows.filter((row) => favorites.has(row.user));
-  }, [state, favOnly, favorites]);
+    // Your own row always stays as the reference point.
+    return state.data.rows.filter(
+      (row) => starred.has(row.user.toLowerCase()) || row.user === config.userId,
+    );
+  }, [state, favOnly, starred, config.userId]);
 
   const rowCount = visibleRows.length;
   const clampedCursor = Math.max(0, Math.min(rowCount - 1, cursor));
@@ -76,14 +88,15 @@ export function RankingPane({
         row.elapsedSec !== null ? formatElapsed(row.elapsedSec).padStart(8) : "       -";
       const penalty = row.penalty > 0 ? chalk.red(`(${row.penalty})`) : "   ";
       const marker = out.length === clampedCursor ? chalk.cyan("❯ ") : "  ";
-      const line = `${marker}${String(row.rank).padStart(6)}  ${styledUser} ${String(row.score).padStart(6)} ${penalty} ${elapsed}`;
+      const star = starred.has(row.user.toLowerCase()) ? chalk.yellow("★") : " ";
+      const line = `${marker}${star}${String(row.rank).padStart(5)}  ${styledUser} ${String(row.score).padStart(6)} ${penalty} ${elapsed}`;
       // The user's own row stands out.
       out.push(
         config.userId !== undefined && row.user === config.userId ? chalk.bold.inverse(line) : line,
       );
     }
     return out;
-  }, [visibleRows, config.userId, width, clampedCursor]);
+  }, [visibleRows, config.userId, width, clampedCursor, starred]);
 
   const me =
     state.status === "ready" && config.userId !== undefined
@@ -118,7 +131,10 @@ export function RankingPane({
   useInput(
     (input) => {
       if (input === "r") refresh();
-      else if (input === "f") {
+      else if (input === "*") {
+        const row = visibleRows[clampedCursor];
+        if (row !== undefined && row.user !== config.userId) toggleStar(row.user);
+      } else if (input === "f") {
         favoritesOnly = !favOnly;
         setFavOnly(!favOnly);
         setCursor(0);
@@ -144,7 +160,9 @@ export function RankingPane({
           {me !== undefined ? `   —   ${language === "ja" ? "自分" : "you"}: #${me.rank}` : ""}
           {favOnly
             ? chalk.cyan(
-                `  [${language === "ja" ? "お気に入りのみ" : "favorites only"} (${rowCount})]  f ${language === "ja" ? "解除" : "off"}`,
+                favList.length === 0
+                  ? `  [${language === "ja" ? "お気に入り未登録 — * で追加" : "no favorites yet — * stars a row"}]`
+                  : `  [${language === "ja" ? "お気に入りのみ" : "favorites only"} (${rowCount})]  f ${language === "ja" ? "解除" : "off"}`,
               )
             : ""}
           {state.stale ? chalk.yellow(`  [${t("stale", language)}]`) : ""}

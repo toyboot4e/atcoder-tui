@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { DEFAULT_CONFIG, loadConfig } from "../src/config.js";
+import { DEFAULT_CONFIG, loadConfig, saveFavorites } from "../src/config.js";
 
 function tempConfig(content: string): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "atui-config-"));
@@ -66,4 +66,15 @@ test("favorites keeps only non-empty strings", () => {
     tempConfig(JSON.stringify({ favorites: ["rival", "", 42, "friend"] })),
   );
   expect(config.favorites).toEqual(["rival", "friend"]);
+});
+
+test("saveFavorites persists and preserves other fields", () => {
+  const file = tempConfig(JSON.stringify({ userId: "example_user", language: "ja" }));
+  saveFavorites(["rival"], file);
+  expect(JSON.parse(fs.readFileSync(file, "utf8"))).toEqual({
+    userId: "example_user",
+    language: "ja",
+    favorites: ["rival"],
+  });
+  expect(loadConfig(file).config.favorites).toEqual(["rival"]);
 });
