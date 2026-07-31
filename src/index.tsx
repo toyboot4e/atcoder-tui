@@ -1,4 +1,6 @@
 import { render } from "ink";
 import { App } from "./app.js";
+import { buildServices } from "./state/services.js";
 
-render(<App />);
+const services = buildServices();
+render(<App services={services} />);
