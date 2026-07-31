@@ -33,16 +33,9 @@ export interface LoadedConfig {
   path: string;
 }
 
-/**
- * The config is JSONC (comments and trailing commas welcome). An existing
- * plain config.json keeps working; new installs get config.jsonc.
- */
+/** The config is JSONC only: comments and trailing commas welcome. */
 export function configFilePath(): string {
-  const jsonc = path.join(configDir(), "config.jsonc");
-  if (fs.existsSync(jsonc)) return jsonc;
-  const json = path.join(configDir(), "config.json");
-  if (fs.existsSync(json)) return json;
-  return jsonc;
+  return path.join(configDir(), "config.jsonc");
 }
 
 export function loadConfig(filePath: string = configFilePath()): LoadedConfig {
