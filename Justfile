@@ -11,12 +11,13 @@ alias s := session-status
 default:
     @just --list
 
-# Run the TUI with Bun (no Nix involved)
-run:
-    bun run src/index.tsx
+# Build and run the compiled binary
+run: build
+    ./dist/atcoder-tui
 
-# Alias of run, for muscle memory
-dev: run
+# Run the TUI from source with Bun (fastest iteration)
+dev:
+    bun run src/index.tsx
 
 # Run unit tests
 test:
