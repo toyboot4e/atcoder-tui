@@ -3,9 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    # x86_64/aarch64 × linux/darwin — exactly Bun's supported platforms,
-    # and overridable via --override-input systems.
-    systems.url = "github:nix-systems/default";
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -16,12 +13,12 @@
     {
       self,
       nixpkgs,
-      systems,
       treefmt-nix,
     }:
     let
       forAllSystems =
-        f: nixpkgs.lib.genAttrs (import systems) (system: f nixpkgs.legacyPackages.${system});
+        f:
+        nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed (system: f nixpkgs.legacyPackages.${system});
 
       treefmtFor =
         pkgs:
