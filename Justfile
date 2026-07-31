@@ -19,6 +19,10 @@ run: build
 dev:
     bun run src/index.tsx
 
+# Run from source, restarting automatically on file changes
+watch:
+    bun --watch run src/index.tsx
+
 # Run unit tests
 test:
     bun test
