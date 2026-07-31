@@ -13,6 +13,9 @@ import { ScrollView, clampScroll } from "./ScrollView.js";
 import { t } from "./strings.js";
 
 const ACTIVE_STANDINGS_TTL_MS = 2 * 60 * 1000;
+const FAV_SYNC_INTERVAL_MS = 24 * 60 * 60 * 1000;
+// One auto-sync attempt at a time, shared across pane instances.
+let favSyncInFlight = false;
 
 // Cursor per contest, consistent with the rest of the modeless UI.
 const rememberedCursor = new Map<string, number>();
@@ -76,8 +79,8 @@ export function RankingPane({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, favOnly, starred, config.userId]);
 
-  /** F: pull the server-side favorites registered on atcoder.jp. */
-  const importFavorites = async () => {
+  /** F (or the daily auto-sync): pull the favorites registered on atcoder.jp. */
+  const importFavorites = async (announce: boolean) => {
     try {
       // Personal page: never cached to disk.
       const { body } = await client.fetch("/settings/fav", {
@@ -91,20 +94,40 @@ export function RankingPane({
       const merged = [...favList, ...added];
       setFavList(merged);
       config.favorites = merged;
-      saveFavorites(merged);
-      notices.push(
-        language === "ja"
-          ? `お気に入り: AtCoder から ${added.length} 人追加（計 ${merged.length} 人）`
-          : `favorites: imported ${added.length} from AtCoder (${merged.length} total)`,
-      );
+      config.favoritesSyncedAt = Date.now();
+      saveFavorites(merged, config.favoritesSyncedAt);
+      if (announce || added.length > 0) {
+        notices.push(
+          language === "ja"
+            ? `お気に入り: AtCoder から ${added.length} 人追加（計 ${merged.length} 人）`
+            : `favorites: imported ${added.length} from AtCoder (${merged.length} total)`,
+        );
+      }
     } catch (error) {
-      notices.push(
-        error instanceof LoginRequiredError
-          ? t("loginRequired", language)
-          : `${t("error", language)}: ${(error as Error).message}`,
-      );
+      // The auto-sync stays quiet on failure; F reports what went wrong.
+      if (announce) {
+        notices.push(
+          error instanceof LoginRequiredError
+            ? t("loginRequired", language)
+            : `${t("error", language)}: ${(error as Error).message}`,
+        );
+      }
     }
   };
+
+  // Automatic import: opening a ranking is a keypress, so syncing here (at
+  // most once per day, only with a session configured) respects the
+  // no-idle-traffic rule while keeping browser-starred rivals fresh.
+  useEffect(() => {
+    if (favSyncInFlight || config.revelSession === undefined) return;
+    const last = config.favoritesSyncedAt ?? 0;
+    if (Date.now() - last < FAV_SYNC_INTERVAL_MS) return;
+    favSyncInFlight = true;
+    void importFavorites(false).finally(() => {
+      favSyncInFlight = false;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const rowCount = visibleRows.length;
   const clampedCursor = Math.max(0, Math.min(rowCount - 1, cursor));
@@ -180,7 +203,7 @@ export function RankingPane({
         setFavOnly(nextOn);
         setCursor(Math.max(0, index));
       } else if (input === "F") {
-        void importFavorites();
+        void importFavorites(true);
       }
     },
     { isActive: active },

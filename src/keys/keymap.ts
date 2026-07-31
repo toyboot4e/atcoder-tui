@@ -129,8 +129,8 @@ export const KEYMAP: KeyBinding[] = [
   {
     keys: "F (ranking)",
     context: "contest",
-    en: "import your favorites registered on atcoder.jp",
-    ja: "AtCoder に登録済みのお気に入りを取り込む",
+    en: "re-import atcoder.jp favorites now (auto-syncs daily)",
+    ja: "AtCoder のお気に入りを今すぐ取込（毎日自動同期）",
   },
   {
     keys: "enter (submissions)",

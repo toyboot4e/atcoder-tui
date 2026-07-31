@@ -56,6 +56,15 @@ export function loadState(file: string = stateFilePath()): PersistedState | null
 
 export function saveState(state: PersistedState, file: string = stateFilePath()): void {
   try {
+    // Set ATCODER_TUI_DEBUG_STATE=/path to trace every state write with a
+    // stack — kept for hunting a rare unexplained dashboard-reset.
+    const debugPath = process.env["ATCODER_TUI_DEBUG_STATE"];
+    if (debugPath !== undefined && debugPath !== "") {
+      fs.appendFileSync(
+        debugPath,
+        `${JSON.stringify({ t: Date.now(), routes: state.routes.map((r) => r.screen) })}\n${new Error("trace").stack}\n`,
+      );
+    }
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, JSON.stringify(state) + "\n");
   } catch {
