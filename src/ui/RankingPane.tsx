@@ -1,16 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Text } from "ink";
+import { Text, useInput } from "ink";
 import chalk from "chalk";
 import { LoginRequiredError } from "../net/http.js";
 import { formatElapsed, parseStandingsJson, ratingColor } from "../scrape/standings.js";
 import { useServices } from "../state/services.js";
 import { useAppState } from "../state/store.js";
 import { useData } from "../state/useData.js";
-import { useScrollKeys } from "../keys/useKeys.js";
+import { useVimNav } from "../keys/useKeys.js";
 import { ScrollView, clampScroll } from "./ScrollView.js";
 import { t } from "./strings.js";
 
 const ACTIVE_STANDINGS_TTL_MS = 2 * 60 * 1000;
+
+// Cursor per contest, consistent with the rest of the modeless UI.
+const rememberedCursor = new Map<string, number>();
 
 export function RankingPane({
   contestId,
@@ -29,7 +32,11 @@ export function RankingPane({
 }) {
   const { client, config } = useServices();
   const { language } = useAppState();
-  const [scrollTop, setScrollTop] = useState(0);
+  const [cursor, setCursorRaw] = useState(rememberedCursor.get(contestId) ?? 0);
+  const setCursor = (i: number) => {
+    rememberedCursor.set(contestId, i);
+    setCursorRaw(i);
+  };
 
   const { state, refresh } = useData(`standings-${contestId}`, async (bypassCache) => {
     const outcome = await client.fetch(`/contests/${contestId}/standings/json`, {
@@ -43,6 +50,9 @@ export function RankingPane({
     };
   });
 
+  const rowCount = state.status === "ready" ? state.data.rows.length : 0;
+  const clampedCursor = Math.max(0, Math.min(rowCount - 1, cursor));
+
   const lines = useMemo(() => {
     if (state.status !== "ready") return [];
     const out: string[] = [];
@@ -53,14 +63,15 @@ export function RankingPane({
       const elapsed =
         row.elapsedSec !== null ? formatElapsed(row.elapsedSec).padStart(8) : "       -";
       const penalty = row.penalty > 0 ? chalk.red(`(${row.penalty})`) : "   ";
-      const line = `${String(row.rank).padStart(6)}  ${styledUser} ${String(row.score).padStart(6)} ${penalty} ${elapsed}`;
+      const marker = out.length === clampedCursor ? chalk.cyan("❯ ") : "  ";
+      const line = `${marker}${String(row.rank).padStart(6)}  ${styledUser} ${String(row.score).padStart(6)} ${penalty} ${elapsed}`;
       // The user's own row stands out.
       out.push(
         config.userId !== undefined && row.user === config.userId ? chalk.bold.inverse(line) : line,
       );
     }
     return out;
-  }, [state, config.userId, width]);
+  }, [state, config.userId, width, clampedCursor]);
 
   const me =
     state.status === "ready" && config.userId !== undefined
@@ -70,31 +81,33 @@ export function RankingPane({
   const viewHeight = height - 2; // header + notice budget
 
   // On first load, land on your own row instead of rank 1: standings come
-  // as one document, so this is pure local scrolling — no extra requests.
+  // as one document, so this is pure local movement — no extra requests.
   const centered = useRef(false);
   useEffect(() => {
     if (centered.current || state.status !== "ready" || config.userId === undefined) return;
     const index = state.data.rows.findIndex((r) => r.user === config.userId);
-    if (index >= 0) {
-      setScrollTop(
-        clampScroll(index - Math.floor(viewHeight / 2), state.data.rows.length, viewHeight),
-      );
-    }
+    if (index >= 0) setCursor(index);
     centered.current = true;
-  }, [state, config.userId, viewHeight]);
-  const clamped = clampScroll(scrollTop, lines.length, viewHeight);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, config.userId]);
 
-  useScrollKeys(
-    active,
+  // The view follows the cursor.
+  const scrollTop = clampScroll(
+    clampedCursor - Math.floor(viewHeight / 2),
     lines.length,
     viewHeight,
-    clamped,
-    setScrollTop,
-    clampScroll,
-    (input, key) => {
+  );
+
+  useVimNav(active, rowCount, clampedCursor, viewHeight, {
+    handleHorizontal: false, // h/l cycle tabs at the contest level
+    onMove: setCursor,
+    onBack,
+  });
+  useInput(
+    (input) => {
       if (input === "r") refresh();
-      else if (key.escape) onBack();
     },
+    { isActive: active },
   );
 
   return (
@@ -115,7 +128,7 @@ export function RankingPane({
           {state.stale ? chalk.yellow(`  [${t("stale", language)}]`) : ""}
         </Text>
       )}
-      <ScrollView lines={lines} height={viewHeight} scrollTop={clamped} />
+      <ScrollView lines={lines} height={viewHeight} scrollTop={scrollTop} />
     </>
   );
 }

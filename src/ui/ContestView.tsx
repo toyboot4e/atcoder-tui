@@ -29,8 +29,9 @@ interface RememberedContest {
 // same contest) restores tab/cursor/scroll instead of resetting.
 const rememberedContest = new Map<string, RememberedContest>();
 
-export type ContestTab = "statement" | "meta" | "submissions" | "ranking";
-const TAB_ORDER: ContestTab[] = ["statement", "meta", "submissions", "ranking"];
+// No meta tab: the contest detail lives on cursor row 0 of the statement view.
+export type ContestTab = "statement" | "submissions" | "ranking";
+const TAB_ORDER: ContestTab[] = ["statement", "submissions", "ranking"];
 
 function describeError(error: Error, phase: string, language: "en" | "ja"): string {
   if (error instanceof LoginRequiredError) return t("loginRequired", language);
@@ -211,11 +212,16 @@ export function ContestView({
   // Contest-level keys.
   useInput(
     (input, key) => {
+      if (phase === "upcoming") {
+        // Lobby: nothing to cycle — h/esc go back like q.
+        if (input === "h" || key.leftArrow || key.escape) dispatch({ type: "pop" });
+        else if (input === "o") openInBrowser(`https://atcoder.jp${currentPagePath()}`);
+        return;
+      }
       if (key.tab) cycleTab(key.shift ? -1 : 1);
       else if (input === "1") setTab("statement");
-      else if (input === "2") setTab("meta");
-      else if (input === "3") setTab("submissions");
-      else if (input === "4") setTab("ranking");
+      else if (input === "2") setTab("submissions");
+      else if (input === "3") setTab("ranking");
       else if (input === "h" || key.leftArrow) cycleTab(-1);
       else if (input === "l" || key.rightArrow) cycleTab(1);
       else if (key.ctrl && input === "o") dispatch({ type: "pop" });
@@ -225,7 +231,7 @@ export function ContestView({
   );
 
   function currentPagePath(): string {
-    if (phase === "upcoming" || tab === "meta" || contestSelected) return `/contests/${contestId}`;
+    if (phase === "upcoming" || contestSelected) return `/contests/${contestId}`;
     if (tab === "ranking") return `/contests/${contestId}/standings`;
     if (tab === "submissions") {
       const user =
@@ -237,7 +243,7 @@ export function ContestView({
       : `/contests/${contestId}/tasks`;
   }
 
-  const hints = `j/k ${language === "ja" ? "前後の問題" : "problem"}   h/l tab   ^e/^y ^d/^u scroll   o ${t("open", language)}   t ${t("language", language)}   q ${t("back", language)}`;
+  const hints = `j/k ${language === "ja" ? "前後の問題" : "problem"}   h/l 1/2/3 ${language === "ja" ? "タブ" : "tab"}   ^e/^y ^d/^u scroll   o ${t("open", language)}   t ${t("language", language)}   q ${t("back", language)}`;
 
   if (phase === "upcoming") {
     // Lobby: the contest exists but its pages don't yet — zero requests.
@@ -350,14 +356,14 @@ export function ContestView({
               <ScrollView lines={lines} height={contentHeight} scrollTop={clampedScroll} />
             </>
           )}
-          {(tab === "meta" || (tab === "statement" && contestSelected)) && (
+          {tab === "statement" && contestSelected && (
             <MetaPane
               contestId={contestId}
               ttl={ttl}
               width={contentWidth}
               height={rows - 3}
               active={!inputActive}
-              lineMotions={tab === "meta"}
+              lineMotions={false}
               onBack={() => dispatch({ type: "pop" })}
             />
           )}

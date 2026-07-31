@@ -97,10 +97,10 @@ export const KEYMAP: KeyBinding[] = [
     ja: "前 / 次のタブ",
   },
   {
-    keys: "1 / 2 / 3 / 4",
+    keys: "1 / 2 / 3",
     context: "contest",
-    en: "statement / meta / submissions / ranking (direct)",
-    ja: "問題文 / 情報 / 提出 / 順位表（直接）",
+    en: "statement / submissions / ranking (contest detail = cursor row 0)",
+    ja: "問題文 / 提出 / 順位表（コンテスト詳細はカーソル先頭行）",
   },
   {
     keys: "j / k",
