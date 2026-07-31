@@ -10,8 +10,7 @@ nix run github:toyboot4e/atcoder-tui
 
 ** Configuration
 
-Check =~/.config/atcoder-tui/config.jsonc= (Windows: =%APPDATA%\atcoder-tui\=;
-comments and trailing commas are allowed):
+Check =~/.config/atcoder-tui/config.jsonc= (Windows: =%APPDATA%\atcoder-tui\=):
 
 #+BEGIN_SRC json
 {
