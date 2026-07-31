@@ -5,11 +5,13 @@ import { loadConfig, type Config } from "../config.js";
 import { cacheDir } from "../platform.js";
 import { AtcoderClient } from "../net/http.js";
 import { LoadMeter } from "../net/load.js";
+import { Notices } from "./notices.js";
 
 export interface Services {
   config: Config;
   client: AtcoderClient;
   meter: LoadMeter;
+  notices: Notices;
   warnings: string[];
 }
 
@@ -23,7 +25,7 @@ export function buildServices(): Services {
     cookie: config.revelSession,
     requestsPerMinute: config.requestsPerMinute,
   });
-  return { config, client, meter, warnings };
+  return { config, client, meter, notices: new Notices(), warnings };
 }
 
 const ServicesContext = createContext<Services | null>(null);

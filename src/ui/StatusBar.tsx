@@ -15,15 +15,27 @@ function formatBytes(bytes: number): string {
  * session and this day have actually cost AtCoder, so politeness is
  * observable rather than claimed.
  */
+const NOTICE_MS = 10_000;
+
 export function StatusBar({ hints }: { hints: string }) {
-  const { meter, warnings } = useServices();
+  const { meter, notices, warnings } = useServices();
   const { language } = useAppState();
   const [stats, setStats] = useState<LoadStats>(() => meter.stats());
+  const [notice, setNotice] = useState<string | null>(() => notices.latest);
 
   useEffect(() => {
     setStats(meter.stats());
     return meter.subscribe(() => setStats(meter.stats()));
   }, [meter]);
+
+  // Transient notices borrow the hints slot for a while — no extra row, so
+  // pane height budgets stay valid.
+  useEffect(() => notices.subscribe(setNotice), [notices]);
+  useEffect(() => {
+    if (notice === null) return;
+    const timer = setTimeout(() => setNotice(null), NOTICE_MS);
+    return () => clearTimeout(timer);
+  }, [notice]);
 
   const net =
     `net ${stats.sessionRequests}req/${formatBytes(stats.sessionBytes)}` +
@@ -44,7 +56,7 @@ export function StatusBar({ hints }: { hints: string }) {
             <Text color="cyan" bold>
               [{language}]
             </Text>
-            <Text dimColor> {hints}</Text>
+            {notice !== null ? <Text color="yellow"> {notice}</Text> : <Text dimColor> {hints}</Text>}
           </Text>
         </Box>
         <Box flexShrink={0} marginLeft={1}>

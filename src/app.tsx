@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useApp, useInput } from "ink";
+import { autoImportSession } from "./autoSession.js";
 import type { Services } from "./state/services.js";
-import { ServicesProvider } from "./state/services.js";
+import { ServicesProvider, useServices } from "./state/services.js";
 import { StoreProvider, useAppDispatch, useAppState, useCurrentRoute } from "./state/store.js";
 import { ContestView } from "./ui/ContestView.js";
 import { Dashboard } from "./ui/Dashboard.js";
@@ -22,7 +23,20 @@ function Root() {
   const { inputActive } = useAppState();
   const dispatch = useAppDispatch();
   const route = useCurrentRoute();
+  const services = useServices();
   const [showHelp, setShowHelp] = useState(false);
+
+  // Convenience: adopt a stored oj/acc session when none is configured.
+  // The result (or expiry) lands in the status bar as a notice.
+  useEffect(() => {
+    void autoImportSession({
+      client: services.client,
+      notices: services.notices,
+      configuredSession: services.config.revelSession,
+    }).then(() => {
+      services.config.revelSession = services.client.getCookie() ?? services.config.revelSession;
+    });
+  }, [services]);
 
   const openHelp = () => {
     setShowHelp(true);

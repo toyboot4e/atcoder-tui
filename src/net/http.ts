@@ -23,6 +23,8 @@ export interface FetchOptions {
   ttl: Ttl;
   /** `r` key: skip the fresh-cache lookup (the result is still stored). */
   bypassCache?: boolean;
+  /** Never write this response to the disk cache (e.g. personal pages). */
+  noStore?: boolean;
 }
 
 export interface FetchOutcome {
@@ -61,7 +63,7 @@ export class AtcoderClient {
   private readonly meter: LoadMeter;
   private readonly cache: DiskCache | null;
   private readonly baseUrl: string;
-  private readonly cookie: string | undefined;
+  private cookie: string | undefined;
   private readonly userAgent: string;
   private readonly minIntervalMs: number;
   private readonly requestsPerMinute: number;
@@ -86,11 +88,20 @@ export class AtcoderClient {
     this.sleep = opts.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
   }
 
+  /** Swap the session cookie at runtime (auto-import, expiry recovery). */
+  setCookie(value: string | undefined): void {
+    this.cookie = value;
+  }
+
+  getCookie(): string | undefined {
+    return this.cookie;
+  }
+
   /** `pathname` is site-relative, e.g. `/contests/abc300/tasks/abc300_a`. */
   fetch(pathname: string, opts: FetchOptions): Promise<FetchOutcome> {
     const url = this.baseUrl + pathname;
 
-    if (this.cache !== null && opts.bypassCache !== true) {
+    if (this.cache !== null && opts.bypassCache !== true && opts.noStore !== true) {
       const hit = this.cache.get(url, opts.ttl);
       if (hit !== null) {
         this.meter.recordCacheHit();
@@ -100,7 +111,7 @@ export class AtcoderClient {
 
     this.queued += 1;
     this.meter.setActivity(true, this.queued);
-    const result = this.tail.then(() => this.performFetch(url));
+    const result = this.tail.then(() => this.performFetch(url, opts.noStore === true));
     // The chain must survive failures, or one error would wedge the queue.
     this.tail = result.then(
       () => {},
@@ -126,7 +137,7 @@ export class AtcoderClient {
     }
   }
 
-  private async performFetch(url: string): Promise<FetchOutcome> {
+  private async performFetch(url: string, noStore: boolean): Promise<FetchOutcome> {
     await this.waitForBudget();
     this.lastRequestAt = this.clock();
 
@@ -163,7 +174,7 @@ export class AtcoderClient {
       throw new HttpError(url, response.status);
     }
 
-    this.cache?.put(url, body);
+    if (!noStore) this.cache?.put(url, body);
     return { body, fromCache: false, stale: false, fetchedAt: this.clock() };
   }
 
