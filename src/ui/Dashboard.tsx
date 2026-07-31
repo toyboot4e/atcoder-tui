@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Box, Text, useInput, useStdout } from "ink";
 import TextInput from "ink-text-input";
-import { parseContestsPage, type ContestListItem } from "../scrape/contests.js";
+import { openInBrowser } from "../platform.js";
+import { parseArchivePage, parseContestsPage, type ContestListItem } from "../scrape/contests.js";
 import { useServices } from "../state/services.js";
 import { useAppDispatch, useAppState } from "../state/store.js";
 import { useData } from "../state/useData.js";
@@ -29,6 +30,11 @@ export function Dashboard() {
   const [selected, setSelected] = useState(0);
   const [filtering, setFiltering] = useState(false);
   const [filter, setFilter] = useState("");
+  // Archive pages are pulled lazily, one page per ctrl-f press.
+  const [archive, setArchive] = useState<ContestListItem[]>([]);
+  const archivePage = useRef(0);
+  const archiveMax = useRef<number | null>(null);
+  const archiveLoading = useRef(false);
 
   const { state, refresh } = useData(`contests-${language}`, async (bypassCache) => {
     const outcome = await client.fetch(`/contests/?lang=${language}`, {
@@ -41,24 +47,25 @@ export function Dashboard() {
   const { rows, contestCount } = useMemo(() => {
     if (state.status !== "ready") return { rows: [] as Row[], contestCount: 0 };
     const needle = filter.trim().toLowerCase();
+    const matches = (c: ContestListItem) =>
+      needle === "" || c.id.toLowerCase().includes(needle) || c.title.toLowerCase().includes(needle);
     const rows: Row[] = [];
     let index = 0;
-    for (const section of state.data) {
-      const contests =
-        needle === ""
-          ? section.contests
-          : section.contests.filter(
-              (c) => c.id.toLowerCase().includes(needle) || c.title.toLowerCase().includes(needle),
-            );
-      if (contests.length === 0) continue;
-      rows.push({ type: "header", title: section.title });
-      for (const contest of contests) {
+    const pushSection = (title: string, contests: ContestListItem[]) => {
+      const filtered = contests.filter(matches);
+      if (filtered.length === 0) return;
+      rows.push({ type: "header", title });
+      for (const contest of filtered) {
         rows.push({ type: "contest", contest, index });
         index += 1;
       }
+    };
+    for (const section of state.data) pushSection(section.title, section.contests);
+    if (archive.length > 0) {
+      pushSection(language === "ja" ? `アーカイブ (${archivePage.current}ページ目まで)` : `Archive (${archivePage.current} page${archivePage.current > 1 ? "s" : ""} loaded)`, archive);
     }
     return { rows, contestCount: index };
-  }, [state, filter]);
+  }, [state, filter, archive, language]);
 
   const clampedSelected = Math.max(0, Math.min(contestCount - 1, selected));
 
@@ -79,25 +86,58 @@ export function Dashboard() {
     },
   });
 
+  const loadNextArchivePage = () => {
+    if (archiveLoading.current) return;
+    if (archiveMax.current !== null && archivePage.current >= archiveMax.current) return;
+    archiveLoading.current = true;
+    const page = archivePage.current + 1;
+    // Page 1 shifts as contests end; deeper pages are effectively immutable.
+    client
+      .fetch(`/contests/archive?lang=${language}&page=${page}`, {
+        ttl: page === 1 ? 60 * 60 * 1000 : "infinite",
+      })
+      .then((outcome) => {
+        const parsed = parseArchivePage(outcome.body);
+        archivePage.current = page;
+        archiveMax.current = parsed.maxPage;
+        setArchive((prev) => [...prev, ...parsed.contests]);
+      })
+      .catch(() => {
+        // The status-bar meter already shows activity; a failed page load
+        // simply leaves the archive as it was.
+      })
+      .finally(() => {
+        archiveLoading.current = false;
+      });
+  };
+
   useInput(
-    (input) => {
+    (input, key) => {
       if (input === "/") {
         setFiltering(true);
         dispatch({ type: "setInputActive", value: true });
       } else if (input === "r") {
         refresh();
+      } else if (key.ctrl && input === "f") {
+        loadNextArchivePage();
+      } else if (input === "o") {
+        const row = rows.find((r) => r.type === "contest" && r.index === clampedSelected);
+        if (row?.type === "contest") openInBrowser(`https://atcoder.jp/contests/${row.contest.id}`);
       }
     },
     { isActive: !filtering && !inputActive },
   );
 
-  // While filtering, esc clears and closes; enter (TextInput onSubmit) keeps the filter.
+  // While filtering, esc clears and closes; enter (TextInput onSubmit) keeps
+  // the filter; ctrl-f still pulls archive pages so old contests can be found.
   useInput(
-    (_input, key) => {
+    (input, key) => {
       if (key.escape) {
         setFilter("");
         setFiltering(false);
         dispatch({ type: "setInputActive", value: false });
+      } else if (key.ctrl && input === "f") {
+        loadNextArchivePage();
       }
     },
     { isActive: filtering },
@@ -113,7 +153,7 @@ export function Dashboard() {
   const top = Math.max(0, Math.min(selectedRowIdx - Math.floor(height / 2), rows.length - height));
   const visible = rows.slice(top, top + height);
 
-  const hints = `j/k ${t("move", language)} · ⏎ ${t("open", language)} · / ${t("filter", language)} · t ${t("language", language)} · r ${t("refresh", language)} · q ${t("quit", language)}`;
+  const hints = `j/k ${t("move", language)} · ⏎ ${t("open", language)} · / ${t("filter", language)} · ^f ${language === "ja" ? "アーカイブ" : "archive"} · t ${t("language", language)} · ? help · q ${t("quit", language)}`;
 
   return (
     <Box flexDirection="column" height={stdout?.rows ?? 24}>

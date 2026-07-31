@@ -39,16 +39,20 @@ export function StatusBar({ hints }: { hints: string }) {
         </Text>
       ))}
       <Box justifyContent="space-between">
-        <Text>
-          <Text color="cyan" bold>
-            [{language}]
+        <Box flexShrink={1}>
+          <Text wrap="truncate">
+            <Text color="cyan" bold>
+              [{language}]
+            </Text>
+            <Text dimColor> {hints}</Text>
           </Text>
-          <Text dimColor> {hints}</Text>
-        </Text>
-        <Text dimColor>
-          {net}
-          <Text color="yellow">{activity}</Text>
-        </Text>
+        </Box>
+        <Box flexShrink={0} marginLeft={1}>
+          <Text dimColor wrap="truncate">
+            {net}
+            <Text color="yellow">{activity}</Text>
+          </Text>
+        </Box>
       </Box>
     </Box>
   );

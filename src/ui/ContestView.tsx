@@ -8,6 +8,7 @@ import { useServices } from "../state/services.js";
 import { useAppDispatch, useAppState } from "../state/store.js";
 import { useData } from "../state/useData.js";
 import { useScrollKeys, useVimNav } from "../keys/useKeys.js";
+import { openInBrowser } from "../platform.js";
 import { useTerminalSize } from "./hooks.js";
 import { MetaPane } from "./MetaPane.js";
 import { ScrollView, clampScroll } from "./ScrollView.js";
@@ -21,7 +22,7 @@ const ACTIVE_TTL_MS = 5 * 60 * 1000;
 export type ContestTab = "statement" | "meta" | "submissions";
 
 export function ContestView({ contestId, endsAt }: { contestId: string; endsAt: number | null }) {
-  const { client } = useServices();
+  const { client, config } = useServices();
   const { language, inputActive } = useAppState();
   const dispatch = useAppDispatch();
   const { columns, rows } = useTerminalSize();
@@ -111,10 +112,23 @@ export function ContestView({ contestId, endsAt }: { contestId: string; endsAt: 
         setFocus("content");
       } else if (key.ctrl && input === "o") {
         dispatch({ type: "pop" });
+      } else if (input === "o") {
+        openInBrowser(`https://atcoder.jp${currentPagePath()}`);
       }
     },
     { isActive: !inputActive },
   );
+
+  function currentPagePath(): string {
+    if (tab === "meta") return `/contests/${contestId}`;
+    if (tab === "submissions") {
+      const user = config.userId !== undefined ? `?f.User=${encodeURIComponent(config.userId)}` : "";
+      return `/contests/${contestId}/submissions${user}`;
+    }
+    return loadedTask !== undefined
+      ? `/contests/${contestId}/tasks/${loadedTask.id}`
+      : `/contests/${contestId}/tasks`;
+  }
 
   const hints =
     focus === "sidebar"
