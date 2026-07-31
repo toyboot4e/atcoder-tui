@@ -18,10 +18,6 @@ run:
 # Alias of run, for muscle memory
 dev: run
 
-# Run the TUI under Node (fallback if Bun tty raw mode misbehaves)
-dev-node:
-    node --import tsx src/index.tsx
-
 # Run unit tests
 test:
     bun test

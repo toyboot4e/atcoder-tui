@@ -13,6 +13,20 @@ describe("configDir", () => {
       path.join(".config", "atcoder-tui"),
     );
   });
+  test("empty or relative XDG values are ignored (never a CWD-relative dir)", () => {
+    expect(configDir("linux", { XDG_CONFIG_HOME: "" })).toContain(
+      path.join(".config", "atcoder-tui"),
+    );
+    expect(cacheDir("linux", { XDG_CACHE_HOME: "" })).toContain(
+      path.join(".cache", "atcoder-tui"),
+    );
+    expect(cacheDir("linux", { XDG_CACHE_HOME: "relative/dir" })).toContain(
+      path.join(".cache", "atcoder-tui"),
+    );
+    expect(path.isAbsolute(cacheDir("linux", { XDG_CACHE_HOME: "" }))).toBe(
+      true,
+    );
+  });
   test("uses APPDATA on windows", () => {
     expect(
       configDir("win32", { APPDATA: "C:\\Users\\x\\AppData\\Roaming" }),
