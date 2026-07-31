@@ -60,10 +60,19 @@ Everything is optional; missing pieces degrade to a status-bar hint.
 
 - `userId` — enables the submissions tab.
 - `revelSession` — AtCoder now gates submission listings (and problems of
-  running contests) behind login. Copy the `REVEL_SESSION` cookie from your
-  browser: DevTools → Application/Storage → Cookies → `https://atcoder.jp` →
-  `REVEL_SESSION` → paste the value here. When it expires the app tells you
-  instead of failing silently.
+  running contests) behind login. The easiest setup:
+
+  ```sh
+  just session-import   # copy the cookie from oj / acc, verify, save
+  just session-set      # or paste it manually (verified before saving)
+  just session-status   # see what is configured / importable
+  ```
+
+  (equivalently `atcoder-tui session import|set|status|check`). To get the
+  value manually: browser DevTools → Application/Storage → Cookies →
+  `https://atcoder.jp` → `REVEL_SESSION`. Values are verified against
+  atcoder.jp before saving and only ever displayed masked. When the session
+  expires the app tells you instead of failing silently.
 - `cache` — set `false` to disable the disk cache (`~/.cache/atcoder-tui/`);
   rate limiting still applies.
 
