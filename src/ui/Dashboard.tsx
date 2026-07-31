@@ -1,8 +1,10 @@
 import { useMemo, useRef, useState } from "react";
 import { Box, Text, useInput, useStdout } from "ink";
 import TextInput from "ink-text-input";
+import { CATEGORY_LABELS, CATEGORY_ORDER, categorize, type Category } from "../categorize.js";
 import { openInBrowser } from "../platform.js";
 import { parseArchivePage, parseContestsPage, type ContestListItem } from "../scrape/contests.js";
+import { UNLISTED_CONTESTS } from "../unlisted.js";
 import { useServices } from "../state/services.js";
 import { useAppDispatch, useAppState } from "../state/store.js";
 import { useData } from "../state/useData.js";
@@ -12,11 +14,17 @@ import { StatusBar } from "./StatusBar.js";
 
 const FRONT_PAGE_TTL_MS = 30 * 60 * 1000;
 
-// Survives unmount so returning from a contest restores the cursor, filter
-// and any loaded archive pages (module-level: there is only one dashboard).
+export type DashView =
+  | { kind: "sections" }
+  | { kind: "categories" }
+  | { kind: "category"; category: Category };
+
+// Survives unmount so returning from a contest restores the cursor, filter,
+// view and any loaded archive pages (module-level: only one dashboard).
 const remembered = {
   selected: 0,
   filter: "",
+  view: { kind: "sections" } as DashView,
   archive: [] as ContestListItem[],
   archivePage: 0,
   archiveMax: null as number | null,
@@ -24,7 +32,8 @@ const remembered = {
 
 type Row =
   | { type: "header"; title: string }
-  | { type: "contest"; contest: ContestListItem; index: number };
+  | { type: "contest"; contest: ContestListItem; index: number }
+  | { type: "category"; category: Category; count: number; index: number };
 
 function formatStart(startsAt: number | null): string {
   if (startsAt === null) return "           ";
@@ -44,6 +53,12 @@ export function Dashboard() {
     remembered.selected = i;
     setSelectedRaw(i);
   };
+  const [view, setViewRaw] = useState<DashView>(remembered.view);
+  const setView = (v: DashView) => {
+    remembered.view = v;
+    setViewRaw(v);
+    setSelected(0);
+  };
   const [filtering, setFiltering] = useState(false);
   const [filter, setFilterRaw] = useState(remembered.filter);
   const setFilter = (f: string) => {
@@ -55,6 +70,8 @@ export function Dashboard() {
   const archivePage = useRef(remembered.archivePage);
   const archiveMax = useRef(remembered.archiveMax);
   const archiveLoading = useRef(false);
+  const atArchiveEnd = () =>
+    archiveMax.current !== null && archivePage.current >= archiveMax.current;
 
   const { state, refresh } = useData(`contests-${language}`, async (bypassCache) => {
     const outcome = await client.fetch(`/contests/?lang=${language}`, {
@@ -68,8 +85,8 @@ export function Dashboard() {
     };
   });
 
-  const { rows, contestCount } = useMemo(() => {
-    if (state.status !== "ready") return { rows: [] as Row[], contestCount: 0 };
+  const { rows, selectableCount } = useMemo(() => {
+    if (state.status !== "ready") return { rows: [] as Row[], selectableCount: 0 };
     const needle = filter.trim().toLowerCase();
     const matches = (c: ContestListItem) =>
       needle === "" ||
@@ -86,29 +103,73 @@ export function Dashboard() {
         index += 1;
       }
     };
-    for (const section of state.data) pushSection(section.title, section.contests);
-    if (archive.length > 0) {
-      pushSection(
-        language === "ja"
-          ? `アーカイブ (${archivePage.current}ページ目まで)`
-          : `Archive (${archivePage.current} page${archivePage.current > 1 ? "s" : ""} loaded)`,
-        archive,
-      );
-    }
-    return { rows, contestCount: index };
-  }, [state, filter, archive, language]);
 
-  const clampedSelected = Math.max(0, Math.min(contestCount - 1, selected));
+    // One deduped pool across front-page sections and the archive.
+    const pool = new Map<string, ContestListItem>();
+    for (const section of state.data) {
+      for (const contest of section.contests) pool.set(contest.id, contest);
+    }
+    for (const contest of archive) {
+      if (!pool.has(contest.id)) pool.set(contest.id, contest);
+    }
+    // Contests atcoder.jp lists nowhere (PAST opens, older weekday
+    // contests) — only reachable through the curated seed.
+    for (const contest of UNLISTED_CONTESTS) {
+      if (!pool.has(contest.id)) pool.set(contest.id, contest);
+    }
+
+    if (view.kind === "categories") {
+      const counts = new Map<Category, number>();
+      for (const contest of pool.values()) {
+        const cat = categorize(contest);
+        counts.set(cat, (counts.get(cat) ?? 0) + 1);
+      }
+      const note = atArchiveEnd()
+        ? `${pool.size}`
+        : `${pool.size}${language === "ja" ? "（アーカイブ取得中…）" : " (loading archive…)"}`;
+      rows.push({
+        type: "header",
+        title:
+          language === "ja" ? `カテゴリ — 全${note}件` : `Categories — ${note} contests indexed`,
+      });
+      for (const category of CATEGORY_ORDER) {
+        const count = counts.get(category) ?? 0;
+        if (count === 0) continue;
+        rows.push({ type: "category", category, count, index });
+        index += 1;
+      }
+    } else if (view.kind === "category") {
+      const contests = [...pool.values()]
+        .filter((contest) => categorize(contest) === view.category)
+        .sort((a, b) => (b.startsAt ?? -1) - (a.startsAt ?? -1));
+      pushSection(CATEGORY_LABELS[view.category][language], contests);
+    } else {
+      for (const section of state.data) pushSection(section.title, section.contests);
+      if (archive.length > 0) {
+        pushSection(
+          language === "ja"
+            ? `アーカイブ (${archivePage.current}ページ目まで)`
+            : `Archive (${archivePage.current} page${archivePage.current > 1 ? "s" : ""} loaded)`,
+          archive,
+        );
+      }
+    }
+    return { rows, selectableCount: index };
+  }, [state, filter, archive, language, view]);
+
+  const clampedSelected = Math.max(0, Math.min(selectableCount - 1, selected));
 
   // Never overflow the terminal: Ink clipping corrupts leading CJK chars.
   const extraRows =
     (state.status === "ready" && state.stale ? 1 : 0) + (filtering ? 1 : 0) + warnings.length;
   const height = (stdout?.rows ?? 24) - 4 - extraRows;
-  useVimNav(!filtering && !inputActive, contestCount, clampedSelected, height, {
+  useVimNav(!filtering && !inputActive, selectableCount, clampedSelected, height, {
     onMove: setSelected,
     onSelect: () => {
-      const row = rows.find((r) => r.type === "contest" && r.index === clampedSelected);
-      if (row?.type === "contest") {
+      const row = rows.find((r) => r.type !== "header" && r.index === clampedSelected);
+      if (row?.type === "category") {
+        setView({ kind: "category", category: row.category });
+      } else if (row?.type === "contest") {
         const { startsAt, durationMin } = row.contest;
         // endsAt lets the contest view choose immutable caching for ended contests.
         const endsAt =
@@ -118,6 +179,10 @@ export function Dashboard() {
           route: { screen: "contest", contestId: row.contest.id, startsAt, endsAt },
         });
       }
+    },
+    onBack: () => {
+      if (view.kind === "category") setView({ kind: "categories" });
+      else if (view.kind === "categories") setView({ kind: "sections" });
     },
   });
 
@@ -138,9 +203,6 @@ export function Dashboard() {
       return next;
     });
   };
-
-  const atArchiveEnd = () =>
-    archiveMax.current !== null && archivePage.current >= archiveMax.current;
 
   /** a: one page; A: everything — the requests still queue >=1s apart, and
    *  pages beyond the first are cached forever, so "all" costs ~18 requests
@@ -171,6 +233,15 @@ export function Dashboard() {
         refresh();
       } else if (input === "a" || input === "A") {
         loadArchive(input === "A");
+      } else if (input === "c") {
+        if (view.kind === "sections") {
+          // The category index is only as complete as the archive: pull it
+          // all (one-time cost, cached forever afterwards).
+          loadArchive(true);
+          setView({ kind: "categories" });
+        } else {
+          setView(view.kind === "category" ? { kind: "categories" } : { kind: "sections" });
+        }
       } else if (input === "o") {
         const row = rows.find((r) => r.type === "contest" && r.index === clampedSelected);
         if (row?.type === "contest") openInBrowser(`https://atcoder.jp/contests/${row.contest.id}`);
@@ -202,7 +273,10 @@ export function Dashboard() {
   const top = Math.max(0, Math.min(selectedRowIdx - Math.floor(height / 2), rows.length - height));
   const visible = rows.slice(top, top + height);
 
-  const hints = `j/k ${t("move", language)}   ⏎ ${t("open", language)}   / ${t("filter", language)}   a ${language === "ja" ? "アーカイブ" : "archive"}   t ${t("language", language)}   ? help   q ${t("quit", language)}`;
+  const hints =
+    view.kind === "sections"
+      ? `j/k ${t("move", language)}   ⏎ ${t("open", language)}   / ${t("filter", language)}   c ${language === "ja" ? "カテゴリ" : "categories"}   a ${language === "ja" ? "アーカイブ" : "archive"}   t ${t("language", language)}   ? help   q ${t("quit", language)}`
+      : `j/k ${t("move", language)}   ⏎ ${t("open", language)}   / ${t("filter", language)}   esc/c ${t("back", language)}   t ${t("language", language)}   q ${t("quit", language)}`;
 
   return (
     <Box flexDirection="column" height={stdout?.rows ?? 24}>
@@ -218,6 +292,17 @@ export function Dashboard() {
             row.type === "header" ? (
               <Text key={`h-${row.title}-${i}`} bold color="magenta">
                 {row.title}
+              </Text>
+            ) : row.type === "category" ? (
+              <Text
+                key={row.category}
+                color={row.index === clampedSelected ? "cyan" : undefined}
+                bold={row.index === clampedSelected}
+                wrap="truncate"
+              >
+                {row.index === clampedSelected ? "❯ " : "  "}
+                {CATEGORY_LABELS[row.category][language].padEnd(36)}
+                <Text dimColor>{String(row.count).padStart(5)}</Text>
               </Text>
             ) : (
               <Text

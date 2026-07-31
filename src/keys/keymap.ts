@@ -73,6 +73,12 @@ export const KEYMAP: KeyBinding[] = [
     ja: "コンテスト絞り込み",
   },
   {
+    keys: "c",
+    context: "dashboard",
+    en: "category view (ABC/ARC/AGC/AHC/AWC/PAST/learning/JOI)",
+    ja: "カテゴリ表示 (ABC/ARC/AGC/AHC/AWC/PAST/学習/JOI)",
+  },
+  {
     keys: "a / A",
     context: "dashboard",
     en: "load next / all archive pages",

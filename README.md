@@ -96,7 +96,9 @@ submission opens its source code, `J`/`K` next/previous problem,
 `o` open the current page in your browser,
 `a`/`A` load one/all archive pages into the dashboard (every past contest,
 filterable with `/`; "all" is ~18 requests once, then cached forever),
-`r` force-refresh.
+`c` category view (ABC / ARC / AGC / AHC / AWC weekday / PAST / learning
+contests like EDPC and Typical 90 / JOI — including contests atcoder.jp
+lists nowhere, via a curated seed), `r` force-refresh.
 
 ## Etiquette toward AtCoder
 
