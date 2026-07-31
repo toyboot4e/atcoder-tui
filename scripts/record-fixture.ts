@@ -20,7 +20,8 @@ if (url === undefined || name === undefined) {
 }
 
 const headers: Record<string, string> = {
-  "User-Agent": "atcoder-tui-fixture-recorder/0.1 (read-only terminal viewer, dev)",
+  "User-Agent":
+    "atcoder-tui-fixture-recorder/0.1 (unofficial, dev-only; +https://github.com/toyboot4e/atcoder-tui)",
 };
 if (useSession) {
   const { config } = loadConfig();

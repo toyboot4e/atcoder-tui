@@ -80,7 +80,9 @@ export class AtcoderClient {
     this.cache = opts.cache;
     this.baseUrl = opts.baseUrl ?? "https://atcoder.jp";
     this.cookie = opts.cookie;
-    this.userAgent = opts.userAgent ?? "atcoder-tui/0.1 (read-only terminal viewer)";
+    this.userAgent =
+      opts.userAgent ??
+      "atcoder-tui/0.1 (unofficial read-only viewer; +https://github.com/toyboot4e/atcoder-tui)";
     this.minIntervalMs = opts.minIntervalMs ?? 1000;
     this.requestsPerMinute = opts.requestsPerMinute ?? 20;
     this.fetchImpl = opts.fetchImpl ?? fetch;

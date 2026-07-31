@@ -1,5 +1,9 @@
 # atcoder-tui
 
+> **Unofficial.** This is a community-made viewer with no affiliation with or
+> endorsement by AtCoder Inc. Problem statements and contest data belong to
+> AtCoder and the respective contest writers.
+
 A read-only [AtCoder](https://atcoder.jp) viewer for the terminal, built with
 React + [Ink](https://github.com/vadimdemedes/ink) on [Bun](https://bun.sh).
 Browse contests, read problem statements (with LaTeX rendered as Unicode),
@@ -94,12 +98,29 @@ submission opens its source code, `J`/`K` next/previous problem,
 filterable with `/`; "all" is ~18 requests once, then cached forever),
 `r` force-refresh.
 
-## Load on AtCoder
+## Etiquette toward AtCoder
 
-This app is deliberately conservative toward atcoder.jp (no official API
-exists): it fetches only on explicit navigation, never polls or prefetches,
-serializes requests with ≥1s spacing under a 20 req/min rolling budget that
-persists across restarts, and caches ended contests indefinitely. The status
-bar shows live counters (requests/bytes for the session and the day, cache
-hit ratio) so the actual load is always visible. A request journal lives in
-`~/.cache/atcoder-tui/requests.jsonl`.
+This project tries to be a well-behaved guest (no official API exists):
+
+- **Rate-limited by construction** — every request flows through one
+  chokepoint: serialized, ≥1s apart, ≤20 req/min on a rolling window that
+  persists across restarts. Enforced by unit tests, not convention.
+- **Cached aggressively** — ended contests are fetched once, ever
+  (immutable cache); everything else has conservative TTLs.
+- **No unnecessary requests** — fetches happen only on explicit
+  navigation; there are no timers, polls, prefetches, or retries. An idle
+  app produces zero traffic.
+- **Observable** — the status bar shows live request/byte counters, and
+  `~/.cache/atcoder-tui/requests.jsonl` is a complete audit log of every
+  request the app has ever sent.
+- **Descriptive User-Agent** — identifies the tool as unofficial and links
+  here.
+- **No unfair advantage** — this is a viewer: no submitting, no contest
+  automation, no assistance features. It shows only what atcoder.jp already
+  shows you in a browser with your own session, subject to the same
+  login/registration gates.
+- Test fixtures are small page snapshots used only for offline parser
+  tests; their content is © AtCoder / the respective writers.
+
+If AtCoder publishes guidance that conflicts with any of this, their rules
+win — please open an issue.

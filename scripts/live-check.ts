@@ -15,7 +15,7 @@ const client = new AtcoderClient({
   meter,
   cache: null,
   userAgent:
-    "atcoder-tui-live-check/0.1 (daily parser canary, 4 requests; github.com/example_user/atcoder-tui)",
+    "atcoder-tui-live-check/0.1 (unofficial daily parser canary, 4 requests/day; +https://github.com/toyboot4e/atcoder-tui)",
 });
 
 let failures = 0;

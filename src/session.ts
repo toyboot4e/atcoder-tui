@@ -84,7 +84,8 @@ export function maskSession(value: string): string {
 export async function checkSession(value: string): Promise<boolean> {
   const response = await fetch("https://atcoder.jp/settings", {
     headers: {
-      "User-Agent": "atcoder-tui/0.1 (read-only terminal viewer)",
+      "User-Agent":
+        "atcoder-tui/0.1 (unofficial read-only viewer; +https://github.com/toyboot4e/atcoder-tui)",
       Cookie: `REVEL_SESSION=${value}`,
     },
     redirect: "manual",
