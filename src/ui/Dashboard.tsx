@@ -103,29 +103,39 @@ export function Dashboard() {
     },
   });
 
-  const loadNextArchivePage = () => {
-    if (archiveLoading.current) return;
-    if (archiveMax.current !== null && archivePage.current >= archiveMax.current) return;
-    archiveLoading.current = true;
+  const fetchArchivePage = async () => {
     const page = archivePage.current + 1;
     // Page 1 shifts as contests end; deeper pages are effectively immutable.
-    client
-      .fetch(`/contests/archive?lang=${language}&page=${page}`, {
-        ttl: page === 1 ? 60 * 60 * 1000 : "infinite",
-      })
-      .then((outcome) => {
-        const parsed = parseArchivePage(outcome.body);
-        archivePage.current = page;
-        archiveMax.current = parsed.maxPage;
-        setArchive((prev) => [...prev, ...parsed.contests]);
-      })
-      .catch(() => {
+    const outcome = await client.fetch(`/contests/archive?lang=${language}&page=${page}`, {
+      ttl: page === 1 ? 60 * 60 * 1000 : "infinite",
+    });
+    const parsed = parseArchivePage(outcome.body);
+    archivePage.current = page;
+    archiveMax.current = parsed.maxPage;
+    setArchive((prev) => [...prev, ...parsed.contests]);
+  };
+
+  const atArchiveEnd = () =>
+    archiveMax.current !== null && archivePage.current >= archiveMax.current;
+
+  /** a: one page; A: everything — the requests still queue >=1s apart, and
+   *  pages beyond the first are cached forever, so "all" costs ~18 requests
+   *  exactly once per machine. */
+  const loadArchive = (all: boolean) => {
+    if (archiveLoading.current || atArchiveEnd()) return;
+    archiveLoading.current = true;
+    (async () => {
+      try {
+        do {
+          await fetchArchivePage();
+        } while (all && !atArchiveEnd());
+      } catch {
         // The status-bar meter already shows activity; a failed page load
         // simply leaves the archive as it was.
-      })
-      .finally(() => {
+      } finally {
         archiveLoading.current = false;
-      });
+      }
+    })();
   };
 
   useInput(
@@ -135,8 +145,8 @@ export function Dashboard() {
         dispatch({ type: "setInputActive", value: true });
       } else if (input === "r") {
         refresh();
-      } else if (input === "a") {
-        loadNextArchivePage();
+      } else if (input === "a" || input === "A") {
+        loadArchive(input === "A");
       } else if (input === "o") {
         const row = rows.find((r) => r.type === "contest" && r.index === clampedSelected);
         if (row?.type === "contest") openInBrowser(`https://atcoder.jp/contests/${row.contest.id}`);

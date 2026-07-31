@@ -73,10 +73,10 @@ export const KEYMAP: KeyBinding[] = [
     ja: "コンテスト絞り込み",
   },
   {
-    keys: "a",
+    keys: "a / A",
     context: "dashboard",
-    en: "load next archive page",
-    ja: "アーカイブを1ページ読み込む",
+    en: "load next / all archive pages",
+    ja: "アーカイブを1ページ / 全て読み込む",
   },
   {
     keys: "tab",
