@@ -1,0 +1,997 @@
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>UNIQUE VISION Programming Contest 2023 Spring(AtCoder Beginner Contest 300) - AtCoder</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta http-equiv="Content-Language" content="en">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0">
+	<meta name="format-detection" content="telephone=no">
+	<meta name="google-site-verification" content="nXGC_JxO0yoP1qBzMnYD_xgufO6leSLw1kyNo2HZltM" />
+	<meta name="robots" content="noai, noimageai">
+
+	
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-RC512FD18N"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+		gtag('set', 'user_properties', {
+			
+				'login_status': 'logged_out',
+			
+		});
+		gtag('config', 'G-RC512FD18N');
+	</script>
+
+	
+	<meta name="description" content="AtCoder is a programming contest site for anyone from beginners to experts. We hold weekly programming contests online.">
+	<meta name="author" content="AtCoder Inc.">
+
+	<meta property="og:site_name" content="AtCoder">
+	
+	<meta property="og:title" content="UNIQUE VISION Programming Contest 2023 Spring(AtCoder Beginner Contest 300) - AtCoder" />
+	<meta property="og:description" content="AtCoder is a programming contest site for anyone from beginners to experts. We hold weekly programming contests online." />
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="https://atcoder.jp/contests/abc300?lang=en" />
+	<meta property="og:image" content="https://img.atcoder.jp/assets/atcoder.png" />
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:site" content="@atcoder" />
+	
+	<meta property="twitter:title" content="UNIQUE VISION Programming Contest 2023 Spring(AtCoder Beginner Contest 300) - AtCoder" />
+
+	<link href="//fonts.googleapis.com/css?family=Lato:400,700" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" type="text/css" href="//img.atcoder.jp/public/c51699a/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="//img.atcoder.jp/public/c51699a/css/base.css">
+	<link rel="shortcut icon" type="image/png" href="//img.atcoder.jp/assets/favicon.png">
+	<link rel="apple-touch-icon" href="//img.atcoder.jp/assets/atcoder.png">
+	<script src="//img.atcoder.jp/public/c51699a/js/lib/jquery-1.9.1.min.js"></script>
+	<script src="//img.atcoder.jp/public/c51699a/js/lib/bootstrap.min.js"></script>
+	<script src="//img.atcoder.jp/public/c51699a/js/cdn/js.cookie.min.js"></script>
+	<script src="//img.atcoder.jp/public/c51699a/js/cdn/moment.min.js"></script>
+	<script src="//img.atcoder.jp/public/c51699a/js/cdn/moment_js-ja.js"></script>
+	<script>
+		var LANG = "en";
+		var userScreenName = "";
+		var csrfToken = "SCRUBBED"
+	</script>
+	<script src="//img.atcoder.jp/public/c51699a/js/utils.js"></script>
+	
+	
+		<script src="//img.atcoder.jp/public/c51699a/js/contest.js"></script>
+		<link href="//img.atcoder.jp/public/c51699a/css/contest.css" rel="stylesheet" />
+		<script>
+			var contestScreenName = "abc300";
+			var remainingText = "Remaining Time";
+			var countDownText = "Contest begins in";
+			var startTime = moment("2023-04-29T21:00:00+09:00");
+			var endTime = moment("2023-04-29T22:40:00+09:00");
+		</script>
+		<style></style>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<script src="//img.atcoder.jp/public/c51699a/js/base.js"></script>
+</head>
+
+<body>
+
+<div id="modal-contest-start" class="modal fade" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">Contest started</h4>
+			</div>
+			<div class="modal-body">
+				<p>UNIQUE VISION Programming Contest 2023 Spring(AtCoder Beginner Contest 300) has begun.</p>
+			</div>
+			<div class="modal-footer">
+				
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				
+			</div>
+		</div>
+	</div>
+</div>
+<div id="modal-contest-end" class="modal fade" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">Contest is over</h4>
+			</div>
+			<div class="modal-body">
+				<p>UNIQUE VISION Programming Contest 2023 Spring(AtCoder Beginner Contest 300) has ended.</p>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="main-div" class="float-container">
+
+
+	<nav class="navbar navbar-inverse navbar-fixed-top">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false">
+					<span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="/home"></a>
+			</div>
+			<div class="collapse navbar-collapse" id="navbar-collapse">
+				<ul class="nav navbar-nav">
+				
+					<li><a class="contest-title" href="/contests/abc300">UNIQUE VISION Programming Contest 2023 Spring(AtCoder Beginner Contest 300)</a></li>
+				
+				</ul>
+				<ul class="nav navbar-nav navbar-right">
+					
+					<li class="dropdown">
+						<a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+							<img src='//img.atcoder.jp/assets/top/img/flag-lang/en.png'> English <span class="caret"></span>
+						</a>
+						<ul class="dropdown-menu">
+							<li><a href="/contests/abc300?lang=ja"><img src='//img.atcoder.jp/assets/top/img/flag-lang/ja.png'> 日本語</a></li>
+							<li><a href="/contests/abc300?lang=en"><img src='//img.atcoder.jp/assets/top/img/flag-lang/en.png'> English</a></li>
+						</ul>
+					</li>
+					
+					
+						<li><a href="/register?continue=https%3A%2F%2Fatcoder.jp%2Fcontests%2Fabc300%3Flang%3Den">Sign Up</a></li>
+						<li><a href="/login?continue=https%3A%2F%2Fatcoder.jp%2Fcontests%2Fabc300%3Flang%3Den">Sign In</a></li>
+					
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<form method="POST" name="form_logout" action="/logout?continue=https%3A%2F%2Fatcoder.jp%2Fcontests%2Fabc300%3Flang%3Den">
+		<input type="hidden" name="csrf_token" value="SCRUBBED" />
+	</form>
+	<div id="main-container" class="container"
+		 	style="padding-top:50px;">
+		
+
+
+<div class="row">
+	<div id="contest-nav-tabs" class="col-sm-12 mb-2 cnvtb-fixed">
+	<div>
+		<small class="contest-duration">
+			
+				Contest Duration:
+				<a href='http://www.timeanddate.com/worldclock/fixedtime.html?iso=20230429T2100&p1=248' target='blank'><time class='fixtime fixtime-full'>2023-04-29 21:00:00+0900</time></a> - <a href='http://www.timeanddate.com/worldclock/fixedtime.html?iso=20230429T2240&p1=248' target='blank'><time class='fixtime fixtime-full'>2023-04-29 22:40:00+0900</time></a> (local time)
+				(100 minutes)
+			
+		</small>
+		<small class="back-to-home pull-right"><a href="/home">Back to Home</a></small>
+	</div>
+	<ul class="nav nav-tabs">
+		<li class="active"><a href="/contests/abc300"><span class="glyphicon glyphicon-home" aria-hidden="true"></span> Top</a></li>
+		
+			<li><a href="/contests/abc300/tasks"><span class="glyphicon glyphicon-tasks" aria-hidden="true"></span> Tasks</a></li>
+		
+
+		
+			<li><a href="/contests/abc300/clarifications"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span> Clarifications <span id="clar-badge" class="badge" ></span></a></li>
+		
+
+		
+
+		
+			<li>
+				<a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Results<span class="caret"></span></a>
+				<ul class="dropdown-menu">
+					<li><a href="/contests/abc300/submissions"><span class="glyphicon glyphicon-globe" aria-hidden="true"></span> All Submissions</a></li>
+					
+				</ul>
+			</li>
+		
+
+		
+			
+				
+					<li><a href="/contests/abc300/standings"><span class="glyphicon glyphicon-sort-by-attributes-alt" aria-hidden="true"></span> Standings</a></li>
+				
+			
+				
+					<li><a href="/contests/abc300/standings/virtual"><span class="glyphicon glyphicon-sort-by-attributes-alt" aria-hidden="true"></span> Virtual Standings</a></li>
+				
+			
+		
+
+		
+
+		
+			<li><a href="/contests/abc300/editorial"><span class="glyphicon glyphicon-book" aria-hidden="true"></span> Editorial</a></li>
+		
+		
+			
+			
+		
+
+		<li class="pull-right"><a id="fix-cnvtb" href="javascript:void(0)"><span class="glyphicon glyphicon-pushpin" aria-hidden="true"></span></a></li>
+	</ul>
+</div>
+	<div class="col-sm-12">
+		
+		<div class="insert-participant-box">
+			<div class="mb-2"><h1 class="text-center">UNIQUE VISION Programming Contest 2023 Spring(AtCoder Beginner Contest 300)</h1></div>
+			
+			
+			
+				
+				
+				
+				
+				
+					
+				
+			
+				
+			
+			
+		</div>
+		<p class="small" style="color: #666;">
+			<span class="mr-2">Can Participate: All</span>
+			<span class="mr-2">Rated Range:  - 1999</span>
+			<span class="mr-2">Penalty: 5 minutes</span>
+			
+		</p>
+		
+
+
+		<div id="contest-statement"><span class="lang">
+  <span class="lang-ja">
+    <h3>コンテスト情報</h3>
+    <section>
+      <ul>
+        <li>コンテスト時間: 100 分</li>
+        <li>レーティング更新対象: 0 - <span class="user-blue">1999</span></li>
+      </ul>
+    </section>
+
+    <hr />
+
+<h3>ABC300におけるDDoS対策について</h3>
+<section><ul><li><a href="https://atcoder.jp/posts/1027" target="_blank" rel="noopener noreferrer">こちらのおしらせ</a>をご覧下さい。</li><li>問題文のpdfは<a href="https://img.atcoder.jp/abc300/tasks.pdf" target="_blank" rel="noopener noreferrer">こちら</a>です。</li></ul></section>
+
+<hr />
+    <h3>コンテスト概要</h3>
+    <section>
+      <p>
+        当コンテストは、<a
+          href="https://www.uniquevision.co.jp/"
+          target="_blank"
+          rel="noreferrer"
+          >ユニークビジョン株式会社</a
+        >が主催するプログラミングコンテストです。
+      </p>
+    </section>
+
+    <hr />
+
+    <h3>ユニークビジョン株式会社について</h3>
+    <h4>Belugaシリーズ</h4>
+    <section>
+      <p>
+        ユニークビジョンはSNSマーケティングツール「Belugaシリーズ」を開発しています。
+      </p>
+      <ul>
+        <a
+          href="https://www.uniquevision.co.jp/service/beluga/"
+          target="_blank"
+          rel="noreferrer"
+          >Beluga スタジオ</a
+        >
+        <ul>
+          <li>
+            Twitter/Facebook/Instagramのアカウントを一元管理できるツールとして、企業のSNS運用をサポートします。
+          </li>
+        </ul>
+      </ul>
+      <ul>
+        <a
+          href="https://www.uniquevision.co.jp/service/beluga-campaign/"
+          target="_blank"
+          rel="noreferrer"
+          >Beluga キャンペーン</a
+        >
+        <ul>
+          <li>
+            Twitter自動返信やインスタントウィンキャンペーンを提供。スピーディで品質の高いキャンペーンを実現します。
+          </li>
+        </ul>
+      </ul>
+      <ul>
+        <a
+          href="https://www.uniquevision.co.jp/service/beluga-chatbot/"
+          target="_blank"
+          rel="noreferrer"
+          >Beluga チャットボット</a
+        >
+        <ul>
+          <li>
+            TwitterのDM機能を用いたチャットボットの構築が可能。ユーザーと自動でメッセージの往復を行えます。
+          </li>
+        </ul>
+      </ul>
+      <p>上記以外にも、様々なBelugaシリーズ製品を開発・運用しています。</p>
+    </section>
+    <h4>導入事例</h4>
+    <section>
+      <p>
+        Belugaシリーズは2011年のリリース以来、大手企業を中心にのべ400社以上の企業に導入され、3000件以上の施策に利用していただいております。
+      </p>
+      <p>
+        以下、導入事例の一部です。その他の事例は<a
+          href="https://www.uniquevision.co.jp/case"
+          target="_blank"
+          rel="noreferrer"
+          >こちら</a
+        >よりご覧ください！
+      </p>
+      <ul>
+        <li>
+          <a
+            href="https://www.uniquevision.co.jp/case/belugacampaign-famichiki"
+            target="_blank"
+            rel="noreferrer"
+            >ファミリーマート：参加意欲を高める3つの工夫で『#やっぱりファミチキ』がトレンド1位を獲得</a
+          >
+        </li>
+        <li>
+          <a
+            href="https://www.uniquevision.co.jp/case/belugacampaign-bdff-squareenix"
+            target="_blank"
+            rel="noreferrer"
+            >スクウェア・エニックス：
+            新作ゲームの発売直前施策でAIを活用した診断キャンペーンを開催</a
+          >
+        </li>
+        <li>
+          <a
+            href="https://www.uniquevision.co.jp/case/belugachatbot-suntory-cclemongame"
+            target="_blank"
+            rel="noreferrer"
+            >サントリー：4月4日「CCレモンの日」制定記念！CCレモンゲームをTwitterチャットボットで実現</a
+          >
+        </li>
+        <li>
+          <a
+            href="https://www.uniquevision.co.jp/case/belugacampaign-cover-hololive5th"
+            target="_blank"
+            rel="noreferrer"
+            >ホロライブプロダクション：5周年の盛り上げに”推し”を診断する企画でTwitterトレンド入りを達成</a
+          >
+        </li>
+      </ul>
+      <img
+        style="width: 100%"
+        src="https://img.atcoder.jp/abc248/fe5ac201d15145eb993fd383d7a0f188.png"
+      />
+    </section>
+
+    <hr />
+
+    <h3>技術スタック</h3>
+    <section>
+      <h4>主要開発言語</h4>
+      <ul>
+        <li>Rust</li>
+      </ul>
+      <h4>開発言語</h4>
+      <ul>
+        <li>Ruby、PL/SQL、Python3、TypeScript</li>
+      </ul>
+      <h4>フレームワーク</h4>
+      <ul>
+        <li>
+          actix-web、Ruby on Rails、Android SDK、iOS
+          SDK、Node.js、Vue.js、Sinatra
+        </li>
+      </ul>
+      <h4>データベース</h4>
+      <ul>
+        <li>PostgreSQL、DynamoDB</li>
+      </ul>
+      <h4>環境</h4>
+      <ul>
+        <li>
+          nginx、Redis、Linux、Amazon Web Service、Google Cloud
+          Platform、BigQuery
+        </li>
+      </ul>
+      <h4>プロジェクト管理</h4>
+      <ul>
+        <li>Git</li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <h3>ユニークビジョンがAtCoderユーザーを必要としている理由</h3>
+    <section>
+      <p>
+        ユニークビジョンは日本で7社の<a
+          href="https://www.uniquevision.co.jp/news/jA4rEc8dRvg5Y0YlU8rFb"
+          target="_blank"
+          rel="noreferrer"
+          >Twitterマーケティングパートナー</a
+        >、日本で4社の<a
+          href="https://www.uniquevision.co.jp/news/4hrLqcEoYS9BUCpdh2YK5t"
+          target="_blank"
+          rel="noreferrer"
+          >LINE OMOテクノロジーパートナー</a
+        >です。2023年4月現在、1社単独でTwitter社・LINE社とのパートナー契約を結んでいる会社は日本でユニークビジョンのみとなっております（グループでは博報堂グループ・電通グループ・ユニークビジョンのみ）。
+      </p>
+      <p>
+        お客様もナショナルクライアントを中心とする大手企業が多く、一つ一つの案件の難易度も高くなっていっています。大手企業が実施する案件はマーケティング予算も豊富で参加者数が増えるため、高負荷案件が多くなります。また、日本でトップレベルのブランドを預かって案件を進めるため、高い安全性は不可欠です。その中でも私たちは業界の最先端を走り続けているため、先駆者のいない初めて出会う仕様の連続で、常に新しい挑戦を続けています。
+      </p>
+      <p>
+        一方でエンジニアチームについては、少数の優秀なメンバーで構成されることが望ましいと考えています。ただ数だけが多くても成果はでないため、ユニークビジョンでも各プロジェクト数名〜多くても10名程度で構成しています。こうした高難易度案件を少数精鋭で数多く実施していくため、新しい技術へのキャッチアップを続け、技術的な選択肢を増やしていっています。
+      </p>
+      <p>私たちは、技術でマーケティングを変えていきます。</p>
+      <p>
+        このコンテスト開催を通じて技術が好きなAtCoderユーザーの皆様にユニークビジョンを知っていただき、是非とも一緒に技術で世の中を変えていく仲間となっていただけたらと思います。求人情報に関しては、<a
+          href="https://jobs.atcoder.jp/offers/list?f.CompanyScreenName=uniquevision"
+          target="_blank"
+          rel="noreferrer"
+          >AtCoderJobs</a
+        >よりご確認ください。
+      </p>
+      <p>なお、今年は7月・10月・12月にもコンテストを開催予定です！</p>
+    </section>
+    <img
+      style="width: 100%"
+      src="https://img.atcoder.jp/abc248/c0168b9efccfbbb00a62ac76997a95ae.png"
+    />
+    <h3>ユニークビジョンで活かせるAtCoderの経験</h3>
+    <section>
+      <p>
+        ユニークビジョンのサービスは<a
+          href="https://www.uniquevision.co.jp/case/belugacampaign-famichiki"
+          target="_blank"
+          rel="noreferrer"
+          >ファミリーマート様</a
+        >、<a
+          href="https://www.uniquevision.co.jp/case/belugacampaign-bdff-squareenix"
+          target="_blank"
+          rel="noreferrer"
+          >スクウェア・エニックス様</a
+        >、<a
+          href="https://www.uniquevision.co.jp/case/belugachatbot-suntory-cclemongame"
+          target="_blank"
+          rel="noreferrer"
+          >サントリー様</a
+        >など日本でもトップレベルの企業さまにTwitter/LINE施策の一環で使っていただくことが多いため、ユニークビジョンの社名をご存知でなくても実際にユニークビジョンのシステムを使用したSNSキャンペーンを見かけたことがある方・参加されたことがある方は少なくないと思います。
+      </p>
+      <p>
+        SNSは情報の展開が早く影響力の高いメディアであるため、こうした大手企業がSNSで実施するキャンペーンは品質やスピードの面でシビアなものがほとんどで、高負荷・高難易度案件が多く存在しています。その中でも即時性を求められるケースや大規模データを扱う際などで、アルゴリズムの知見を活用していただけます。
+      </p>
+      <p>
+        ただ、直接的なアルゴリズムの能力のみを求められる業務はほぼありません。様々な技術領域を組み合わせて、全社を挙げてより良いサービスを作り上げていく中での1つの強みとしていただけたらと思います。特に競技プログラミングに取り組む中で培われた、<b>決められた時間内でいかに問題を解決していくか</b>という能力は幅広い業務に活かしていただけます。
+      </p>
+      <p>
+        他にも計算量やコーナーケースへの意識、問題解決のための選択肢の多さ、得意な言語を何かしらお持ちであることなど、競技プログラミングを通じて実業務で強みとなる要素は数多くあります。競技プログラミングでのご経験を活かし、ユニークビジョンで活躍していただけたら嬉しいです！<br>
+        （ユニークビジョンには<font color="#C0C000">黄色コーダー2名</font>、<font color="#0000FF">青色コーダー3名</font>、<font color="#00C0C0">水色コーダー2名</font>、<font color="#008000">緑色コーダー1名</font>、その他数名が在籍しています）
+      </p>
+    </section>
+
+    <hr />
+
+    <h3>社内AtCoderユーザーからのメッセージ</h3>
+    <section>
+      <p>
+        ユニークビジョンでは担当業務に関わらずスピード感を持った開発と高いパフォーマンスや可用性が求められており、その実現のためにエンジニア主導で新しい技術の導入や開発体験を高めるための改善の検討を行うなど、改善意欲のあるエンジニアが力を発揮しやすい職場となっています。
+      </p>
+      <p>
+        また、主要サービスであるBelugaキャンペーンは柔軟で表現能力が高く未知のキャンペーンでも多くの場合追加開発なしで行うことが出来るようになっています。一方で、その柔軟さ故に案件実現の可否を判断するためには深い業務知識と問題の本質を見抜く能力、パフォーマンス的に問題が無いかを判断する計算量などの知識が必要で簡単ではありません。こういった業務は通常のWebアプリケーション開発にはない面白さがあり、競技プログラミングで培った知識や思考力を活かしていただけるのではないかと期待しています。
+      </p>
+      <p>
+        向上心の高いエンジニアが多く、競技プログラミングをはじめ様々な技術分野について社内で議論することが出来ます。少しでもご興味を持たれた方は是非、オフィスツアーや弊社主催の勉強会に参加してみてください！
+      </p>
+    </section>
+
+    <hr />
+
+    <h3>懇親会</h3>
+    <section>
+      <p>
+        本コンテスト参加者のみを対象とした懇親会をオフィスにて開催予定でございましたが、攻撃を受け予期せぬ事態となった場合にはご案内に混乱を招く恐れもあり、今回は開催を見送らせていただく運びとなりました。<br>
+        ユニークビジョンは今年も複数回のコンテストを開催予定となっておりますので、懸念なくコンテストを楽しんでいただける機会に、また改めて開催のご案内が出来ましたら幸いです。
+      </p>
+    </section>
+
+    <hr />
+
+    <h3>配点</h3>
+    <section>
+      <div class="row">
+        <div class="span4">
+          <table class="table table-responsible table-striped table-bordered">
+            <thead>
+              <tr>
+                <th style="text-align: center">問題</th>
+                <th style="text-align: center">点数</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="text-align: center">A</td>
+                <td style="text-align: center">100</td>
+              </tr>
+              <tr>
+                <td style="text-align: center">B</td>
+                <td style="text-align: center">200</td>
+              </tr>
+              <tr>
+                <td style="text-align: center">C</td>
+                <td style="text-align: center">300</td>
+              </tr>
+              <tr>
+                <td style="text-align: center">D</td>
+                <td style="text-align: center">400</td>
+              </tr>
+              <tr>
+                <td style="text-align: center">E</td>
+                <td style="text-align: center">500</td>
+              </tr>
+              <tr>
+                <td style="text-align: center">F</td>
+                <td style="text-align: center">500</td>
+              </tr>
+              <tr>
+                <td style="text-align: center">G</td>
+                <td style="text-align: center">600</td>
+              </tr>
+              <tr>
+                <td style="text-align: center">Ex</td>
+                <td style="text-align: center">600</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <hr />
+
+    <h3>賞品</h3>
+    <section>
+      <p>
+        順位（全体の順位ではなく、条件を満たした方から構成される順位）
+        により総合優秀賞、学生賞の賞品（Amazon
+        ギフトカード）を用意しております。未成年の参加者は、賞品の受け取りについて保護者の同意を得てください。
+      </p>
+      <h4>総合優秀賞</h4>
+      <div class="row">
+        <div class="span4">
+          <table class="table table-responsible table-striped table-bordered">
+            <thead>
+              <tr>
+                <th style="text-align: center">総合優秀賞</th>
+                <th style="text-align: center">金額</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="text-align: center">総合1位</td>
+                <td style="text-align: center">50,000円</td>
+              </tr>
+              <tr>
+                <td style="text-align: center">総合2位</td>
+                <td style="text-align: center">40,000円</td>
+              </tr>
+              <tr>
+                <td style="text-align: center">総合3位</td>
+                <td style="text-align: center">30,000円</td>
+              </tr>
+              <tr>
+                <td style="text-align: center">総合4位</td>
+                <td style="text-align: center">20,000円</td>
+              </tr>
+              <tr>
+                <td style="text-align: center">総合5位</td>
+                <td style="text-align: center">10,000円</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <h4>学生賞</h4>
+      <div class="row">
+        <div class="span4">
+          <table class="table table-responsible table-striped table-bordered">
+            <thead>
+              <tr>
+                <th style="text-align: center">学生賞</th>
+                <th style="text-align: center">金額</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="text-align: center">学生1位</td>
+                <td style="text-align: center">30,000円</td>
+              </tr>
+              <tr>
+                <td style="text-align: center">学生2位</td>
+                <td style="text-align: center">25,000円</td>
+              </tr>
+              <tr>
+                <td style="text-align: center">学生3位</td>
+                <td style="text-align: center">20,000円</td>
+              </tr>
+              <tr>
+                <td style="text-align: center">学生4位</td>
+                <td style="text-align: center">15,000円</td>
+              </tr>
+              <tr>
+                <td style="text-align: center">学生5位</td>
+                <td style="text-align: center">10,000円</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <h3>ユニークビジョン賞</h3>
+    <section>
+        <p>
+            本コンテストでは、ユニークビジョンのサービスである<a
+              href="https://www.uniquevision.co.jp/service/beluga-campaign/"
+              target="_blank"
+              rel="noreferrer"
+              >Belugaキャンペーン</a
+            >の「カスタムストーリー」機能を用いてユニークビジョン賞を決定します！<br />
+            2023/5/11(木)～5/15(月)の期間中、ユニークビジョン技術Twitterアカウント（<a
+              href="https://twitter.com/uv_technology"
+              target="_blank"
+              rel="noreferrer"
+              >@uv_technology</a
+            >）からキャンペーンに参加していただいた方の中から、<br />
+            Wチャンスも含めて合計50名に1000円分のAmazonギフトカードを贈呈します。
+          </p>
+          <p>
+            キャンペーン対象となる投稿は、2023/5/11(木)11:00に<a
+              href="https://twitter.com/uv_technology"
+              target="_blank"
+              rel="noreferrer"
+              >@uv_technology</a
+            >よりツイートいたします。<br />
+            是非、アカウントをフォローしてお待ちください！
+          </p>
+          <img
+            style="width: 100%"
+            src="https://img.atcoder.jp/abc283/f87431c5cca83ecad57d6da9d3be5d7f.png"
+          />
+          <h4>【キャンペーン参加方法】</h4>
+          <ol>
+            <li>
+              ユニークビジョン技術Twitterアカウント（<a
+                href="https://twitter.com/uv_technology"
+                target="_blank"
+                rel="noreferrer"
+                >@uv_technology</a
+              >）をフォロー
+            </li>
+            <li>キャンペーンツイートから問題に挑戦（全3問）</li>
+            <li>成績をツイート</li>
+            <li>その場で結果が分かる！（当選：40名）</li>
+              <ul class="unique-list">
+                <li>
+                    ハズレの場合にはリプライ、当たりの場合にはDMでご連絡します
+                </li>
+              </ul>
+            <li>さらに、全問正解の方ではずれた方の中からWチャンス！（当選:10名）</li>
+              <ul class="unique-list">
+                <li>
+                    キャンペーン終了後一週間以内に、当選者のみにDMでご連絡します
+                </li>
+            </ul>
+          </ol>
+    
+          <h4>【キャンペーン開催期間】</h4>
+          <p>2023/5/11(木)11:00～5/15(月)10:59</p>
+    
+          <h4>【ユニークビジョン賞キャンペーンにおける注意事項】</h4>
+          <p>参加・当選</p>
+          <ul>
+            <li>
+              問題に参加される際、ページを閉じる、もしくはリロードした場合、最初の問題からやり直しとなります。
+            </li>
+            <li>
+              広告をブロックするアプリやサービスなどをご利用の場合には問題が正常にお楽しみいただけない可能性があるため、成績のツイートが完了するまで該当機能の停止・解除をお願い致します。
+            </li>
+            <li>
+              ユニークビジョン技術Twitterアカウントから応募者のアカウントへ自動で抽選結果をお送りします。落選の場合にはリプライにてご連絡を行い、当選の場合にはダイレクトメッセージにて当選のご連絡と賞品に関するご案内をさせていただきます。
+            </li>
+            <li>
+              本キャンペーンはサンプルキャンペーンとなりますため、API制限がかかっております。リプライ上限が2,400件/1日となりますため、参加者が上限を超えた場合には翌日以降のリプライ・DM送信となりますのでご了承ください。
+            </li>
+            <li>
+              Wチャンスの結果は、キャンペーン終了後一週間以内に、当選者のみにダイレクトメッセージにて当選のご連絡と賞品に関するご案内をさせていただきます。
+            </li>
+          </ul>
+    
+          <p>参加対象</p>
+          <ul>
+            <li>
+              本コンテストにご参加いただく際の参加登録情報に<b>ユーザー名を入力していただいたTwitterアカウント</b>が、本キャンペーンの参加対象となります。
+            </li>
+            <li>
+              ユニークビジョン技術Twitterアカウントをフォローされていない場合、DMを送信できないため、他の参加条件を満たしていた場合にも自動的に落選となります。<b>キャンペーンにご参加いただく際には、ユニークビジョン技術Twitterアカウントのフォローは外さない</b>ようにお願いいたします。
+            </li>
+            <li>
+              本コンテストの参加登録時に<b>Twitterユーザー名を入力されていない方、誤った入力をされている方、情報提供同意のチェックを外されている方、本コンテスト参加時のレーティングが0の方は、キャンペーン参加対象外</b>となります。参加対象外のアカウントで本キャンペーンに参加された場合には、<b>一切のリプライ及びDMの送信を行っておりません</b>のでご了承ください。
+              <ul class="unique-list">
+                <li>
+                    過去のキャンペーンでは、情報提供同意のチェックやTwitterユーザー名入力の間違いから、誤って参加対象外となっているケースもございます。<b>コンテスト終了後の変更は反映できかねます</b>ため、キャンペーン参加をご希望の方はコンテスト開始までに参加登録情報をご確認ください。
+                </li>
+              </ul>
+            </li>
+            <li>
+              参加対象のアカウントで複数回成績をツイートされた場合でも、リプライおよび抽選は最初の一度のみとなります。二度目以降は落選のリプライも行っておりません。
+            </li>
+            <li>
+              ご自身で一度投稿したツイートや、他の方のツイートからコピーするなどして投稿された場合には、不正参加とみなされるため抽選結果はお送りしておりません。
+            </li>
+            <li>
+              Twitterアカウントを非公開（鍵付き）にしている場合、リツイートを確認できないため本キャンペーンにはご参加いただけません。
+            </li>
+            <li>
+              Twitterアカウントが、新規作成したばかり、利用頻度が少ない、Twitterルールに反している等とTwitterAPIが判断した場合には、リプライをお送りできない場合がございます。
+            </li>
+            <li>
+                Wチャンスに当選されていても、DMをお送りする時点でフォローを外されていた場合にはご連絡が出来かねるため、当選は無効とさせていただきます。
+            </li>
+          </ul>
+    
+          <p>その他</p>
+          <ul>
+            <li>Twitterユーザー名から他のデータを抽出することはありません。</li>
+            <li>
+              Twitterユーザー名は今回のキャンペーンのリプライ・当選者DM送信のみに使用し、採用等の本キャンペーン以外を目的としたご連絡には一切使用いたしません。
+            </li>
+            <li>
+              インターネットの通信料・接続料はお客様の負担となります。通信の際の接続トラブルについては責任を負いかねます。
+            </li>
+            <li>
+              本キャンペーンは、やむを得ない事情により中止または内容が変更になる場合がございますので、あらかじめご了承ください。
+            </li>
+            <li>
+              <b>DDoS攻撃によって unrated になった場合は、賞品の送付をしないため本キャンペーンも中止となります。</b>
+            </li>
+          </ul>
+    </section>
+
+    <hr />
+
+    <h3>注意事項</h3>
+    <section>
+      <ul class="unique-list">
+        <li>少なくとも1問以上の正解が必要です。</li>
+        <li>
+          総合優秀賞・学生賞について
+          <ul class="unique-list">
+            <li>該当順位が複数名いる場合は抽選とさせていただきます。</li>
+            <li>
+              賞品は日本国内に在住の方のみに、Amazonギフトカードにてお送りいたします。
+            </li>
+            <li>
+              賞品対象者の方には参加時にご登録いただいたメールアドレスに詳細をご連絡させて頂きます｡なお必要事項をご提供頂けない場合は賞品対象外とさせて頂きます。
+            </li>
+            <li>
+              賞品の受け取り方法などについては、コンテスト終了後に受賞された方へメールにてご連絡させていただきます。運営事務局が提示させていただく期限内に必要事項をご返信いただけない場合はお送りできかねますので、ご注意ください。
+            </li>
+            <li>
+              何らかの理由により賞品配送が完了しなかった場合、ご登録いただいたメールアドレスにご連絡させて頂きます。2週間以内にご返信がない場合は賞品対象外となります。
+            </li>
+            <li>
+              賞品対象者が対象外となった場合には、賞品対象者に次ぐ順位以下の方を、順番に繰り上げて贈呈します。
+            </li>
+          </ul>
+        </li>
+        <li>
+          大学生および大学院生の方には、弊社の新卒採用イベント等のご案内をさせていただくことがございます。
+        </li>
+        <li>
+          社会人の方には、弊社のキャリア採用イベント等のご案内をさせていただくことがございます。
+        </li>
+        <li>
+<span style="color:red">DDoS攻撃によって unrated になった場合は、賞品を送付しないこととします。</span>
+        </li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <h3>ルール</h3>
+    <section>
+      <ol>
+        <li>コンテスト中に問題に正解すると点数を獲得できます。</li>
+        <li>順位は総合得点で決定します。</li>
+        <li>同点の場合は提出時間の早い人が上の順位になります。</li>
+        <li>
+          誤答を提出するたびにペナルティが加算されます。このコンテストのペナルティは5分です。詳細は画面下部の「ルール」をご覧ください。
+        </li>
+      </ol>
+      <p style="margin-left: 20px">
+        このコンテストは full-feedback
+        形式のコンテストです。コンテスト中に提出された結果だけで順位が決定します。
+      </p>
+    </section>
+
+    <h3>便利情報</h3>
+    <ul>
+      <li><a href="https://atcoder.jp/">トップページ</a></li>
+      <li><a href="https://atcoder.jp/post/37">参加方法</a></li>
+      <li>
+        <a href="https://atcoder.jp/contests/practice">提出の練習ページ</a>
+      </li>
+    </ul>
+  </span>
+
+  <span class="lang-en">
+    <h3>Contest Information</h3>
+
+    <ul>
+      <li>Duration: 100 minutes</li>
+      <li>Rated Range: 0 - <span class="user-blue">1999</span></li>
+    </ul>
+    
+    <h3>About DDoS measures in ABC300</h3>
+<section><ul><li><a href="https://atcoder.jp/posts/1028" target="_blank" rel="noopener noreferrer">Please see this notice</a>.</li><li>A pdf of the problem statement will be distributed <a href="https://img.atcoder.jp/abc300/tasks.pdf" target="_blank" rel="noopener noreferrer">here</a>.
+</li></ul></section>
+
+    <h3>Point Values</h3>
+
+    <div class="row">
+      <div class="span4">
+        <table class="table table-responsible table-striped table-bordered">
+          <thead>
+            <tr>
+              <th style="text-align: center">Task</th>
+              <th style="text-align: center">Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="text-align: center">A</td>
+              <td style="text-align: center">100</td>
+            </tr>
+            <tr>
+              <td style="text-align: center">B</td>
+              <td style="text-align: center">200</td>
+            </tr>
+            <tr>
+              <td style="text-align: center">C</td>
+              <td style="text-align: center">300</td>
+            </tr>
+            <tr>
+              <td style="text-align: center">D</td>
+              <td style="text-align: center">400</td>
+            </tr>
+            <tr>
+              <td style="text-align: center">E</td>
+              <td style="text-align: center">500</td>
+            </tr>
+            <tr>
+              <td style="text-align: center">F</td>
+              <td style="text-align: center">500</td>
+            </tr>
+            <tr>
+              <td style="text-align: center">G</td>
+              <td style="text-align: center">600</td>
+            </tr>
+            <tr>
+              <td style="text-align: center">Ex</td>
+              <td style="text-align: center">600</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <h3>Contest Rules</h3>
+    This contest is full-feedback (solutions are judged during the contest).
+    <br />
+    When you solve a problem, you get a score assigned to it. Competitors are
+    ranked first by total scores, then by penalties. The penalties are computed
+    as (the time you spend to get your current score) + (5 minutes) * (the
+    number of incorrect attempts).
+    <br />
+
+    <h3>Useful Links</h3>
+    <ul>
+      <li><a href="https://atcoder.jp/">AtCoder top page</a></li>
+      <li><a href="https://atcoder.jp/post/2">How to participate</a></li>
+      <li>
+        <a href="https://atcoder.jp/contests/practice">Practice contest</a>
+      </li>
+    </ul>
+  </span>
+</span>
+</div>
+		<script>
+			$('iframe').each(function() {
+				if ($(this).hasClass('no-responsive') || $(this).hasClass('embed-responsive-item')) return;
+				$(this).addClass('embed-responsive-item').wrap('<div class="embed-responsive embed-responsive-16by9"></div>');
+			});
+		</script>
+		
+		
+		
+	</div>
+</div>
+
+
+
+
+		
+			<hr>
+			
+			
+			
+<div class="a2a_kit a2a_kit_size_20 a2a_default_style pull-right" data-a2a-url="https://atcoder.jp/contests/abc300?lang=en" data-a2a-title="UNIQUE VISION Programming Contest 2023 Spring(AtCoder Beginner Contest 300) - AtCoder">
+	<a class="a2a_button_facebook"></a>
+	<a class="a2a_button_twitter"></a>
+	
+		<a class="a2a_button_telegram"></a>
+	
+	<a class="a2a_dd" href="https://www.addtoany.com/share"></a>
+</div>
+
+		
+		<script async src="//static.addtoany.com/menu/page.js"></script>
+		
+	</div> 
+	<hr>
+</div> 
+
+	<div class="container" style="margin-bottom: 80px;">
+			<footer class="footer">
+			
+				<ul>
+					<li><a href="/contests/abc300/rules">Rule</a></li>
+					<li><a href="/contests/abc300/glossary">Glossary</a></li>
+					
+				</ul>
+			
+			<ul>
+				<li><a href="/tos">Terms of Use</a></li>
+				<li><a href="/privacy">Privacy Policy</a></li>
+				<li><a href="/personal">Information Protection Policy</a></li>
+				<li><a href="/company">Company</a></li>
+				<li><a href="/faq">FAQ</a></li>
+				<li><a href="/contact">Contact</a></li>
+				
+			</ul>
+			<div class="text-center">
+					<small id="copyright">Copyright Since 2012 &copy;<a href="http://atcoder.co.jp">AtCoder Inc.</a> All rights reserved.</small>
+			</div>
+			</footer>
+	</div>
+	<p id="fixed-server-timer" class="contest-timer"></p>
+	<div id="scroll-page-top" style="display:none;"><span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span> Page Top</div>
+
+</body>
+</html>
+
+
