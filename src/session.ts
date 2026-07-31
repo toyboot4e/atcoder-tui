@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { configFilePath } from "./config.js";
+import { configFilePath, updateConfigField } from "./config.js";
 
 export interface SessionCandidate {
   /** Human-readable origin, e.g. "oj (~/.local/share/…/cookie.jar)". */
@@ -57,18 +57,9 @@ export function findSessionCandidates(home: string = os.homedir()): SessionCandi
   return candidates;
 }
 
-/** Writes revelSession into the config file, preserving other fields. */
+/** Writes revelSession into the config file, preserving comments and fields. */
 export function saveSession(value: string, filePath: string = configFilePath()): string {
-  let config: Record<string, unknown> = {};
-  try {
-    const parsed: unknown = JSON.parse(fs.readFileSync(filePath, "utf8"));
-    if (typeof parsed === "object" && parsed !== null) config = parsed as Record<string, unknown>;
-  } catch {
-    // missing or corrupt — start fresh
-  }
-  config["revelSession"] = value;
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, JSON.stringify(config, null, 2) + "\n");
+  updateConfigField("revelSession", value, filePath);
   return filePath;
 }
 

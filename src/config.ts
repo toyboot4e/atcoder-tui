@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { applyEdits, modify, parse as parseJsonc, type ParseError } from "jsonc-parser";
 import { configDir } from "./platform.js";
 
 export type Language = "en" | "ja";
@@ -32,8 +33,16 @@ export interface LoadedConfig {
   path: string;
 }
 
+/**
+ * The config is JSONC (comments and trailing commas welcome). An existing
+ * plain config.json keeps working; new installs get config.jsonc.
+ */
 export function configFilePath(): string {
-  return path.join(configDir(), "config.json");
+  const jsonc = path.join(configDir(), "config.jsonc");
+  if (fs.existsSync(jsonc)) return jsonc;
+  const json = path.join(configDir(), "config.json");
+  if (fs.existsSync(json)) return json;
+  return jsonc;
 }
 
 export function loadConfig(filePath: string = configFilePath()): LoadedConfig {
@@ -47,12 +56,11 @@ export function loadConfig(filePath: string = configFilePath()): LoadedConfig {
     return { config, warnings, path: filePath };
   }
 
-  let data: unknown;
-  try {
-    data = JSON.parse(raw);
-  } catch {
-    warnings.push(`config: invalid JSON in ${filePath}, using defaults`);
-    return { config, warnings, path: filePath };
+  const errors: ParseError[] = [];
+  const data: unknown = parseJsonc(raw, errors, { allowTrailingComma: true });
+  if (errors.length > 0) {
+    // jsonc-parser recovers what it can; say so rather than failing silently.
+    warnings.push(`config: ${errors.length} syntax issue(s) in ${filePath}`);
   }
   if (typeof data !== "object" || data === null) {
     warnings.push(`config: expected an object in ${filePath}, using defaults`);
@@ -87,16 +95,30 @@ export function loadConfig(filePath: string = configFilePath()): LoadedConfig {
   return { config, warnings, path: filePath };
 }
 
-/** Persists the favorites list into the config file, preserving other fields. */
-export function saveFavorites(favorites: string[], filePath: string = configFilePath()): void {
-  let raw: Record<string, unknown> = {};
+/**
+ * Surgically updates one top-level config field, preserving the user's
+ * comments and formatting (the file is theirs; the app is only a guest).
+ */
+export function updateConfigField(
+  key: string,
+  value: unknown,
+  filePath: string = configFilePath(),
+): void {
+  let raw = "";
   try {
-    const parsed: unknown = JSON.parse(fs.readFileSync(filePath, "utf8"));
-    if (typeof parsed === "object" && parsed !== null) raw = parsed as Record<string, unknown>;
+    raw = fs.readFileSync(filePath, "utf8");
   } catch {
-    // missing or corrupt — start fresh
+    raw = "{}\n";
   }
-  raw["favorites"] = favorites;
+  if (raw.trim() === "") raw = "{}\n";
+  const edits = modify(raw, [key], value, {
+    formattingOptions: { insertSpaces: true, tabSize: 2 },
+  });
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, JSON.stringify(raw, null, 2) + "\n");
+  fs.writeFileSync(filePath, applyEdits(raw, edits));
+}
+
+/** Persists the manual favorites list, preserving comments and fields. */
+export function saveFavorites(favorites: string[], filePath: string = configFilePath()): void {
+  updateConfigField("favorites", favorites, filePath);
 }

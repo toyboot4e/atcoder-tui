@@ -78,3 +78,29 @@ test("saveFavorites persists and preserves other fields", () => {
   });
   expect(loadConfig(file).config.favorites).toEqual(["rival"]);
 });
+
+test("jsonc: comments and trailing commas are welcome", () => {
+  const file = tempConfig(`{
+  // my rivals live here
+  "userId": "example_user",
+  "favorites": ["rival_a", "rival_b"], // trailing comma next line is fine too
+  "language": "ja",
+}`);
+  const { config, warnings } = loadConfig(file);
+  expect(config.userId).toBe("example_user");
+  expect(config.favorites).toEqual(["rival_a", "rival_b"]);
+  expect(config.language).toBe("ja");
+  expect(warnings).toEqual([]);
+});
+
+test("writes preserve comments and formatting", () => {
+  const file = tempConfig(`{
+  // session lives below
+  "userId": "example_user",
+}`);
+  saveFavorites(["rival"], file);
+  const text = fs.readFileSync(file, "utf8");
+  expect(text).toContain("// session lives below");
+  expect(loadConfig(file).config.favorites).toEqual(["rival"]);
+  expect(loadConfig(file).config.userId).toBe("example_user");
+});

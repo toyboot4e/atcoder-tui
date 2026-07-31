@@ -10,14 +10,13 @@ nix run github:toyboot4e/atcoder-tui
 
 ** Configuration
 
-Check =~/.config/atcoder-tui/config.json= (Windows: =%APPDATA%\atcoder-tui\=):
+Check =~/.config/atcoder-tui/config.jsonc= (Windows: =%APPDATA%\atcoder-tui\=;
+comments and trailing commas are allowed):
 
 #+BEGIN_SRC json
 {
   "userId": "your_atcoder_id",
-  "language": "en",
-  "revelSession": "<REVEL_SESSION cookie value>",
-  "favorites": ["rival_1", "rival_2"]
+  "language": "en"
 }
 #+END_SRC
 
