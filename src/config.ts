@@ -14,12 +14,15 @@ export interface Config {
   cache: boolean;
   /** Rolling-window request budget toward atcoder.jp. */
   requestsPerMinute: number;
+  /** User ids highlighted/filterable in the ranking tab (f toggles). */
+  favorites: string[];
 }
 
 export const DEFAULT_CONFIG: Config = {
   language: "en",
   cache: true,
   requestsPerMinute: 20,
+  favorites: [],
 };
 
 export interface LoadedConfig {
@@ -67,6 +70,11 @@ export function loadConfig(filePath: string = configFilePath()): LoadedConfig {
   }
   if (typeof obj["revelSession"] === "string" && obj["revelSession"] !== "") {
     config.revelSession = obj["revelSession"];
+  }
+  if (Array.isArray(obj["favorites"])) {
+    config.favorites = obj["favorites"].filter(
+      (name): name is string => typeof name === "string" && name !== "",
+    );
   }
   if (typeof obj["cache"] === "boolean") {
     config.cache = obj["cache"];

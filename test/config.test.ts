@@ -35,6 +35,7 @@ describe("loadConfig", () => {
       revelSession: "abc123",
       cache: false,
       requestsPerMinute: 10,
+      favorites: [],
     });
     expect(warnings).toEqual([]);
   });
@@ -58,4 +59,11 @@ describe("loadConfig", () => {
     const { config } = loadConfig(tempConfig(JSON.stringify({ requestsPerMinute: 100000 })));
     expect(config.requestsPerMinute).toBe(30);
   });
+});
+
+test("favorites keeps only non-empty strings", () => {
+  const { config } = loadConfig(
+    tempConfig(JSON.stringify({ favorites: ["rival", "", 42, "friend"] })),
+  );
+  expect(config.favorites).toEqual(["rival", "friend"]);
 });

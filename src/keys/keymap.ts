@@ -115,6 +115,12 @@ export const KEYMAP: KeyBinding[] = [
     ja: "問題文を1行スクロール",
   },
   {
+    keys: "f (ranking)",
+    context: "contest",
+    en: "toggle favorites-only standings (config: favorites)",
+    ja: "お気に入りユーザーのみ表示（config の favorites）",
+  },
+  {
     keys: "enter (submissions)",
     context: "contest",
     en: "open submission source",

@@ -17,6 +17,7 @@ Check =~/.config/atcoder-tui/config.json= (Windows: =%APPDATA%\atcoder-tui\=):
   "userId": "your_atcoder_id",
   "language": "en",
   "revelSession": "<REVEL_SESSION cookie value>",
+  "favorites": ["rival_1", "rival_2"]
 }
 #+END_SRC
 

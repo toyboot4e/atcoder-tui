@@ -14,6 +14,8 @@ const ACTIVE_STANDINGS_TTL_MS = 2 * 60 * 1000;
 
 // Cursor per contest, consistent with the rest of the modeless UI.
 const rememberedCursor = new Map<string, number>();
+// f toggles favorites-only; sticky across panes for the session.
+let favoritesOnly = false;
 
 export function RankingPane({
   contestId,
@@ -50,13 +52,23 @@ export function RankingPane({
     };
   });
 
-  const rowCount = state.status === "ready" ? state.data.rows.length : 0;
+  const [favOnly, setFavOnly] = useState(favoritesOnly);
+  const favorites = useMemo(
+    () => new Set([...config.favorites, ...(config.userId !== undefined ? [config.userId] : [])]),
+    [config.favorites, config.userId],
+  );
+  const visibleRows = useMemo(() => {
+    if (state.status !== "ready") return [];
+    if (!favOnly) return state.data.rows;
+    return state.data.rows.filter((row) => favorites.has(row.user));
+  }, [state, favOnly, favorites]);
+
+  const rowCount = visibleRows.length;
   const clampedCursor = Math.max(0, Math.min(rowCount - 1, cursor));
 
   const lines = useMemo(() => {
-    if (state.status !== "ready") return [];
     const out: string[] = [];
-    for (const row of state.data.rows) {
+    for (const row of visibleRows) {
       const color = ratingColor(row.rating);
       const user = row.user.length > 18 ? `${row.user.slice(0, 17)}…` : row.user.padEnd(18);
       const styledUser = color !== null ? chalk.hex(color)(user) : user;
@@ -71,7 +83,7 @@ export function RankingPane({
       );
     }
     return out;
-  }, [state, config.userId, width, clampedCursor]);
+  }, [visibleRows, config.userId, width, clampedCursor]);
 
   const me =
     state.status === "ready" && config.userId !== undefined
@@ -85,7 +97,7 @@ export function RankingPane({
   const centered = useRef(false);
   useEffect(() => {
     if (centered.current || state.status !== "ready" || config.userId === undefined) return;
-    const index = state.data.rows.findIndex((r) => r.user === config.userId);
+    const index = visibleRows.findIndex((r) => r.user === config.userId);
     if (index >= 0) setCursor(index);
     centered.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -106,6 +118,11 @@ export function RankingPane({
   useInput(
     (input) => {
       if (input === "r") refresh();
+      else if (input === "f") {
+        favoritesOnly = !favOnly;
+        setFavOnly(!favOnly);
+        setCursor(0);
+      }
     },
     { isActive: active },
   );
@@ -125,6 +142,11 @@ export function RankingPane({
         <Text bold dimColor wrap="truncate">
           {`  rank  ${"user".padEnd(18)}  score pen     time`}
           {me !== undefined ? `   —   ${language === "ja" ? "自分" : "you"}: #${me.rank}` : ""}
+          {favOnly
+            ? chalk.cyan(
+                `  [${language === "ja" ? "お気に入りのみ" : "favorites only"} (${rowCount})]  f ${language === "ja" ? "解除" : "off"}`,
+              )
+            : ""}
           {state.stale ? chalk.yellow(`  [${t("stale", language)}]`) : ""}
         </Text>
       )}
