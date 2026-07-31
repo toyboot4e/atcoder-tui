@@ -3,7 +3,8 @@ import type { Language } from "../config.js";
 
 export type Route =
   | { screen: "dashboard" }
-  | { screen: "contest"; contestId: string; startsAt: number | null; endsAt: number | null };
+  | { screen: "contest"; contestId: string; startsAt: number | null; endsAt: number | null }
+  | { screen: "submission"; contestId: string; submissionId: string };
 
 export interface AppState {
   /** Navigation stack; the last entry is the visible screen. */
@@ -35,9 +36,17 @@ function reducer(state: AppState, action: AppAction): AppState {
 const StateContext = createContext<AppState | null>(null);
 const DispatchContext = createContext<Dispatch<AppAction> | null>(null);
 
-export function StoreProvider({ language, children }: { language: Language; children: ReactNode }) {
+export function StoreProvider({
+  language,
+  initialRoutes,
+  children,
+}: {
+  language: Language;
+  initialRoutes?: Route[];
+  children: ReactNode;
+}) {
   const [state, dispatch] = useReducer(reducer, {
-    routes: [{ screen: "dashboard" }],
+    routes: initialRoutes ?? [{ screen: "dashboard" }],
     language,
     inputActive: false,
   });

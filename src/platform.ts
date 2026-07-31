@@ -39,6 +39,19 @@ export function cacheDir(
   return path.join(base, "atcoder-tui");
 }
 
+/** UI state (last open screen) — XDG state dir, not config or cache. */
+export function stateFilePath(
+  platform: Platform = process.platform,
+  env: NodeJS.ProcessEnv = process.env,
+): string {
+  if (platform === "win32") {
+    const base = envDir(env, "LOCALAPPDATA", platform) ?? path.join(homedir(), "AppData", "Local");
+    return path.join(base, "atcoder-tui", "state.json");
+  }
+  const base = envDir(env, "XDG_STATE_HOME", platform) ?? path.join(homedir(), ".local", "state");
+  return path.join(base, "atcoder-tui", "state.json");
+}
+
 export function browserCommand(
   url: string,
   platform: Platform = process.platform,

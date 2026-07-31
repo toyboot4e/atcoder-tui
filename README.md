@@ -86,8 +86,10 @@ Everything is optional; missing pieces degrade to a status-bar hint.
 ## Keys
 
 Press `?` in the app for the full list. Highlights: `enter`/`l` open,
-`h`/`esc` back, `t` language, `1`/`2`/`3` statement/meta/submissions tabs,
-`J`/`K` next/previous problem, `o` open the current page in your browser,
+`h`/`esc`/`q` back (`q` quits at the dashboard), `t` language,
+`1`/`2`/`3`/`4` statement/meta/submissions/ranking tabs, `enter` on a
+submission opens its source code, `J`/`K` next/previous problem,
+`o` open the current page in your browser,
 `a`/`A` load one/all archive pages into the dashboard (every past contest,
 filterable with `/`; "all" is ~18 requests once, then cached forever),
 `r` force-refresh.

@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
-import { Text } from "ink";
+import { Text, useInput } from "ink";
 import chalk from "chalk";
 import { LoginRequiredError } from "../net/http.js";
 import { parseSubmissionsPage, type Submission } from "../scrape/submissions.js";
 import { useServices } from "../state/services.js";
-import { useAppState } from "../state/store.js";
+import { useAppDispatch, useAppState } from "../state/store.js";
 import { useData } from "../state/useData.js";
-import { useScrollKeys } from "../keys/useKeys.js";
+import { useVimNav } from "../keys/useKeys.js";
 import { ScrollView, clampScroll } from "./ScrollView.js";
 import { t } from "./strings.js";
 
@@ -46,7 +46,8 @@ export function SubmissionsPane({
 }) {
   const { client, config } = useServices();
   const { language } = useAppState();
-  const [scrollTop, setScrollTop] = useState(0);
+  const dispatch = useAppDispatch();
+  const [cursor, setCursor] = useState(0);
   const userId = config.userId;
 
   const { state, refresh } = useData(
@@ -65,28 +66,45 @@ export function SubmissionsPane({
     },
   );
 
+  const submissions = state.status === "ready" && state.data !== null ? state.data.submissions : [];
+  const clampedCursor = Math.max(0, Math.min(submissions.length - 1, cursor));
+
   const lines = useMemo(() => {
     if (state.status !== "ready" || state.data === null) return [];
     if (state.data.submissions.length === 0) {
       return [chalk.dim(language === "ja" ? "提出はありません" : "no submissions")];
     }
-    return state.data.submissions.map((s) => formatRow(s, width));
-  }, [state, width, language]);
+    return state.data.submissions.map(
+      (s, i) => `${i === clampedCursor ? chalk.cyan("❯ ") : "  "}${formatRow(s, width)}`,
+    );
+  }, [state, width, language, clampedCursor]);
 
   const viewHeight = height - 1; // header/notice row
-  const clamped = clampScroll(scrollTop, lines.length, viewHeight);
-
-  useScrollKeys(
-    active,
+  // Keep the selected row in view.
+  const scrollTop = clampScroll(
+    clampedCursor - Math.floor(viewHeight / 2),
     lines.length,
     viewHeight,
-    clamped,
-    setScrollTop,
-    clampScroll,
-    (input, key) => {
-      if (input === "r") refresh();
-      else if (input === "h" || key.escape) onBack();
+  );
+
+  useVimNav(active, submissions.length, clampedCursor, viewHeight, {
+    onMove: setCursor,
+    onSelect: () => {
+      const submission = submissions[clampedCursor];
+      if (submission?.id != null) {
+        dispatch({
+          type: "push",
+          route: { screen: "submission", contestId, submissionId: submission.id },
+        });
+      }
     },
+    onBack,
+  });
+  useInput(
+    (input) => {
+      if (input === "r") refresh();
+    },
+    { isActive: active },
   );
 
   if (userId === undefined) {
@@ -116,7 +134,7 @@ export function SubmissionsPane({
           {state.stale ? chalk.yellow(`  [${t("stale", language)}]`) : ""}
         </Text>
       )}
-      <ScrollView lines={lines} height={viewHeight} scrollTop={clamped} />
+      <ScrollView lines={lines} height={viewHeight} scrollTop={scrollTop} />
     </>
   );
 }

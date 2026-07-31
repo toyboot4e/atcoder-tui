@@ -12,6 +12,16 @@ import { StatusBar } from "./StatusBar.js";
 
 const FRONT_PAGE_TTL_MS = 30 * 60 * 1000;
 
+// Survives unmount so returning from a contest restores the cursor, filter
+// and any loaded archive pages (module-level: there is only one dashboard).
+const remembered = {
+  selected: 0,
+  filter: "",
+  archive: [] as ContestListItem[],
+  archivePage: 0,
+  archiveMax: null as number | null,
+};
+
 type Row =
   | { type: "header"; title: string }
   | { type: "contest"; contest: ContestListItem; index: number };
@@ -29,13 +39,21 @@ export function Dashboard() {
   const dispatch = useAppDispatch();
   const { stdout } = useStdout();
 
-  const [selected, setSelected] = useState(0);
+  const [selected, setSelectedRaw] = useState(remembered.selected);
+  const setSelected = (i: number) => {
+    remembered.selected = i;
+    setSelectedRaw(i);
+  };
   const [filtering, setFiltering] = useState(false);
-  const [filter, setFilter] = useState("");
-  // Archive pages are pulled lazily, one page per ctrl-f press.
-  const [archive, setArchive] = useState<ContestListItem[]>([]);
-  const archivePage = useRef(0);
-  const archiveMax = useRef<number | null>(null);
+  const [filter, setFilterRaw] = useState(remembered.filter);
+  const setFilter = (f: string) => {
+    remembered.filter = f;
+    setFilterRaw(f);
+  };
+  // Archive pages are pulled lazily (a: one page, A: all).
+  const [archive, setArchiveRaw] = useState<ContestListItem[]>(remembered.archive);
+  const archivePage = useRef(remembered.archivePage);
+  const archiveMax = useRef(remembered.archiveMax);
   const archiveLoading = useRef(false);
 
   const { state, refresh } = useData(`contests-${language}`, async (bypassCache) => {
@@ -112,7 +130,13 @@ export function Dashboard() {
     const parsed = parseArchivePage(outcome.body);
     archivePage.current = page;
     archiveMax.current = parsed.maxPage;
-    setArchive((prev) => [...prev, ...parsed.contests]);
+    remembered.archivePage = page;
+    remembered.archiveMax = parsed.maxPage;
+    setArchiveRaw((prev) => {
+      const next = [...prev, ...parsed.contests];
+      remembered.archive = next;
+      return next;
+    });
   };
 
   const atArchiveEnd = () =>

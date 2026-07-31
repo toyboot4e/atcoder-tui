@@ -12,6 +12,7 @@ import { useScrollKeys, useVimNav } from "../keys/useKeys.js";
 import { openInBrowser } from "../platform.js";
 import { useTerminalSize } from "./hooks.js";
 import { MetaPane } from "./MetaPane.js";
+import { RankingPane } from "./RankingPane.js";
 import { ScrollView, clampScroll } from "./ScrollView.js";
 import { StatusBar } from "./StatusBar.js";
 import { SubmissionsPane } from "./SubmissionsPane.js";
@@ -20,7 +21,7 @@ import { t } from "./strings.js";
 const SIDEBAR_WIDTH = 26;
 const ACTIVE_TTL_MS = 5 * 60 * 1000;
 
-export type ContestTab = "statement" | "meta" | "submissions";
+export type ContestTab = "statement" | "meta" | "submissions" | "ranking";
 
 function describeError(error: Error, phase: string, language: "en" | "ja"): string {
   if (error instanceof LoginRequiredError) return t("loginRequired", language);
@@ -107,6 +108,7 @@ export function ContestView({
   // Notice rows shrink the scroll viewport so the pane content never
   // overflows its box (Ink clipping corrupts leading CJK characters).
   const noticeRows =
+    (loadedTask !== undefined ? 1 : 0) + // title header row
     (fallbackNotice ? 1 : 0) +
     (statementData.state.status === "loading" || statementData.state.status === "error" ? 1 : 0) +
     (statementData.state.status === "ready" && statementData.state.stale ? 1 : 0);
@@ -154,6 +156,9 @@ export function ContestView({
       } else if (input === "3") {
         setTab("submissions");
         setFocus("content");
+      } else if (input === "4") {
+        setTab("ranking");
+        setFocus("content");
       } else if (key.ctrl && input === "o") {
         dispatch({ type: "pop" });
       } else if (input === "o") {
@@ -165,6 +170,7 @@ export function ContestView({
 
   function currentPagePath(): string {
     if (phase === "upcoming" || tab === "meta") return `/contests/${contestId}`;
+    if (tab === "ranking") return `/contests/${contestId}/standings`;
     if (tab === "submissions") {
       const user =
         config.userId !== undefined ? `?f.User=${encodeURIComponent(config.userId)}` : "";
@@ -178,7 +184,7 @@ export function ContestView({
   const hints =
     focus === "sidebar"
       ? `j/k ${t("move", language)}   ⏎ ${t("open", language)}   h ${t("back", language)}   t ${t("language", language)}   q ${t("quit", language)}`
-      : `j/k scroll   J/K ${language === "ja" ? "前後の問題" : "prev/next problem"}   1/2/3 tab   t ${t("language", language)}   q ${t("quit", language)}`;
+      : `j/k scroll   J/K ${language === "ja" ? "前後の問題" : "prev/next problem"}   1/2/3/4 tab   t ${t("language", language)}   q ${t("back", language)}`;
 
   if (phase === "upcoming") {
     // Lobby: the contest exists but its pages don't yet — zero requests.
@@ -249,6 +255,15 @@ export function ContestView({
         >
           {tab === "statement" && (
             <>
+              {loadedTask !== undefined && (
+                <Text bold color="cyan" wrap="truncate">
+                  {loadedTask.letter} — {loadedTask.title}
+                  <Text dimColor>
+                    {"  "}
+                    {loadedTask.timeLimit} / {loadedTask.memoryLimit}
+                  </Text>
+                </Text>
+              )}
               {fallbackNotice && (
                 <Text color="yellow">
                   {language === "en" ? "English not available — showing Japanese" : ""}
@@ -273,6 +288,16 @@ export function ContestView({
             <MetaPane
               contestId={contestId}
               ttl={ttl}
+              width={contentWidth}
+              height={rows - 3}
+              active={focus === "content" && !inputActive}
+              onBack={() => setFocus("sidebar")}
+            />
+          )}
+          {tab === "ranking" && (
+            <RankingPane
+              contestId={contestId}
+              ended={phase === "ended"}
               width={contentWidth}
               height={rows - 3}
               active={focus === "content" && !inputActive}

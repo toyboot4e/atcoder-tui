@@ -4,8 +4,12 @@ import path from "node:path";
 import { parseArchivePage } from "../src/scrape/contests.js";
 import { parseContestTop } from "../src/scrape/contest.js";
 import { parseSubmissionsPage } from "../src/scrape/submissions.js";
+import { formatElapsed, parseStandingsJson, ratingColor } from "../src/scrape/standings.js";
+import { parseSubmissionDetail } from "../src/scrape/submission.js";
 import { parseTasksPage } from "../src/scrape/tasks.js";
 
+const fixture2 = (name: string) =>
+  fs.readFileSync(path.join(import.meta.dir, "fixtures", name), "utf8");
 const fixture = (name: string) =>
   fs.readFileSync(path.join(import.meta.dir, "fixtures", `${name}.html`), "utf8");
 
@@ -107,5 +111,60 @@ describe("parseSubmissionsPage: private recordings", () => {
         expect(s.user).not.toBe("");
       }
     }
+  });
+});
+
+describe("parseStandingsJson", () => {
+  const standings = parseStandingsJson(fixture2("standings_sample.json"));
+
+  test("tasks and ranked rows", () => {
+    expect(standings.tasks.map((t) => t.label)).toEqual(["A", "B"]);
+    expect(standings.rows).toHaveLength(3);
+    expect(standings.rows[0]).toEqual({
+      rank: 1,
+      user: "tourist_sample",
+      rating: 3800,
+      score: 600,
+      penalty: 0,
+      elapsedSec: 754,
+    });
+  });
+
+  test("no scoring submission yields null elapsed", () => {
+    expect(standings.rows[2]!.elapsedSec).toBeNull();
+    expect(standings.rows[2]!.score).toBe(0);
+  });
+
+  test("elapsed formatting", () => {
+    expect(formatElapsed(754)).toBe("12:34");
+    expect(formatElapsed(3541)).toBe("59:01");
+    expect(formatElapsed(3661)).toBe("1:01:01");
+  });
+
+  test("rating tiers", () => {
+    expect(ratingColor(0)).toBeNull();
+    expect(ratingColor(399)).toBe("#808080");
+    expect(ratingColor(1234)).toBe("#00C0C0");
+    expect(ratingColor(3800)).toBe("#FF0000");
+  });
+});
+
+describe("parseSubmissionDetail", () => {
+  const detail = parseSubmissionDetail(fixture2("submission_sample.html"));
+
+  test("source code is extracted verbatim", () => {
+    expect(detail.code).toContain("main :: IO ()");
+    expect(detail.code).toContain("map read . words <$> getLine");
+  });
+
+  test("facts table", () => {
+    const facts = Object.fromEntries(detail.facts);
+    expect(facts["Task"]).toBe("A - Sample Problem A");
+    expect(facts["Status"]).toBe("AC");
+    expect(facts["Exec Time"]).toBe("2 ms");
+  });
+
+  test("no compile error section", () => {
+    expect(detail.compileError).toBeNull();
   });
 });

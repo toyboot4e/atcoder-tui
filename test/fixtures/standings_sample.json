@@ -1,0 +1,30 @@
+{
+  "Fixed": true,
+  "TaskInfo": [
+    { "Assignment": "A", "TaskName": "Sample Problem A", "TaskScreenName": "abc999_a" },
+    { "Assignment": "B", "TaskName": "Sample Problem B", "TaskScreenName": "abc999_b" }
+  ],
+  "StandingsData": [
+    {
+      "Rank": 1,
+      "UserScreenName": "tourist_sample",
+      "Rating": 3800,
+      "IsRated": true,
+      "TotalResult": { "Count": 2, "Accepted": 2, "Penalty": 0, "Score": 60000, "Elapsed": 754000000000 }
+    },
+    {
+      "Rank": 2,
+      "UserScreenName": "sample_user",
+      "Rating": 1234,
+      "IsRated": true,
+      "TotalResult": { "Count": 3, "Accepted": 2, "Penalty": 1, "Score": 60000, "Elapsed": 3541000000000 }
+    },
+    {
+      "Rank": 3,
+      "UserScreenName": "newbie_sample",
+      "Rating": 0,
+      "IsRated": false,
+      "TotalResult": { "Count": 1, "Accepted": 0, "Penalty": 0, "Score": 0, "Elapsed": 0 }
+    }
+  ]
+}

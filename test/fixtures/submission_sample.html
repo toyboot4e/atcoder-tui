@@ -1,0 +1,58 @@
+<!-- FULLY SYNTHETIC fixture: fabricated submission-detail page mirroring the
+     login-gated markup. Real recordings go to test/fixtures/private/. -->
+<html>
+  <body>
+    <div id="main-container">
+      <div class="container">
+        <h2>Submission #12345678</h2>
+        <div class="panel">
+          <h3>Source Code</h3>
+          <pre id="submission-code" class="prettyprint linenums">main :: IO ()
+main = do
+  [a, b] &lt;- map read . words &lt;$&gt; getLine
+  print (a + b)</pre>
+        </div>
+        <table class="table table-bordered small">
+          <tbody>
+            <tr>
+              <th>Submission Time</th>
+              <td class="text-center"><time class="fixtime-second">2023-04-29 21:02:32+0900</time></td>
+            </tr>
+            <tr>
+              <th>Task</th>
+              <td class="text-center"><a href="/contests/abc999/tasks/abc999_a">A - Sample Problem A</a></td>
+            </tr>
+            <tr>
+              <th>User</th>
+              <td class="text-center"><a href="/users/sample_user">sample_user</a></td>
+            </tr>
+            <tr>
+              <th>Language</th>
+              <td class="text-center">Haskell (GHC 9.4.5)</td>
+            </tr>
+            <tr>
+              <th>Score</th>
+              <td class="text-center">100</td>
+            </tr>
+            <tr>
+              <th>Code Size</th>
+              <td class="text-center">85 Byte</td>
+            </tr>
+            <tr>
+              <th>Status</th>
+              <td class="text-center"><span class="label label-success">AC</span></td>
+            </tr>
+            <tr>
+              <th>Exec Time</th>
+              <td class="text-center">2 ms</td>
+            </tr>
+            <tr>
+              <th>Memory</th>
+              <td class="text-center">4380 KB</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>

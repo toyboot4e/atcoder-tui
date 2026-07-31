@@ -85,10 +85,16 @@ export const KEYMAP: KeyBinding[] = [
     ja: "フォーカス切替",
   },
   {
-    keys: "1 / 2 / 3",
+    keys: "1 / 2 / 3 / 4",
     context: "contest",
-    en: "statement / meta / submissions",
-    ja: "問題文 / 情報 / 提出",
+    en: "statement / meta / submissions / ranking",
+    ja: "問題文 / 情報 / 提出 / 順位表",
+  },
+  {
+    keys: "enter (submissions)",
+    context: "contest",
+    en: "open submission source",
+    ja: "提出コードを表示",
   },
   {
     keys: "J / K",
