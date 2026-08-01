@@ -6,7 +6,6 @@
   "scripts": {
     "start": "bun run src/index.tsx",
     "dev": "bun --watch run src/index.tsx",
-    "dev:node": "node --import tsx src/index.tsx",
     "build": "bun build --compile src/index.tsx --outfile dist/atcoder-tui",
     "fmt": "oxfmt src scripts test/*.ts",
     "fmt:check": "oxfmt --check src scripts test/*.ts",
@@ -32,7 +31,6 @@
     "oxlint": "^1.76.0",
     "oxlint-tsgolint": "^7.0.2001",
     "react-devtools-core": "^7.0.1",
-    "tsx": "^4.23.1",
     "typescript": "^7.0.2"
   }
 }
