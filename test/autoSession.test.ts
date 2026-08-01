@@ -16,7 +16,7 @@ function homeWithAccSession(value: string): string {
   const accDir = path.join(home, ".config", "atcoder-cli-nodejs");
   fs.mkdirSync(accDir, { recursive: true });
   fs.writeFileSync(
-    accDir + "/session.json",
+    `${accDir}/session.json`,
     `{"cookies":["REVEL_SESSION=${value}; Path=/; Secure"]}`,
   );
   return home;
@@ -24,24 +24,27 @@ function homeWithAccSession(value: string): string {
 
 function makeClient(validCookie: string | null) {
   let now = 1_000_000;
-  const seen: Array<string | null> = [];
+  const seen: (string | null)[] = [];
   const client = new AtcoderClient({
     meter: new LoadMeter(null, () => now),
     cache: null,
     clock: () => now,
-    sleep: async (ms) => {
+    sleep: (ms) => {
       now += ms;
+      return Promise.resolve();
     },
-    fetchImpl: async (_url, init) => {
+    fetchImpl: (_url, init) => {
       const cookie = new Headers(init?.headers).get("cookie");
       seen.push(cookie);
       if (validCookie !== null && cookie === `REVEL_SESSION=${validCookie}`) {
-        return new Response("settings page", { status: 200 });
+        return Promise.resolve(new Response("settings page", { status: 200 }));
       }
-      return new Response(null, {
-        status: 302,
-        headers: { location: "https://atcoder.jp/login" },
-      });
+      return Promise.resolve(
+        new Response(null, {
+          status: 302,
+          headers: { location: "https://atcoder.jp/login" },
+        }),
+      );
     },
   });
   return { client, seen };
@@ -115,12 +118,11 @@ describe("autoImportSession", () => {
       meter: new LoadMeter(null, () => now),
       cache: null,
       clock: () => now,
-      sleep: async (ms) => {
+      sleep: (ms) => {
         now += ms;
+        return Promise.resolve();
       },
-      fetchImpl: async () => {
-        throw new Error("offline");
-      },
+      fetchImpl: () => Promise.reject(new Error("offline")),
     });
     const notices = new Notices();
 

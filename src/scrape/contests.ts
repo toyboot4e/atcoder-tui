@@ -1,5 +1,5 @@
 import * as cheerio from "cheerio";
-import type { AnyNode } from "domhandler";
+import { type AnyNode } from "domhandler";
 
 export interface ContestListItem {
   id: string;
@@ -27,15 +27,15 @@ function parseStart(text: string): number | null {
   const iso = text
     .trim()
     .replace(" ", "T")
-    .replace(/([+-]\d{2})(\d{2})$/, "$1:$2");
+    .replace(/(?<hh>[+-]\d{2})(?<mm>\d{2})$/u, "$<hh>:$<mm>");
   const ms = Date.parse(iso);
   return Number.isNaN(ms) ? null : ms;
 }
 
 function parseDuration(text: string): number | null {
-  const m = /^(\d+):(\d{2})$/.exec(text.trim());
+  const m = /^(?<hours>\d+):(?<minutes>\d{2})$/u.exec(text.trim());
   if (m === null) return null;
-  return Number(m[1]) * 60 + Number(m[2]);
+  return Number(m.groups!["hours"]) * 60 + Number(m.groups!["minutes"]);
 }
 
 function parseRow($: cheerio.CheerioAPI, tr: AnyNode): ContestListItem | null {
@@ -47,7 +47,7 @@ function parseRow($: cheerio.CheerioAPI, tr: AnyNode): ContestListItem | null {
   const link = nameTd.find("a[href^='/contests/']").first();
   const href = link.attr("href");
   if (href === undefined) return null;
-  const contestId = href.replace("/contests/", "").split(/[/?#]/)[0]!;
+  const contestId = href.replace("/contests/", "").split(/[/?#]/u)[0]!;
 
   const marker = nameTd.find("span[data-toggle='tooltip']").attr("title") ?? "";
   const kind = marker === "Algorithm" ? "algorithm" : marker === "Heuristic" ? "heuristic" : null;
@@ -81,7 +81,7 @@ export function parseContestsPage(html: string): ContestSection[] {
     const id = ($div.attr("id") ?? "").replace("contest-table-", "");
     const title = $div.find("h3").first().text().trim();
     const contests: ContestListItem[] = [];
-    $div.find("tbody tr").each((_, tr) => {
+    $div.find("tbody tr").each((_row, tr) => {
       const item = parseRow($, tr);
       if (item !== null) contests.push(item);
     });
@@ -108,8 +108,8 @@ export function parseArchivePage(html: string): ArchivePage {
 
   let maxPage = 1;
   $("ul.pagination a[href*='page=']").each((_, a) => {
-    const m = /[?&]page=(\d+)/.exec($(a).attr("href") ?? "");
-    if (m !== null) maxPage = Math.max(maxPage, Number(m[1]));
+    const m = /[?&]page=(?<page>\d+)/u.exec($(a).attr("href") ?? "");
+    if (m !== null) maxPage = Math.max(maxPage, Number(m.groups!["page"]));
   });
   return { contests, maxPage };
 }

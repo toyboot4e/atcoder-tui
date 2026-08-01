@@ -1,4 +1,4 @@
-import type { Language } from "./config.js";
+import { type Language } from "./config.js";
 
 /** Content-type buckets for the dashboard category view. */
 export type Category =
@@ -57,13 +57,13 @@ const LEARNING_IDS = new Set([
  */
 export function categorize(contest: { id: string; title: string }): Category {
   const id = contest.id.toLowerCase();
-  if (/^abc\d/.test(id)) return "abc";
-  if (/^arc\d/.test(id)) return "arc";
-  if (/^agc\d/.test(id)) return "agc";
-  if (/^ahc\d/.test(id)) return "ahc";
-  if (/^awc\d/.test(id)) return "awc";
+  if (/^abc\d/u.test(id)) return "abc";
+  if (/^arc\d/u.test(id)) return "arc";
+  if (/^agc\d/u.test(id)) return "agc";
+  if (/^ahc\d/u.test(id)) return "ahc";
+  if (/^awc\d/u.test(id)) return "awc";
   if (id.startsWith("past")) return "past";
-  if (LEARNING_IDS.has(id) || /educational/i.test(contest.title)) return "learning";
-  if (id.startsWith("joi") || /\bJOI\b/.test(contest.title)) return "joi";
+  if (LEARNING_IDS.has(id) || /educational/iu.test(contest.title)) return "learning";
+  if (id.startsWith("joi") || /\bJOI\b/u.test(contest.title)) return "joi";
   return "other";
 }

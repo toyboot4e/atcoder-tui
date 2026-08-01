@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { loadState, saveState } from "../src/state/persist.js";
-import type { Route } from "../src/state/store.js";
+import { type Route } from "../src/state/store.js";
 
 const tempFile = () =>
   path.join(fs.mkdtempSync(path.join(os.tmpdir(), "atui-state-")), "state.json");

@@ -3,7 +3,7 @@ import { Box, Text } from "ink";
 import chalk from "chalk";
 import { HttpError, LoginRequiredError } from "../net/http.js";
 import { parseSubmissionDetail } from "../scrape/submission.js";
-import type { Submission } from "../scrape/submissions.js";
+import { type Submission } from "../scrape/submissions.js";
 import { useServices } from "../state/services.js";
 import { useAppDispatch, useAppState } from "../state/store.js";
 import { useData } from "../state/useData.js";
@@ -52,7 +52,7 @@ export function SubmissionView({
 
   const summaryLines = useMemo(() => {
     if (summary === undefined) return [];
-    const pairs: Array<[string, string]> = [
+    const pairs: [string, string][] = [
       [language === "ja" ? "提出時刻" : "Time", summary.timeText],
       [language === "ja" ? "問題" : "Task", summary.taskLabel],
       [language === "ja" ? "言語" : "Language", summary.language],
@@ -73,7 +73,7 @@ export function SubmissionView({
       out.push(`${chalk.bold(label.padEnd(16))} ${value}`);
     }
     out.push("");
-    const codeLines = state.data.code.replace(/\n$/, "").split("\n");
+    const codeLines = state.data.code.replace(/\n$/u, "").split("\n");
     const gutterWidth = String(codeLines.length).length;
     codeLines.forEach((line, i) => {
       out.push(`${chalk.dim(String(i + 1).padStart(gutterWidth))} ${line}`);

@@ -121,4 +121,4 @@ export function useScrollKeys(
   );
 }
 
-export type { Key };
+export type { Key } from "ink";

@@ -29,21 +29,34 @@ export interface Statement {
   en: Section[] | null;
 }
 
+/** Compile-time exhaustiveness backstop: unreachable unless data is malformed. */
+export function unreachable(value: never): never {
+  throw new Error(`unreachable: ${JSON.stringify(value)}`);
+}
+
 export function inlineText(inlines: Inline[]): string {
   return inlines
     .map((inline) => {
       switch (inline.kind) {
-        case "text":
+        case "text": {
           return inline.text;
-        case "math":
+        }
+        case "math": {
           return inline.latex;
-        case "code":
+        }
+        case "code": {
           return inline.text;
+        }
         case "strong":
-        case "em":
+        case "em": {
           return inlineText(inline.inlines);
-        case "break":
+        }
+        case "break": {
           return "\n";
+        }
+        default: {
+          return unreachable(inline);
+        }
       }
     })
     .join("");

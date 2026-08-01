@@ -40,10 +40,13 @@ if (!response.ok) {
 let body = await response.text();
 
 // Scrub session-adjacent tokens regardless of destination.
-body = body.replace(/(var csrfToken = ")[^"]*(")/g, "$1SCRUBBED$2");
-body = body.replace(/(name="csrf_token"\s+value=")[^"]*(")/g, "$1SCRUBBED$2");
+body = body.replaceAll(/(?<pre>var csrfToken = ")[^"]*(?<post>")/gu, "$<pre>SCRUBBED$<post>");
+body = body.replaceAll(
+  /(?<pre>name="csrf_token"\s+value=")[^"]*(?<post>")/gu,
+  "$<pre>SCRUBBED$<post>",
+);
 
-const loggedIn = /userScreenName = "[^"]/.test(body);
+const loggedIn = /userScreenName = "[^"]/u.test(body);
 const isPrivate = useSession || loggedIn;
 if (loggedIn && !useSession) {
   console.error("note: page shows a logged-in session — routing to the private dir");

@@ -24,12 +24,14 @@ export function findSessionCandidates(home: string = os.homedir()): SessionCandi
   ]) {
     try {
       const text = fs.readFileSync(jar, "utf8");
-      const m = /REVEL_SESSION="((?:\\.|[^"\\])*)"/.exec(text);
+      const m = /REVEL_SESSION="(?<value>(?:\\.|[^"\\])*)"/u.exec(text);
       if (m !== null) {
-        const expires = /REVEL_SESSION="[^\n]*?expires="([^"]*)"/.exec(text)?.[1];
+        const expires = /REVEL_SESSION="[^\n]*?expires="(?<date>[^"]*)"/u.exec(text)?.groups![
+          "date"
+        ];
         candidates.push({
           source: `oj (${jar})`,
-          value: m[1]!.replace(/\\(.)/g, "$1"),
+          value: m.groups!["value"]!.replaceAll(/\\(?<esc>.)/gu, "$<esc>"),
           ...(expires !== undefined ? { expires } : {}),
         });
       }
@@ -45,9 +47,9 @@ export function findSessionCandidates(home: string = os.homedir()): SessionCandi
   ]) {
     try {
       const text = fs.readFileSync(file, "utf8");
-      const m = /REVEL_SESSION=([^;"\\\s]+)/.exec(text);
+      const m = /REVEL_SESSION=(?<value>[^;"\\\s]+)/u.exec(text);
       if (m !== null) {
-        candidates.push({ source: `acc (${file})`, value: m[1]! });
+        candidates.push({ source: `acc (${file})`, value: m.groups!["value"]! });
       }
     } catch {
       // absent or unreadable — skip

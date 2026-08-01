@@ -21,13 +21,13 @@ export interface Standings {
 }
 
 interface RawStandings {
-  TaskInfo?: Array<{ Assignment?: string; TaskScreenName?: string }>;
-  StandingsData?: Array<{
+  TaskInfo?: { Assignment?: string; TaskScreenName?: string }[];
+  StandingsData?: {
     Rank?: number;
     UserScreenName?: string;
     Rating?: number;
     TotalResult?: { Score?: number; Penalty?: number; Elapsed?: number; Count?: number };
-  }>;
+  }[];
 }
 
 /** Parses /contests/{id}/standings/json (login-gated). */
@@ -52,8 +52,9 @@ export function parseStandingsJson(json: string): Standings {
   return { tasks, rows };
 }
 
+const pad = (n: number) => String(n).padStart(2, "0");
+
 export function formatElapsed(sec: number): string {
-  const pad = (n: number) => String(n).padStart(2, "0");
   const h = Math.floor(sec / 3600);
   const m = Math.floor((sec % 3600) / 60);
   const s = sec % 60;

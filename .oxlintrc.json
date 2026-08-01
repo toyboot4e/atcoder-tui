@@ -1,0 +1,97 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  // Every stable category at deny. `restriction` is a pick-list (it bans ?.
+  // and default exports wholesale) and `nursery` is unstable; from those we
+  // take nothing wholesale. Rules turned off below conflict with idioms this
+  // codebase uses deliberately — each one says why.
+  "categories": {
+    "correctness": "deny",
+    "suspicious": "deny",
+    "pedantic": "deny",
+    "perf": "deny",
+    "style": "deny"
+  },
+  "plugins": ["react", "unicorn", "typescript", "oxc", "import", "promise"],
+  "rules": {
+    // Named exports are the house style; these two rules demand the opposite
+    // (and contradict each other).
+    "import/no-named-export": "off",
+    "import/prefer-default-export": "off",
+    // Export placement/grouping is semantic, not positional.
+    "import/group-exports": "off",
+    "import/exports-last": "off",
+    // This is a Bun/Node CLI app; node: modules are the platform.
+    "import/no-nodejs-modules": "off",
+    // `import * as cheerio` is cheerio's documented import form.
+    "import/no-namespace": "off",
+    // Dependency-count caps force artificial splits.
+    "import/max-dependencies": "off",
+    // Inline `{ type X }` specifiers, matching verbatimModuleSyntax usage —
+    // top-level `import type` statements would trip no-duplicate-imports.
+    "import/consistent-type-specifier-style": ["deny", "prefer-inline"],
+    // Obsolete under the react-jsx transform (tsconfig jsx: react-jsx).
+    "react/react-in-jsx-scope": "off",
+    // Depth caps fight Ink layouts, which nest boxes by design.
+    "react/jsx-max-depth": "off",
+    // Conditional spreads are how optional Ink props are passed under
+    // exactOptionalPropertyTypes.
+    "react/jsx-props-no-spreading": "off",
+    // The [x, setXRaw] + wrapped-setter pattern is deliberate (mirrors into
+    // module state); the rule demands exact set<X> naming.
+    "react/hook-use-state": "off",
+    // Viewport rows are recomputed slices with no persistent identity; an
+    // index-qualified key is the honest one.
+    "react/no-array-index-key": "off",
+    // useData's two-callback .then(onOk, onErr) is deliberate: it must not
+    // catch errors thrown by the success path's setState. These four rules
+    // all demand rewrites of that pattern.
+    "promise/prefer-await-to-then": "off",
+    "promise/prefer-await-to-callbacks": "off",
+    "promise/prefer-catch": "off",
+    "promise/always-return": "off",
+    // `new Promise(resolve => setTimeout(...))` is the sleep idiom.
+    "promise/avoid-new": "off",
+    // Layout math and test expectations are numbers; naming each one is noise.
+    "eslint/no-magic-numbers": "off",
+    // House style: single-line guard clauses without braces.
+    "eslint/curly": "off",
+    // $ (cheerio), i/j/t are established idioms here.
+    "eslint/id-length": "off",
+    // JSX branches on ternaries; that is the language's conditional expression.
+    "eslint/no-ternary": "off",
+    "eslint/no-nested-ternary": "off",
+    "unicorn/no-nested-ternary": "off",
+    // Key/import order is semantic (grouped by meaning), not alphabetical.
+    "eslint/sort-keys": "off",
+    "eslint/sort-imports": "off",
+    // Function declarations are used deliberately (components, hoisting).
+    "eslint/func-style": "off",
+    // React/Ink APIs speak null (render nothing, empty ref).
+    "unicorn/no-null": "off",
+    // Comment prose style is the author's.
+    "eslint/capitalized-comments": "off",
+    "eslint/no-inline-comments": "off",
+    // Size caps force artificial splits; review judges size, not the linter.
+    "eslint/max-statements": "off",
+    "eslint/max-lines-per-function": "off",
+    "eslint/max-lines": "off",
+    "eslint/max-params": "off",
+    "eslint/max-classes-per-file": "off",
+    "unicorn/max-nested-calls": "off",
+    // Guard-clause idiom: early-return on the negated case reads better.
+    "eslint/no-negated-condition": "off",
+    "unicorn/no-negated-condition": "off",
+    "eslint/no-continue": "off",
+    // `let x: T; try { x = ... }` is the narrowest way to scope try results.
+    "eslint/init-declarations": "off",
+    // Constructor parameter properties are used deliberately (DiskCache, LoadMeter).
+    "typescript/parameter-properties": "off",
+    // The rate limiter and its tests are sequential BY DESIGN (AGENTS.md).
+    "eslint/no-await-in-loop": "off",
+    // React components are PascalCase files; the rest is camelCase.
+    "unicorn/filename-case": "off",
+    // The LaTeX table keys keep explicit escapes; String.raw as computed
+    // object keys reads worse than "\\frac".
+    "unicorn/prefer-string-raw": "off"
+  }
+}

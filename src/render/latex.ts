@@ -323,7 +323,9 @@ const SUBSCRIPTS: Record<string, string> = {
   x: "ₓ",
 };
 
-class Unsupported extends Error {}
+class UnsupportedError extends Error {
+  override name = "UnsupportedError";
+}
 
 class Parser {
   private pos = 0;
@@ -331,7 +333,7 @@ class Parser {
 
   parse(): string {
     const out = this.sequence(null);
-    if (this.pos < this.src.length) throw new Unsupported("trailing input");
+    if (this.pos < this.src.length) throw new UnsupportedError("trailing input");
     return out;
   }
 
@@ -344,10 +346,10 @@ class Parser {
         this.pos += 1;
         return out;
       }
-      if (ch === "}") throw new Unsupported("unbalanced brace");
+      if (ch === "}") throw new UnsupportedError("unbalanced brace");
       out += this.atomWithScripts();
     }
-    if (until !== null) throw new Unsupported("unterminated group");
+    if (until !== null) throw new UnsupportedError("unterminated group");
     return out;
   }
 
@@ -384,7 +386,7 @@ class Parser {
 
   /** The (already converted) content of a ^/_ argument. */
   private scriptGroup(): string {
-    if (this.pos >= this.src.length) throw new Unsupported("dangling script");
+    if (this.pos >= this.src.length) throw new UnsupportedError("dangling script");
     if (this.src[this.pos] === "{") {
       this.pos += 1;
       return this.sequence("}");
@@ -394,24 +396,24 @@ class Parser {
 
   private argument(): string {
     while (this.src[this.pos] === " ") this.pos += 1;
-    if (this.pos >= this.src.length) throw new Unsupported("missing argument");
+    if (this.pos >= this.src.length) throw new UnsupportedError("missing argument");
     return this.atom();
   }
 
   private command(): string {
     this.pos += 1; // consume backslash
     let name = "";
-    if (this.pos < this.src.length && !/[a-zA-Z]/.test(this.src[this.pos]!)) {
+    if (this.pos < this.src.length && !/[a-zA-Z]/u.test(this.src[this.pos]!)) {
       // Single-character command like \{ or \,
       name = this.src[this.pos]!;
       this.pos += 1;
     } else {
-      while (this.pos < this.src.length && /[a-zA-Z]/.test(this.src[this.pos]!)) {
+      while (this.pos < this.src.length && /[a-zA-Z]/u.test(this.src[this.pos]!)) {
         name += this.src[this.pos]!;
         this.pos += 1;
       }
     }
-    if (name === "") throw new Unsupported("lone backslash");
+    if (name === "") throw new UnsupportedError("lone backslash");
 
     if (name === "," || name === ";" || name === ":" || name === "!" || name === " ")
       return name === "!" ? "" : " ";
@@ -442,7 +444,7 @@ class Parser {
       const denominator = this.argument();
       return `${maybeParenthesize(numerator)}/${maybeParenthesize(denominator)}`;
     }
-    throw new Unsupported(`\\${name}`);
+    throw new UnsupportedError(`\\${name}`);
   }
 }
 
@@ -463,7 +465,7 @@ function maybeParenthesize(operand: string): string {
 
 export function latexToUnicode(latex: string): ConvertedMath {
   try {
-    const text = new Parser(latex).parse().replace(/ {2,}/g, " ").trim();
+    const text = new Parser(latex).parse().replaceAll(/ {2,}/gu, " ").trim();
     return { text, exact: true };
   } catch {
     return { text: latex, exact: false };

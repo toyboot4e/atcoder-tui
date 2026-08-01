@@ -1,6 +1,6 @@
 import * as cheerio from "cheerio";
-import type { AnyNode, Element } from "domhandler";
-import type { Block, Inline, Section, Statement } from "../render/ast.js";
+import { type AnyNode, type Element } from "domhandler";
+import { type Block, type Inline, type Section, type Statement } from "../render/ast.js";
 
 /**
  * Parses `#task-statement` into a bilingual statement AST.
@@ -80,13 +80,14 @@ function parseBlock($: cheerio.CheerioAPI, el: Element): Block[] | null {
       const inlines = parseInlines($, $(el).contents().toArray());
       return inlines.length > 0 ? [{ kind: "paragraph", inlines }] : null;
     }
-    case "pre":
+    case "pre": {
       return [
         {
           kind: "pre",
           inlines: parseInlines($, $(el).contents().toArray(), true),
         },
       ];
+    }
     case "ul":
     case "ol": {
       const items: Inline[][] = [];
@@ -98,7 +99,7 @@ function parseBlock($: cheerio.CheerioAPI, el: Element): Block[] | null {
       return [{ kind: "list", ordered: name === "ol", items }];
     }
     case "h4":
-    case "h5":
+    case "h5": {
       return [
         {
           kind: "heading",
@@ -106,8 +107,10 @@ function parseBlock($: cheerio.CheerioAPI, el: Element): Block[] | null {
           text: $(el).text().trim(),
         },
       ];
-    case "hr":
+    }
+    case "hr": {
       return [{ kind: "rule" }];
+    }
     case "blockquote":
     case "details": {
       const blocks: Block[] = [];
@@ -119,17 +122,19 @@ function parseBlock($: cheerio.CheerioAPI, el: Element): Block[] | null {
         });
       return blocks;
     }
-    case "table":
+    case "table": {
       // Rare in statements; degrade to text so nothing is silently dropped.
       return [
         {
           kind: "paragraph",
-          inlines: [{ kind: "text", text: $(el).text().replace(/\s+/g, " ").trim() }],
+          inlines: [{ kind: "text", text: $(el).text().replaceAll(/\s+/gu, " ").trim() }],
         },
       ];
+    }
     case "script":
-    case "style":
+    case "style": {
       return null;
+    }
     default: {
       const inlines = parseInlines($, [el]);
       return inlines.length > 0 ? [{ kind: "paragraph", inlines }] : null;
@@ -143,7 +148,7 @@ function parseInlines($: cheerio.CheerioAPI, nodes: AnyNode[], verbatim = false)
   for (const node of nodes) {
     if (node.type === "text") {
       const raw = $(node).text();
-      const text = verbatim ? raw : raw.replace(/\s+/g, " ");
+      const text = verbatim ? raw : raw.replaceAll(/\s+/gu, " ");
       if (text !== "") inlines.push({ kind: "text", text });
       continue;
     }
@@ -152,23 +157,28 @@ function parseInlines($: cheerio.CheerioAPI, nodes: AnyNode[], verbatim = false)
     const name = el.tagName.toLowerCase();
     const children = () => parseInlines($, $(el).contents().toArray(), verbatim);
     switch (name) {
-      case "var":
+      case "var": {
         inlines.push({ kind: "math", latex: $(el).text().trim() });
         break;
-      case "code":
+      }
+      case "code": {
         inlines.push({ kind: "code", text: $(el).text() });
         break;
+      }
       case "strong":
-      case "b":
+      case "b": {
         inlines.push({ kind: "strong", inlines: children() });
         break;
+      }
       case "em":
-      case "i":
+      case "i": {
         inlines.push({ kind: "em", inlines: children() });
         break;
-      case "br":
+      }
+      case "br": {
         inlines.push({ kind: "break" });
         break;
+      }
       case "img": {
         // Terminals can't show the image: fall back to alt text plus the
         // URL so it can be opened in a browser.
@@ -179,8 +189,9 @@ function parseInlines($: cheerio.CheerioAPI, nodes: AnyNode[], verbatim = false)
         inlines.push({ kind: "text", text: url !== "" ? `${label} <${url}>` : label });
         break;
       }
-      default:
+      default: {
         inlines.push(...children());
+      }
     }
   }
   // Trim leading/trailing pure-whitespace runs in prose context.
@@ -194,8 +205,8 @@ function parseInlines($: cheerio.CheerioAPI, nodes: AnyNode[], verbatim = false)
     }
     while (
       inlines.length > 0 &&
-      inlines[inlines.length - 1]!.kind === "text" &&
-      (inlines[inlines.length - 1] as { text: string }).text.trim() === ""
+      inlines.at(-1)!.kind === "text" &&
+      (inlines.at(-1) as { text: string }).text.trim() === ""
     ) {
       inlines.pop();
     }

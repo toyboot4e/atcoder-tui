@@ -123,7 +123,7 @@ export function ContestView({
   // Debounce: flipping j-j-j through problems fetches only where you settle.
   // Cache-fresh statements settle instantly — the debounce only exists to
   // avoid fetching intermediate problems, and a cached flip fetches nothing.
-  const [settledTaskId, setSettledTaskId] = useState<string | undefined>(undefined);
+  const [settledTaskId, setSettledTaskId] = useState<string | undefined>();
   useEffect(() => {
     const id = loadedTask?.id;
     if (id !== undefined && client.peekFresh(`/contests/${contestId}/tasks/${id}`, ttl)) {
@@ -212,12 +212,13 @@ export function ContestView({
       }
       if (input === "j" || input === "J" || key.downArrow) moveCursor(cursor + 1);
       else if (input === "k" || input === "K" || key.upArrow) moveCursor(cursor - 1);
-      else if (contestSelected)
-        return; // g/G/r belong to the detail pane
-      else if (input === "G")
-        setStatementScroll(clampScroll(lines.length, lines.length, contentHeight));
-      else if (input === "g") setStatementScroll(0);
-      else if (input === "r") statementData.refresh();
+      else if (!contestSelected) {
+        // g/G/r belong to the detail pane while the contest row is selected
+        if (input === "G")
+          setStatementScroll(clampScroll(lines.length, lines.length, contentHeight));
+        else if (input === "g") setStatementScroll(0);
+        else if (input === "r") statementData.refresh();
+      }
     },
     { isActive: tab === "statement" && !inputActive },
   );
@@ -399,7 +400,6 @@ export function ContestView({
             <RankingPane
               contestId={contestId}
               ended={phase === "ended"}
-              width={contentWidth}
               height={rows - 3}
               active={!inputActive}
               onBack={() => dispatch({ type: "pop" })}

@@ -1,5 +1,6 @@
 import { createContext, useContext, useReducer, type Dispatch, type ReactNode } from "react";
-import type { Language } from "../config.js";
+import { type Language } from "../config.js";
+import { type Submission } from "../scrape/submissions.js";
 
 export type Route =
   | { screen: "dashboard" }
@@ -8,7 +9,7 @@ export type Route =
       screen: "submission";
       contestId: string;
       submissionId: string;
-      summary?: import("../scrape/submissions.js").Submission;
+      summary?: Submission;
     };
 
 export interface AppState {
@@ -27,14 +28,18 @@ export type AppAction =
 
 function reducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
-    case "push":
+    case "push": {
       return { ...state, routes: [...state.routes, action.route] };
-    case "pop":
+    }
+    case "pop": {
       return state.routes.length > 1 ? { ...state, routes: state.routes.slice(0, -1) } : state;
-    case "toggleLanguage":
+    }
+    case "toggleLanguage": {
       return { ...state, language: state.language === "en" ? "ja" : "en" };
-    case "setInputActive":
+    }
+    case "setInputActive": {
       return { ...state, inputActive: action.value };
+    }
   }
 }
 
@@ -76,5 +81,5 @@ export function useAppDispatch(): Dispatch<AppAction> {
 
 export function useCurrentRoute(): Route {
   const { routes } = useAppState();
-  return routes[routes.length - 1]!;
+  return routes.at(-1)!;
 }

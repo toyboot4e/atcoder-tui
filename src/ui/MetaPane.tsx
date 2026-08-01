@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Text } from "ink";
 import chalk from "chalk";
-import type { Ttl } from "../cache.js";
+import { type Ttl } from "../cache.js";
 import { renderSections } from "../render/lines.js";
 import { parseContestTop } from "../scrape/contest.js";
 import { parseFragmentSections } from "../scrape/statement.js";
@@ -49,8 +49,7 @@ export function MetaPane({
   const lines = useMemo(() => {
     if (state.status !== "ready") return [];
     const meta = state.data;
-    const out: string[] = [];
-    out.push(chalk.bold.cyan(meta.title));
+    const out: string[] = [chalk.bold.cyan(meta.title)];
     if (meta.startText !== null) {
       out.push(`${meta.startText}  →  ${meta.endText ?? "?"}`);
     }

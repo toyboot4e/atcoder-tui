@@ -31,14 +31,15 @@ function makeHarness(
     cache: null,
     baseUrl: "https://atcoder.jp",
     clock,
-    sleep: async (ms) => {
+    sleep: (ms) => {
       now += ms;
+      return Promise.resolve();
     },
-    fetchImpl: async (input: string | URL | Request, init?: RequestInit) => {
+    fetchImpl: (input: string | URL | Request, init?: RequestInit) => {
       const url = String(input);
       const headers = new Headers(init?.headers);
       calls.push({ url, at: now, cookie: headers.get("cookie") });
-      return respond(url);
+      return Promise.resolve(respond(url));
     },
     ...overrides,
     ...(overrides.meter === undefined ? { meter } : {}),
@@ -94,10 +95,11 @@ describe("AtcoderClient", () => {
     const journal = path.join(tempDir(), "requests.jsonl");
     let now = 1_000_000;
     const clock = () => now;
-    const sleep = async (ms: number) => {
+    const sleep = (ms: number) => {
       now += ms;
+      return Promise.resolve();
     };
-    const fetchImpl = async () => ok("x");
+    const fetchImpl = () => Promise.resolve(ok("x"));
 
     const first = new AtcoderClient({
       meter: new LoadMeter(journal, clock),
@@ -120,9 +122,9 @@ describe("AtcoderClient", () => {
       minIntervalMs: 0,
       clock,
       sleep,
-      fetchImpl: async () => {
+      fetchImpl: () => {
         calls.push(now);
-        return ok("x");
+        return Promise.resolve(ok("x"));
       },
     });
     await second.fetch("/c", { ttl: 0 });
@@ -173,7 +175,7 @@ describe("AtcoderClient", () => {
     await client.fetch("/a", { ttl: "infinite" });
     const hitsBefore = meter.stats().cacheHits;
     expect(client.peekFresh("/a", "infinite")).toBe(true);
-    cacheNow += 1_000;
+    cacheNow += 1000;
     expect(client.peekFresh("/a", 999)).toBe(false); // older than the ttl
     expect(calls).toHaveLength(1);
     expect(meter.stats().cacheHits).toBe(hitsBefore);
@@ -194,7 +196,7 @@ describe("AtcoderClient", () => {
     expect(cached.body).toBe("v1");
   });
 
-  test("302 to /login raises LoginRequiredError", async () => {
+  test("302 to /login raises LoginRequiredError", () => {
     const { client } = makeHarness(
       () =>
         new Response(null, {
@@ -202,7 +204,7 @@ describe("AtcoderClient", () => {
           headers: { location: "https://atcoder.jp/login" },
         }),
     );
-    expect(client.fetch("/contests/x/tasks", { ttl: 0 })).rejects.toBeInstanceOf(
+    return expect(client.fetch("/contests/x/tasks", { ttl: 0 })).rejects.toBeInstanceOf(
       LoginRequiredError,
     );
   });
@@ -218,9 +220,9 @@ describe("AtcoderClient", () => {
     expect(outcome.body).toBe("old");
   });
 
-  test("server error without cache raises HttpError", async () => {
+  test("server error without cache raises HttpError", () => {
     const { client } = makeHarness(() => new Response("boom", { status: 500 }));
-    expect(client.fetch("/a", { ttl: 0 })).rejects.toBeInstanceOf(HttpError);
+    return expect(client.fetch("/a", { ttl: 0 })).rejects.toBeInstanceOf(HttpError);
   });
 
   test("network error with stale cache serves stale", async () => {

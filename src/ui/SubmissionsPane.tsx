@@ -17,13 +17,13 @@ const rememberedCursor = new Map<string, number>();
 
 function statusColor(status: string): (s: string) => string {
   if (status === "AC") return chalk.green.bold;
-  if (status === "WJ" || /^\d+\/\d+$/.test(status)) return chalk.blue;
+  if (status === "WJ" || /^\d+\/\d+$/u.test(status)) return chalk.blue;
   if (status === "CE" || status === "IE") return chalk.gray.bold;
   return chalk.yellow.bold;
 }
 
 function formatRow(s: Submission, width: number): string {
-  const time = s.timeText.replace(/\+\d{4}$/, "").slice(5, 16); // "MM-DD HH:MM"
+  const time = s.timeText.replace(/\+\d{4}$/u, "").slice(5, 16); // "MM-DD HH:MM"
   const status = statusColor(s.status)(s.status.padEnd(3));
   const score = s.score.padStart(5);
   const task = s.taskLabel.length > 28 ? `${s.taskLabel.slice(0, 27)}…` : s.taskLabel.padEnd(28);
@@ -55,7 +55,7 @@ export function SubmissionsPane({
     rememberedCursor.set(contestId, i);
     setCursorRaw(i);
   };
-  const userId = config.userId;
+  const { userId } = config;
 
   const { state, refresh } = useData(
     `submissions-${contestId}-${userId ?? "anon"}`,
@@ -99,7 +99,7 @@ export function SubmissionsPane({
     onMove: setCursor,
     onSelect: () => {
       const submission = submissions[clampedCursor];
-      if (submission?.id != null) {
+      if (submission !== undefined && submission.id !== null) {
         dispatch({
           type: "push",
           route: {

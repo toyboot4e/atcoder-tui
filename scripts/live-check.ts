@@ -27,11 +27,8 @@ function check(name: string, ok: boolean): void {
 {
   const { body } = await client.fetch("/contests/?lang=en", { ttl: 0 });
   const sections = parseContestsPage(body);
-  const ids = sections.map((s) => s.id);
-  check(
-    "front page: upcoming and recent sections found",
-    ids.includes("upcoming") && ids.includes("recent"),
-  );
+  const ids = new Set(sections.map((s) => s.id));
+  check("front page: upcoming and recent sections found", ids.has("upcoming") && ids.has("recent"));
   const recent = sections.find((s) => s.id === "recent")?.contests[0];
   check(
     "front page: recent row has id/start/duration/rated",

@@ -1,6 +1,6 @@
 import { Buffer } from "node:buffer";
-import type { DiskCache, Ttl } from "../cache.js";
-import type { LoadMeter } from "./load.js";
+import { type DiskCache, type Ttl } from "../cache.js";
+import { type LoadMeter } from "./load.js";
 
 export class LoginRequiredError extends Error {
   constructor(url: string) {
@@ -88,7 +88,12 @@ export class AtcoderClient {
     this.requestsPerMinute = opts.requestsPerMinute ?? 20;
     this.fetchImpl = opts.fetchImpl ?? fetch;
     this.clock = opts.clock ?? Date.now;
-    this.sleep = opts.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
+    this.sleep =
+      opts.sleep ??
+      ((ms) =>
+        new Promise((resolve) => {
+          setTimeout(resolve, ms);
+        }));
   }
 
   /** Swap the session cookie at runtime (auto-import, expiry recovery). */

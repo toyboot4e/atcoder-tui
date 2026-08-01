@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import wrapAnsi from "wrap-ansi";
-import type { Block, Inline, Section } from "./ast.js";
+import { unreachable, type Block, type Inline, type Section } from "./ast.js";
 import { latexToUnicode } from "./latex.js";
 
 /**
@@ -13,8 +13,7 @@ export function renderSections(sections: Section[], width: number): string[] {
   for (const section of sections) {
     if (section.title !== "") {
       if (lines.length > 0) lines.push("");
-      lines.push(chalk.bold.magenta.underline(section.title));
-      lines.push("");
+      lines.push(chalk.bold.magenta.underline(section.title), "");
     }
     for (const block of section.blocks) {
       lines.push(...renderBlock(block, width));
@@ -26,11 +25,12 @@ export function renderSections(sections: Section[], width: number): string[] {
 
 function renderBlock(block: Block, width: number): string[] {
   switch (block.kind) {
-    case "paragraph":
+    case "paragraph": {
       return [...wrap(renderInlines(block.inlines), width), ""];
+    }
     case "pre": {
       const gutter = chalk.gray("│ ");
-      const body = renderInlines(block.inlines).replace(/\n$/, "");
+      const body = renderInlines(block.inlines).replace(/\n$/u, "");
       return [...body.split("\n").map((line) => gutter + line), ""];
     }
     case "list": {
@@ -44,10 +44,12 @@ function renderBlock(block: Block, width: number): string[] {
       lines.push("");
       return lines;
     }
-    case "heading":
+    case "heading": {
       return [chalk.bold.underline(block.text), ""];
-    case "rule":
+    }
+    case "rule": {
       return [chalk.gray("─".repeat(Math.max(1, width))), ""];
+    }
   }
 }
 
@@ -61,22 +63,30 @@ export function renderInlines(inlines: Inline[]): string {
   return inlines
     .map((inline) => {
       switch (inline.kind) {
-        case "text":
+        case "text": {
           return inline.text;
+        }
         case "math": {
           const converted = latexToUnicode(inline.latex);
           // Unconvertible math stays raw LaTeX, marked yellow so it is
           // recognizable as source rather than a rendering bug.
           return converted.exact ? converted.text : chalk.yellow(converted.text);
         }
-        case "code":
+        case "code": {
           return chalk.cyan(inline.text);
-        case "strong":
+        }
+        case "strong": {
           return chalk.bold(renderInlines(inline.inlines));
-        case "em":
+        }
+        case "em": {
           return chalk.italic(renderInlines(inline.inlines));
-        case "break":
+        }
+        case "break": {
           return "\n";
+        }
+        default: {
+          return unreachable(inline);
+        }
       }
     })
     .join("");

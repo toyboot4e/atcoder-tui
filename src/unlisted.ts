@@ -1,4 +1,4 @@
-import type { ContestListItem } from "./scrape/contests.js";
+import { type ContestListItem } from "./scrape/contests.js";
 
 const entry = (id: string, title: string): ContestListItem => ({
   id,

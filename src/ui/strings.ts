@@ -1,4 +1,4 @@
-import type { Language } from "../config.js";
+import { type Language } from "../config.js";
 
 /** UI chrome labels; problem/contest content comes localized from the site. */
 const STRINGS = {

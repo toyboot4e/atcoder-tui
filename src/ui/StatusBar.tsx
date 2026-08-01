@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Box, Text } from "ink";
 import { useServices } from "../state/services.js";
 import { useAppState } from "../state/store.js";
-import type { LoadStats } from "../net/load.js";
+import { type LoadStats } from "../net/load.js";
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes}B`;
@@ -37,10 +37,9 @@ export function StatusBar({ hints }: { hints: string }) {
     return () => clearTimeout(timer);
   }, [notice]);
 
-  const net =
-    `net ${stats.sessionRequests}req/${formatBytes(stats.sessionBytes)}` +
-    ` · today ${stats.todayRequests}req/${formatBytes(stats.todayBytes)}` +
-    (stats.cacheHits > 0 ? ` · cache ${(stats.cacheHitRatio * 100).toFixed(0)}%` : "");
+  const net = `net ${stats.sessionRequests}req/${formatBytes(stats.sessionBytes)} · today ${stats.todayRequests}req/${formatBytes(stats.todayBytes)}${
+    stats.cacheHits > 0 ? ` · cache ${(stats.cacheHitRatio * 100).toFixed(0)}%` : ""
+  }`;
   const activity = stats.inFlight ? ` ⇄${stats.queued > 1 ? `×${stats.queued}` : ""}` : "";
 
   return (

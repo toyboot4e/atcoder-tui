@@ -112,9 +112,10 @@ export async function runCli(args: string[]): Promise<boolean> {
       if (!ok) process.exitCode = 1;
       return true;
     }
-    default:
+    default: {
       console.log(HELP);
       process.exitCode = args[1] === "help" || args[1] === "--help" ? 0 : 1;
       return true;
+    }
   }
 }

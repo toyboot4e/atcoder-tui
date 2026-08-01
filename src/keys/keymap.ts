@@ -1,4 +1,4 @@
-import type { Language } from "../config.js";
+import { type Language } from "../config.js";
 
 export interface KeyBinding {
   keys: string;

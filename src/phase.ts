@@ -1,4 +1,4 @@
-import type { Language } from "./config.js";
+import { type Language } from "./config.js";
 
 export type ContestPhase = "upcoming" | "active" | "ended" | "unknown";
 
@@ -20,8 +20,8 @@ export function contestPhase(
 /** "2d 3h" / "1h 05m" / "12m 30s" — coarse on purpose; it's a lobby screen. */
 export function formatCountdown(untilMs: number): string {
   const total = Math.max(0, Math.floor(untilMs / 1000));
-  const days = Math.floor(total / 86400);
-  const hours = Math.floor((total % 86400) / 3600);
+  const days = Math.floor(total / 86_400);
+  const hours = Math.floor((total % 86_400) / 3600);
   const minutes = Math.floor((total % 3600) / 60);
   const seconds = total % 60;
   if (days > 0) return `${days}d ${hours}h`;
@@ -29,9 +29,10 @@ export function formatCountdown(untilMs: number): string {
   return `${minutes}m ${String(seconds).padStart(2, "0")}s`;
 }
 
+const pad = (n: number) => String(n).padStart(2, "0");
+
 export function formatStartLine(startsAt: number, now: number, language: Language): string {
   const start = new Date(startsAt);
-  const pad = (n: number) => String(n).padStart(2, "0");
   const when = `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())} ${pad(start.getHours())}:${pad(start.getMinutes())}`;
   const countdown = formatCountdown(startsAt - now);
   return language === "ja"

@@ -1,7 +1,7 @@
 import os from "node:os";
 import { configFilePath } from "./config.js";
 import { LoginRequiredError, type AtcoderClient } from "./net/http.js";
-import type { Notices } from "./state/notices.js";
+import { type Notices } from "./state/notices.js";
 import { findSessionCandidates, saveSession } from "./session.js";
 
 export interface AutoImportDeps {

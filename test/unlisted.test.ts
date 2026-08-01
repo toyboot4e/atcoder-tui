@@ -20,6 +20,6 @@ describe("UNLISTED_CONTESTS seed", () => {
   test("awc series is newest-first and zero-padded", () => {
     const awc = UNLISTED_CONTESTS.filter((c) => c.id.startsWith("awc"));
     expect(awc[0]!.id).toBe("awc0125");
-    expect(awc[awc.length - 1]!.id).toBe("awc0001");
+    expect(awc.at(-1)!.id).toBe("awc0001");
   });
 });

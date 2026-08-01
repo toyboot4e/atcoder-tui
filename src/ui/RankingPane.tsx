@@ -26,14 +26,12 @@ let favoritesOnly = false;
 export function RankingPane({
   contestId,
   ended,
-  width,
   height,
   active,
   onBack,
 }: {
   contestId: string;
   ended: boolean;
-  width: number;
   height: number;
   active: boolean;
   onBack: () => void;
@@ -155,7 +153,7 @@ export function RankingPane({
       );
     }
     return out;
-  }, [visibleRows, config.userId, width, clampedCursor, starred]);
+  }, [visibleRows, config.userId, clampedCursor, starred]);
 
   const me =
     state.status === "ready" && config.userId !== undefined
@@ -170,7 +168,7 @@ export function RankingPane({
   useEffect(() => {
     if (centered.current || state.status !== "ready" || config.userId === undefined) return;
     const index = visibleRows.findIndex((r) => r.user === config.userId);
-    if (index >= 0) setCursor(index);
+    if (index !== -1) setCursor(index);
     centered.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, config.userId]);

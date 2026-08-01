@@ -35,10 +35,11 @@ type Row =
   | { type: "contest"; contest: ContestListItem; index: number }
   | { type: "category"; category: Category; count: number; index: number };
 
+const pad = (n: number) => String(n).padStart(2, "0");
+
 function formatStart(startsAt: number | null): string {
   if (startsAt === null) return "           ";
   const d = new Date(startsAt);
-  const pad = (n: number) => String(n).padStart(2, "0");
   return `${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
@@ -92,14 +93,14 @@ export function Dashboard() {
       needle === "" ||
       c.id.toLowerCase().includes(needle) ||
       c.title.toLowerCase().includes(needle);
-    const rows: Row[] = [];
+    const out: Row[] = [];
     let index = 0;
     const pushSection = (title: string, contests: ContestListItem[]) => {
-      const filtered = contests.filter(matches);
+      const filtered = contests.filter((contest) => matches(contest));
       if (filtered.length === 0) return;
-      rows.push({ type: "header", title });
+      out.push({ type: "header", title });
       for (const contest of filtered) {
-        rows.push({ type: "contest", contest, index });
+        out.push({ type: "contest", contest, index });
         index += 1;
       }
     };
@@ -127,7 +128,7 @@ export function Dashboard() {
       const note = atArchiveEnd()
         ? `${pool.size}`
         : `${pool.size}${language === "ja" ? "（アーカイブ取得中…）" : " (loading archive…)"}`;
-      rows.push({
+      out.push({
         type: "header",
         title:
           language === "ja" ? `カテゴリ — 全${note}件` : `Categories — ${note} contests indexed`,
@@ -135,13 +136,13 @@ export function Dashboard() {
       for (const category of CATEGORY_ORDER) {
         const count = counts.get(category) ?? 0;
         if (count === 0) continue;
-        rows.push({ type: "category", category, count, index });
+        out.push({ type: "category", category, count, index });
         index += 1;
       }
     } else if (view.kind === "category") {
       const contests = [...pool.values()]
         .filter((contest) => categorize(contest) === view.category)
-        .sort((a, b) => (b.startsAt ?? -1) - (a.startsAt ?? -1));
+        .toSorted((a, b) => (b.startsAt ?? -1) - (a.startsAt ?? -1));
       pushSection(CATEGORY_LABELS[view.category][language], contests);
     } else {
       for (const section of state.data) pushSection(section.title, section.contests);
@@ -154,7 +155,7 @@ export function Dashboard() {
         );
       }
     }
-    return { rows, selectableCount: index };
+    return { rows: out, selectableCount: index };
   }, [state, filter, archive, language, view]);
 
   const clampedSelected = Math.max(0, Math.min(selectableCount - 1, selected));
@@ -212,9 +213,10 @@ export function Dashboard() {
     archiveLoading.current = true;
     (async () => {
       try {
-        do {
-          await fetchArchivePage();
-        } while (all && !atArchiveEnd());
+        await fetchArchivePage();
+        if (all) {
+          while (!atArchiveEnd()) await fetchArchivePage();
+        }
       } catch {
         // The status-bar meter already shows activity; a failed page load
         // simply leaves the archive as it was.

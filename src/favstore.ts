@@ -33,7 +33,7 @@ export function loadServerFavs(file: string = serverFavsPath()): ServerFavs | nu
 export function saveServerFavs(favs: ServerFavs, file: string = serverFavsPath()): void {
   try {
     fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, JSON.stringify(favs) + "\n");
+    fs.writeFileSync(file, `${JSON.stringify(favs)}\n`);
   } catch {
     // A failed cache write must never break the app.
   }

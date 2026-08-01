@@ -10,14 +10,18 @@ const fixture = (name: string) =>
 const blockText = (block: Block): string => {
   switch (block.kind) {
     case "paragraph":
-    case "pre":
+    case "pre": {
       return inlineText(block.inlines);
-    case "list":
+    }
+    case "list": {
       return block.items.map(inlineText).join("\n");
-    case "heading":
+    }
+    case "heading": {
       return block.text;
-    case "rule":
+    }
+    case "rule": {
       return "";
+    }
   }
 };
 

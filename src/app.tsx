@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useApp, useInput } from "ink";
 import { autoImportSession } from "./autoSession.js";
 import { loadState, saveState } from "./state/persist.js";
-import type { Services } from "./state/services.js";
-import { ServicesProvider, useServices } from "./state/services.js";
+import { ServicesProvider, useServices, type Services } from "./state/services.js";
 import { StoreProvider, useAppDispatch, useAppState, useCurrentRoute } from "./state/store.js";
 import { ContestView } from "./ui/ContestView.js";
 import { Dashboard } from "./ui/Dashboard.js";
@@ -85,9 +84,10 @@ function Root() {
   if (showHelp) return <HelpOverlay />;
 
   switch (route.screen) {
-    case "dashboard":
+    case "dashboard": {
       return <Dashboard />;
-    case "contest":
+    }
+    case "contest": {
       return (
         <ContestView
           key={route.contestId}
@@ -96,7 +96,8 @@ function Root() {
           endsAt={route.endsAt}
         />
       );
-    case "submission":
+    }
+    case "submission": {
       return (
         <SubmissionView
           key={route.submissionId}
@@ -105,5 +106,6 @@ function Root() {
           summary={route.summary}
         />
       );
+    }
   }
 }

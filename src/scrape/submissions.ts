@@ -39,7 +39,7 @@ export function parseSubmissionsPage(html: string): SubmissionsPage {
       .find("a[href*='/submissions/']")
       .toArray()
       .map((a) => $(a).attr("href") ?? "")
-      .find((href) => /\/submissions\/\d+$/.test(href));
+      .find((href) => /\/submissions\/\d+$/u.test(href));
 
     const status = $(tr).find("span.label").first().text().trim();
     // Positional columns: 0 time, 1 task, 2 user, 3 language, 4 score, 5 code
@@ -48,7 +48,7 @@ export function parseSubmissionsPage(html: string): SubmissionsPage {
     submissions.push({
       id: detailHref !== undefined ? detailHref.split("/submissions/")[1]! : null,
       timeText: tds.eq(0).find("time").text().trim() || tds.eq(0).text().trim(),
-      taskId: taskHref.split("/tasks/")[1]?.split(/[/?#]/)[0] ?? null,
+      taskId: taskHref.split("/tasks/")[1]?.split(/[/?#]/u)[0] ?? null,
       taskLabel: taskLink.text().trim(),
       user: $(tr).find("a[href^='/users/']").first().text().trim(),
       language: tds.eq(3).text().trim(),
@@ -61,8 +61,8 @@ export function parseSubmissionsPage(html: string): SubmissionsPage {
 
   let maxPage = 1;
   $("ul.pagination a[href*='page=']").each((_, a) => {
-    const m = /[?&]page=(\d+)/.exec($(a).attr("href") ?? "");
-    if (m !== null) maxPage = Math.max(maxPage, Number(m[1]));
+    const m = /[?&]page=(?<page>\d+)/u.exec($(a).attr("href") ?? "");
+    if (m !== null) maxPage = Math.max(maxPage, Number(m.groups!["page"]));
   });
   return { submissions, maxPage };
 }

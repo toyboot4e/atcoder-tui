@@ -23,7 +23,7 @@ export function parseContestTop(html: string): ContestMeta {
 
   const headerFacts = $("p.small span.mr-2")
     .toArray()
-    .map((el) => $(el).text().replace(/\s+/g, " ").trim())
+    .map((el) => $(el).text().replaceAll(/\s+/gu, " ").trim())
     .filter((fact) => fact !== "");
 
   const statement = $("#contest-statement");
@@ -45,7 +45,7 @@ export function parseContestTop(html: string): ContestMeta {
     if (!isWriter && !isTester) return;
     $(li)
       .find("a[href^='/users/']")
-      .each((_, a) => {
+      .each((_link, a) => {
         const name = $(a).text().trim();
         if (name === "") return;
         if (isTester && !isWriter) testers.add(name);

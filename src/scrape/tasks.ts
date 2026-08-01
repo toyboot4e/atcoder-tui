@@ -21,7 +21,7 @@ export function parseTasksPage(html: string): TaskListItem[] {
     const titleLink = tds.eq(1).find("a").first();
     const href = titleLink.attr("href") ?? letterLink.attr("href");
     if (href === undefined) return;
-    const id = href.split("/tasks/")[1]?.split(/[/?#]/)[0];
+    const id = href.split("/tasks/")[1]?.split(/[/?#]/u)[0];
     if (id === undefined) return;
     tasks.push({
       id,
