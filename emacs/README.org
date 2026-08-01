@@ -1,26 +1,19 @@
 * atcoder-tui.el
 
-Run [[https://github.com/toyboot4e/atcoder-tui][atcoder-tui]] — the read-only AtCoder viewer — inside Emacs, in a
-terminal emulator buffer, and manage the login session without leaving
-Emacs.
-
 ** Requirements
 
 - Emacs 30+
-- One way to run atcoder-tui (checked in this order):
-  1. ~atcoder-tui-program~, if you set it (e.g., =nix run github:toyboot4e/atcoder-tui=)
-  2. an ~atcoder-tui~ executable on ~exec-path~
-- Optionally [[https://codeberg.org/akib/emacs-eat][eat]] or [[https://github.com/akermu/emacs-libvterm][vterm]] for a better terminal; the built-in
-  ~term~ is the fallback.
+- Have ~atcoder-tui~ on ~exec-path~ or define ~atcoder-tui-program~:
+  #+BEGIN_SRC elisp
+  (setq atcoder-tui-program '("nix" "run" "github:toyboot4e/atcoder-tui"))
+  #+END_SRC
+- (Optional) Install the [[https://codeberg.org/akib/emacs-eat][eat]] terminal.
 
 ** Try it without installing
 
 #+begin_src sh
 nix run github:toyboot4e/atcoder-tui#emacs
 #+end_src
-
-This launches a throwaway terminal Emacs (your config untouched) with
-the package loaded, the eat backend, and the TUI already open.
 
 ** Installation
 
@@ -33,30 +26,26 @@ the package loaded, the eat backend, and the TUI already open.
 
 ** Usage
 
-| Command                      | What it does                                        |
-|------------------------------+-----------------------------------------------------|
-| ~M-x atcoder-tui~            | open the TUI (re-focuses a running instance)        |
-| ~M-x atcoder-tui-session-status~ | show whether a login session is configured      |
-| ~M-x atcoder-tui-session-import~ | copy =REVEL_SESSION= from oj / acc              |
+| Command                        | What it does                                       |
+|--------------------------------+----------------------------------------------------|
+| ~M-x atcoder-tui~                | open the TUI (re-focuses a running instance)       |
+| ~M-x atcoder-tui-session-status~ | show whether a login session is configured         |
+| ~M-x atcoder-tui-session-import~ | copy =REVEL_SESSION= from oj / acc                   |
 | ~M-x atcoder-tui-session-set~    | paste a cookie value (read hidden, sent via stdin) |
-| ~M-x atcoder-tui-session-check~  | verify the session against atcoder.jp           |
-
-Inside the TUI buffer every key goes to the app — navigate and quit
-(~q~) exactly as in a plain terminal.
+| ~M-x atcoder-tui-session-check~  | verify the session against atcoder.jp              |
 
 ** Customization
 
-- ~atcoder-tui-program~ — program name or full command line (list of
-  strings); ~nil~ (default) auto-detects as described above.
-- ~atcoder-tui-backend~ — ~auto~ (default; prefers eat, then vterm,
-  then term), or force one of ~eat~ / ~vterm~ / ~term~.
-- ~atcoder-tui-buffer-name~ — TUI buffer name, default ~*atcoder-tui*~.
+| Variable                | Default       | What it does                                                           |
+|-------------------------+---------------+------------------------------------------------------------------------|
+| ~atcoder-tui-program~     | ~nil~           | program name or full command line (list of strings)                    |
+| ~atcoder-tui-backend~     | ~auto~          | prefers eat, then vterm, then term; or force one of ~eat~ / ~vterm~ / ~term~ |
+| ~atcoder-tui-buffer-name~ | ~*atcoder-tui*~ | name of the buffer running the TUI                                     |
 
 ** Notes
 
-- ~atcoder-tui-session-set~ reads the cookie with ~read-passwd~ and
-  pipes it to the CLI's stdin, so the value never appears in argv, in
-  the process list, or in the output buffer (the CLI only ever prints
-  it masked).
-- The package never talks to atcoder.jp itself; everything goes through
-  the app and its rate limiter.
+- ~atcoder-tui-session-set~ reads the cookie with ~read-passwd~ and pipes it to the CLI's stdin, so the
+  value never appears in argv, in the process list, or in the output buffer (the CLI only ever
+  prints it masked).
+- The package never talks to atcoder.jp itself; everything goes through the app and its rate
+  limiter.

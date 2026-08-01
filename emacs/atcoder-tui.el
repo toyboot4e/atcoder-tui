@@ -2,7 +2,7 @@
 
 ;; Author: toyboot4e <toyboot4e@gmail.com>
 ;; Version: 0.1.0
-;; Package-Requires: ((emacs "27.1"))
+;; Package-Requires: ((emacs "30.0"))
 ;; Keywords: terminals, tools
 ;; URL: https://github.com/toyboot4e/atcoder-tui
 
