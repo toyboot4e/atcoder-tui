@@ -253,7 +253,7 @@ export function Dashboard() {
   // While filtering, esc clears and closes; enter (TextInput onSubmit) keeps
   // the filter — press a afterwards to pull archive pages into the results.
   useInput(
-    (input, key) => {
+    (_input, key) => {
       if (key.escape) {
         setFilter("");
         setFiltering(false);
@@ -296,7 +296,7 @@ export function Dashboard() {
             ) : row.type === "category" ? (
               <Text
                 key={row.category}
-                color={row.index === clampedSelected ? "cyan" : undefined}
+                {...(row.index === clampedSelected ? { color: "cyan" } : {})}
                 bold={row.index === clampedSelected}
                 wrap="truncate"
               >
@@ -307,7 +307,7 @@ export function Dashboard() {
             ) : (
               <Text
                 key={row.contest.id}
-                color={row.index === clampedSelected ? "cyan" : undefined}
+                {...(row.index === clampedSelected ? { color: "cyan" } : {})}
                 bold={row.index === clampedSelected}
                 wrap="truncate"
               >

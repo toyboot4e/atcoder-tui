@@ -53,7 +53,8 @@ function Root() {
       notices: services.notices,
       configuredSession: services.config.revelSession,
     }).then(() => {
-      services.config.revelSession = services.client.getCookie() ?? services.config.revelSession;
+      const cookie = services.client.getCookie();
+      if (cookie !== undefined) services.config.revelSession = cookie;
     });
   }, [services]);
 

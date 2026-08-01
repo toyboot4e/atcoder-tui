@@ -29,7 +29,7 @@ export function SubmissionView({
 }: {
   contestId: string;
   submissionId: string;
-  summary?: Submission;
+  summary?: Submission | undefined;
 }) {
   const { client } = useServices();
   const { language, inputActive } = useAppState();

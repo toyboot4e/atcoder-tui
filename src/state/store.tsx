@@ -47,7 +47,7 @@ export function StoreProvider({
   children,
 }: {
   language: Language;
-  initialRoutes?: Route[];
+  initialRoutes?: Route[] | undefined;
   children: ReactNode;
 }) {
   const [state, dispatch] = useReducer(reducer, {

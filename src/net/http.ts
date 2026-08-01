@@ -41,7 +41,7 @@ export interface ClientOptions {
   meter: LoadMeter;
   cache: DiskCache | null;
   baseUrl?: string;
-  cookie?: string;
+  cookie?: string | undefined;
   userAgent?: string;
   minIntervalMs?: number;
   requestsPerMinute?: number;

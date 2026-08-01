@@ -311,7 +311,7 @@ export function ContestView({
           borderColor="gray"
           paddingX={sidebarNarrow ? 0 : 1}
         >
-          <Text bold color={contestSelected ? "cyan" : undefined} wrap="truncate">
+          <Text bold {...(contestSelected ? { color: "cyan" } : {})} wrap="truncate">
             {sidebarNarrow ? "" : contestSelected ? "❯ " : "  "}
             {contestId}
           </Text>
@@ -324,7 +324,7 @@ export function ContestView({
           {tasks.map((task, index) => (
             <Text
               key={task.id}
-              color={index + 1 === cursor ? "cyan" : undefined}
+              {...(index + 1 === cursor ? { color: "cyan" } : {})}
               bold={index + 1 === cursor}
               wrap="truncate"
             >
