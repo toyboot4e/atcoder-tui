@@ -115,6 +115,12 @@ export const KEYMAP: KeyBinding[] = [
     ja: "問題文を1行スクロール",
   },
   {
+    keys: "w",
+    context: "contest",
+    en: "narrow ⇄ wide problem list (narrow by default)",
+    ja: "問題リストの幅切替（既定は縮小表示）",
+  },
+  {
     keys: "* (ranking)",
     context: "contest",
     en: "star/unstar the user under the cursor (saved to config)",

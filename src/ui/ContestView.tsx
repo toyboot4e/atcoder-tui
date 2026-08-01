@@ -18,7 +18,13 @@ import { SubmissionsPane } from "./SubmissionsPane.js";
 import { t } from "./strings.js";
 
 const SIDEBAR_WIDTH = 26;
+// Narrow: problem letters plus the contest id header ("❯ abc420" — 8 cells
+// inside the border; horizontal padding is dropped in narrow mode).
+const NARROW_SIDEBAR_WIDTH = 10;
 const ACTIVE_TTL_MS = 5 * 60 * 1000;
+
+// Session-wide (not per contest): the preferred width follows you around.
+let sidebarNarrowDefault = true;
 
 interface RememberedContest {
   cursor: number;
@@ -89,6 +95,12 @@ export function ContestView({
     setTabRaw(v);
   };
   const [scrollTop, setScrollTop] = useState(0);
+  const [sidebarNarrow, setSidebarNarrowRaw] = useState(sidebarNarrowDefault);
+  const setSidebarNarrow = (v: boolean) => {
+    sidebarNarrowDefault = v;
+    setSidebarNarrowRaw(v);
+  };
+  const sidebarWidth = sidebarNarrow ? NARROW_SIDEBAR_WIDTH : SIDEBAR_WIDTH;
 
   const tasksData = useData(`tasks-${contestId}-${language}-${phase}`, async (bypassCache) => {
     if (phase === "upcoming") return { data: [], stale: false, fetchedAt: 0 };
@@ -133,7 +145,7 @@ export function ContestView({
     },
   );
 
-  const contentWidth = columns - SIDEBAR_WIDTH - 3;
+  const contentWidth = columns - sidebarWidth - 3;
   const statement = statementData.state.status === "ready" ? statementData.state.data : null;
   const englishMissing = statement !== null && statement.en === null;
   const { lines, fallbackNotice } = useMemo(() => {
@@ -226,6 +238,7 @@ export function ContestView({
       else if (input === "l" || key.rightArrow) cycleTab(1);
       else if (key.ctrl && input === "o") dispatch({ type: "pop" });
       else if (input === "o") openInBrowser(`https://atcoder.jp${currentPagePath()}`);
+      else if (input === "w") setSidebarNarrow(!sidebarNarrow);
     },
     { isActive: !inputActive },
   );
@@ -244,7 +257,7 @@ export function ContestView({
   }
 
   const tabHint = `h/l 1/2/3 ${language === "ja" ? "タブ" : "tab"}`;
-  const commonHint = `o ${t("open", language)}   t ${t("language", language)}   q ${t("back", language)}`;
+  const commonHint = `w ${language === "ja" ? "幅" : "width"}   o ${t("open", language)}   t ${t("language", language)}   q ${t("back", language)}`;
   const hints =
     tab === "ranking"
       ? `j/k ${t("move", language)}   * ${language === "ja" ? "お気に入り" : "star"}   f ${language === "ja" ? "お気に入りのみ" : "favs only"}   F ${language === "ja" ? "取込" : "import"}   ${tabHint}   ${commonHint}`
@@ -285,10 +298,10 @@ export function ContestView({
       <Box flexGrow={1}>
         <Box
           flexDirection="column"
-          width={SIDEBAR_WIDTH}
+          width={sidebarWidth}
           borderStyle="round"
           borderColor="gray"
-          paddingX={1}
+          paddingX={sidebarNarrow ? 0 : 1}
         >
           <Text bold color={contestSelected ? "cyan" : undefined} wrap="truncate">
             {contestSelected ? "❯ " : "  "}
@@ -308,7 +321,7 @@ export function ContestView({
               wrap="truncate"
             >
               {index + 1 === cursor ? "❯ " : "  "}
-              {task.letter} {task.title}
+              {sidebarNarrow ? task.letter : `${task.letter} ${task.title}`}
             </Text>
           ))}
         </Box>
