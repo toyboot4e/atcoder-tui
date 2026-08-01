@@ -1,6 +1,8 @@
 # Full node_modules (incl. dev deps, so nix flake check can run
 # tests/typecheck) as a fixed-output derivation: one hash to bump
-# whenever bun.lock changes (the build error prints the new hash).
+# whenever bun.lock changes. Set outputHash to a fake value and the
+# build error prints the real one — a merely stale hash reuses the old
+# store output silently instead of failing.
 {
   lib,
   stdenvNoCC,
@@ -32,9 +34,13 @@ stdenvNoCC.mkDerivation {
   '';
   installPhase = ''
     mkdir -p $out
+    # Drop the tsgolint npm shim: its native binary is an optional dep that
+    # --omit=optional excludes, and a broken shim would shadow the PATH
+    # tsgolint that nixpkgs' oxlint wrapper provides in checks.
+    rm -f node_modules/.bin/tsgolint
     cp -R node_modules $out/node_modules
   '';
   outputHashAlgo = "sha256";
   outputHashMode = "recursive";
-  outputHash = "sha256-FthzSDFByBjaqezLdHhqBmDQWMGa6Zf3mhs7s4l61oE=";
+  outputHash = "sha256-Y+VvOZrgOfqf3bK8zPGsud7zAkz7awT6uvHc6HYjb+s=";
 }

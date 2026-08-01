@@ -211,7 +211,7 @@ export function Dashboard() {
   const loadArchive = (all: boolean) => {
     if (archiveLoading.current || atArchiveEnd()) return;
     archiveLoading.current = true;
-    (async () => {
+    void (async () => {
       try {
         await fetchArchivePage();
         if (all) {

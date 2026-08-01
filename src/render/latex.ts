@@ -449,6 +449,9 @@ class Parser {
 }
 
 function mapScript(content: string, table: Record<string, string>, sigil: "^" | "_"): string {
+  // Code-point iteration is the intent: table keys are single BMP chars, and
+  // anything unmappable falls through to the sigil form below.
+  // oxlint-disable-next-line typescript/no-misused-spread
   const mapped = [...content].map((ch) => table[ch]);
   if (content.length > 0 && mapped.every((ch) => ch !== undefined)) {
     return mapped.join("");

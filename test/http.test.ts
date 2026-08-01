@@ -36,7 +36,7 @@ function makeHarness(
       return Promise.resolve();
     },
     fetchImpl: (input: string | URL | Request, init?: RequestInit) => {
-      const url = String(input);
+      const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
       const headers = new Headers(init?.headers);
       calls.push({ url, at: now, cookie: headers.get("cookie") });
       return Promise.resolve(respond(url));

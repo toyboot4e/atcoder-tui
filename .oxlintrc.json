@@ -4,6 +4,10 @@
   // and default exports wholesale) and `nursery` is unstable; from those we
   // take nothing wholesale. Rules turned off below conflict with idioms this
   // codebase uses deliberately — each one says why.
+  // Type-aware rules run via oxlint-tsgolint (typescript-go under the hood).
+  "options": {
+    "typeAware": true
+  },
   "categories": {
     "correctness": "deny",
     "suspicious": "deny",
@@ -92,6 +96,18 @@
     "unicorn/filename-case": "off",
     // The LaTeX table keys keep explicit escapes; String.raw as computed
     // object keys reads worse than "\\frac".
-    "unicorn/prefer-string-raw": "off"
+    "unicorn/prefer-string-raw": "off",
+    // Deep-readonly parameters everywhere would wrap every cheerio/Ink/React
+    // signature in Readonly<> shims; mutation discipline is by convention.
+    "typescript/prefer-readonly-parameter-types": "off",
+    // `() => setX(v)` handler/timer shorthand is the house React idiom; this
+    // rule would brace every callback.
+    "typescript/no-confusing-void-expression": "off",
+    // Parsed JSON/scrape payloads are asserted at IO boundaries by design;
+    // the shapes are covered by fixture tests and the live-check workflow.
+    "typescript/no-unsafe-type-assertion": "off",
+    // noImplicitReturns already enforces this and, unlike the rule,
+    // understands exhaustive switches over discriminated unions.
+    "typescript/consistent-return": "off"
   }
 }

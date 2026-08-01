@@ -57,7 +57,9 @@ describe("autoImportSession", () => {
     const { client } = makeClient("goodcookie123");
     const notices = new Notices();
     const messages: string[] = [];
-    notices.subscribe((m) => messages.push(m));
+    notices.subscribe((m) => {
+      messages.push(m);
+    });
 
     await autoImportSession({
       client,

@@ -1,5 +1,5 @@
 import * as cheerio from "cheerio";
-import { type AnyNode, type Element } from "domhandler";
+import { type AnyNode, type Element, isTag, isText } from "domhandler";
 import { type Block, type Inline, type Section, type Statement } from "../render/ast.js";
 
 /**
@@ -43,7 +43,7 @@ function parseSections($: cheerio.CheerioAPI, container: Cheerio): Section[] {
 
   const walk = (nodes: AnyNode[]) => {
     for (const node of nodes) {
-      if (node.type !== "tag") {
+      if (!isTag(node)) {
         // Loose top-level text (rare); fold into the current section.
         const text = $(node).text().trim();
         if (text !== "")
@@ -53,7 +53,7 @@ function parseSections($: cheerio.CheerioAPI, container: Cheerio): Section[] {
           });
         continue;
       }
-      const el = node as Element;
+      const el = node;
       const name = el.tagName.toLowerCase();
       if (name === "h3") {
         // Both generations: an h3 (wherever it sits) starts a new section.
@@ -146,14 +146,14 @@ function parseBlock($: cheerio.CheerioAPI, el: Element): Block[] | null {
 function parseInlines($: cheerio.CheerioAPI, nodes: AnyNode[], verbatim = false): Inline[] {
   const inlines: Inline[] = [];
   for (const node of nodes) {
-    if (node.type === "text") {
+    if (isText(node)) {
       const raw = $(node).text();
       const text = verbatim ? raw : raw.replaceAll(/\s+/gu, " ");
       if (text !== "") inlines.push({ kind: "text", text });
       continue;
     }
-    if (node.type !== "tag") continue;
-    const el = node as Element;
+    if (!isTag(node)) continue;
+    const el = node;
     const name = el.tagName.toLowerCase();
     const children = () => parseInlines($, $(el).contents().toArray(), verbatim);
     switch (name) {

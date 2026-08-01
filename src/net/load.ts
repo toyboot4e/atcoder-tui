@@ -32,13 +32,13 @@ function dayKey(ts: number): string {
  * so the app's load on AtCoder is observable, not just claimed.
  */
 export class LoadMeter {
-  private history: LoadEvent[] = [];
+  private readonly history: LoadEvent[] = [];
   private sessionRequests = 0;
   private sessionBytes = 0;
   private cacheHits = 0;
   private inFlight = false;
   private queued = 0;
-  private listeners = new Set<() => void>();
+  private readonly listeners = new Set<() => void>();
 
   constructor(
     private readonly journalPath: string | null,
@@ -137,7 +137,9 @@ export class LoadMeter {
 
   subscribe(listener: () => void): () => void {
     this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
   }
 
   private notify(): void {

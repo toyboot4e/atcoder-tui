@@ -39,7 +39,9 @@ function renderBlock(block: Block, width: number): string[] {
         const marker = block.ordered ? `${index + 1}. ` : "• ";
         const indent = " ".repeat(marker.length);
         const wrapped = wrap(renderInlines(item), Math.max(10, width - marker.length));
-        wrapped.forEach((line, i) => lines.push((i === 0 ? marker : indent) + line));
+        wrapped.forEach((line, i) => {
+          lines.push((i === 0 ? marker : indent) + line);
+        });
       });
       lines.push("");
       return lines;

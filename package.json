@@ -30,6 +30,7 @@
     "@types/react": "^19.2.18",
     "oxfmt": "^0.61.0",
     "oxlint": "^1.76.0",
+    "oxlint-tsgolint": "^7.0.2001",
     "react-devtools-core": "^7.0.1",
     "tsx": "^4.23.1",
     "typescript": "^7.0.2"
