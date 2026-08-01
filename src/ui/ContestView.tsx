@@ -328,7 +328,7 @@ export function ContestView({
               bold={index + 1 === cursor}
               wrap="truncate"
             >
-              {sidebarNarrow ? "" : index + 1 === cursor ? "❯ " : "  "}
+              {sidebarNarrow ? " " : index + 1 === cursor ? "❯ " : "  "}
               {sidebarNarrow ? task.letter : `${task.letter} ${task.title}`}
             </Text>
           ))}
