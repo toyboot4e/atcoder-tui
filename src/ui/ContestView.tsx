@@ -18,9 +18,10 @@ import { SubmissionsPane } from "./SubmissionsPane.js";
 import { t } from "./strings.js";
 
 const SIDEBAR_WIDTH = 26;
-// Narrow: problem letters plus the contest id header ("❯ abc420" — 8 cells
-// inside the border; horizontal padding is dropped in narrow mode).
-const NARROW_SIDEBAR_WIDTH = 10;
+// Narrow: problem letters plus the contest id header ("abc420" — 6 cells
+// inside the border; no cursor marker or horizontal padding, selection is
+// shown by color alone).
+const NARROW_SIDEBAR_WIDTH = 8;
 const ACTIVE_TTL_MS = 5 * 60 * 1000;
 
 // Session-wide (not per contest): the preferred width follows you around.
@@ -304,7 +305,7 @@ export function ContestView({
           paddingX={sidebarNarrow ? 0 : 1}
         >
           <Text bold color={contestSelected ? "cyan" : undefined} wrap="truncate">
-            {contestSelected ? "❯ " : "  "}
+            {sidebarNarrow ? "" : contestSelected ? "❯ " : "  "}
             {contestId}
           </Text>
           {tasksData.state.status === "loading" && <Text dimColor>{t("loading", language)}</Text>}
@@ -320,7 +321,7 @@ export function ContestView({
               bold={index + 1 === cursor}
               wrap="truncate"
             >
-              {index + 1 === cursor ? "❯ " : "  "}
+              {sidebarNarrow ? "" : index + 1 === cursor ? "❯ " : "  "}
               {sidebarNarrow ? task.letter : `${task.letter} ${task.title}`}
             </Text>
           ))}
