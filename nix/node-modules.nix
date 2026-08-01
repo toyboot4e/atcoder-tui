@@ -27,7 +27,7 @@ stdenvNoCC.mkDerivation {
     export BUN_INSTALL_CACHE_DIR=$TMPDIR/bun-cache
     # --omit=optional keeps node_modules platform-independent
     # (typescript 7 ships per-platform native binaries as optional
-    # deps); checks typecheck with nixpkgs' typescript instead.
+    # deps); checks typecheck with nixpkgs' typescript-go instead.
     bun install --frozen-lockfile --no-progress --backend=copyfile --omit=optional
   '';
   installPhase = ''

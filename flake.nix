@@ -86,7 +86,7 @@
             src = ./.;
             nativeBuildInputs = [
               pkgs.bun
-              pkgs.typescript
+              pkgs.typescript-go
               pkgs.oxlint
             ];
             dontConfigure = true;
@@ -106,12 +106,12 @@
         default = pkgs.mkShell {
           packages = with pkgs; [
             bun
-            typescript
+            # Native TS7: provides tsc and tsgo, incl. the LSP (tsgo --lsp --stdio)
+            typescript-go
             nodejs
             just
             oxlint
             pinact
-            typescript-language-server
             (packagesFor pkgs).aclogin
           ];
         };
