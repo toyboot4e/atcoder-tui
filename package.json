@@ -8,11 +8,12 @@
     "dev": "bun --watch run src/index.tsx",
     "dev:node": "node --import tsx src/index.tsx",
     "build": "bun build --compile src/index.tsx --outfile dist/atcoder-tui",
-    "test": "bun test",
-    "typecheck": "tsc --noEmit",
-    "lint": "oxlint --deny-warnings .",
     "fmt": "oxfmt src scripts test/*.ts",
-    "check": "bun run lint && bun run typecheck && bun run test"
+    "fmt:check": "oxfmt --check src scripts test/*.ts",
+    "lint": "oxlint --deny-warnings .",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "check": "bun run fmt:check && bun run lint && bun run typecheck && bun run test"
   },
   "dependencies": {
     "chalk": "^6.0.0",
