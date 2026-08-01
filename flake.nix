@@ -95,11 +95,13 @@
               chmod +x $out/bin/atcoder-tui
             '';
           };
+          emacs-demo = pkgs.callPackage ./nix/emacs-demo.nix { inherit atcoder-tui; };
         in
         {
           inherit nodeModules;
           inherit atcoder-tui;
           inherit aclogin;
+          inherit emacs-demo;
           default = atcoder-tui;
         };
     in
@@ -110,6 +112,10 @@
         default = {
           type = "app";
           program = "${(packagesFor pkgs).atcoder-tui}/bin/atcoder-tui";
+        };
+        emacs = {
+          type = "app";
+          program = "${(packagesFor pkgs).emacs-demo}/bin/atcoder-tui-emacs";
         };
       });
 
