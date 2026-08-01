@@ -121,11 +121,18 @@ export function ContestView({
   const loadedTask = contestSelected ? undefined : tasks[Math.min(cursor - 1, tasks.length - 1)];
 
   // Debounce: flipping j-j-j through problems fetches only where you settle.
+  // Cache-fresh statements settle instantly — the debounce only exists to
+  // avoid fetching intermediate problems, and a cached flip fetches nothing.
   const [settledTaskId, setSettledTaskId] = useState<string | undefined>(undefined);
   useEffect(() => {
     const id = loadedTask?.id;
+    if (id !== undefined && client.peekFresh(`/contests/${contestId}/tasks/${id}`, ttl)) {
+      setSettledTaskId(id);
+      return;
+    }
     const timer = setTimeout(() => setSettledTaskId(id), 150);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadedTask?.id]);
   const settledTask = tasks.find((task) => task.id === settledTaskId);
 

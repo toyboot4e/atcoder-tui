@@ -74,6 +74,7 @@ export class AtcoderClient {
   private tail: Promise<void> = Promise.resolve();
   private lastRequestAt = Number.NEGATIVE_INFINITY;
   private queued = 0;
+  private readonly pending = new Map<string, Promise<FetchOutcome>>();
 
   constructor(opts: ClientOptions) {
     this.meter = opts.meter;
@@ -116,6 +117,11 @@ export class AtcoderClient {
       }
     }
 
+    // Coalesce: a caller asking for a URL that is already queued or in
+    // flight joins that request instead of costing AtCoder a duplicate.
+    const inFlight = this.pending.get(url);
+    if (inFlight !== undefined) return inFlight;
+
     this.queued += 1;
     this.meter.setActivity(true, this.queued);
     const result = this.tail.then(() => this.performFetch(url, opts.noStore === true));
@@ -124,10 +130,18 @@ export class AtcoderClient {
       () => {},
       () => {},
     );
+    this.pending.set(url, result);
     return result.finally(() => {
+      this.pending.delete(url);
       this.queued -= 1;
       this.meter.setActivity(this.queued > 0, this.queued);
     });
+  }
+
+  /** Cache-only freshness probe: no request, no queueing, no metering. */
+  peekFresh(pathname: string, ttl: Ttl): boolean {
+    if (this.cache === null) return false;
+    return this.cache.get(this.baseUrl + pathname, ttl) !== null;
   }
 
   private async waitForBudget(): Promise<void> {

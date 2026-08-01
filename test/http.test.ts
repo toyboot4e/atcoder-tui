@@ -139,6 +139,46 @@ describe("AtcoderClient", () => {
     expect(meter.stats().cacheHits).toBe(1);
   });
 
+  test("concurrent fetches of one URL coalesce into a single request", async () => {
+    const { client, calls } = makeHarness(() => ok("x"));
+    const outcomes = await Promise.all([
+      client.fetch("/a", { ttl: 0 }),
+      client.fetch("/a", { ttl: 0 }),
+      client.fetch("/b", { ttl: 0 }),
+      client.fetch("/a", { ttl: 0 }),
+    ]);
+    expect(calls.map((c) => c.url)).toEqual(["https://atcoder.jp/a", "https://atcoder.jp/b"]);
+    for (const outcome of outcomes) expect(outcome.body).toBe("x");
+  });
+
+  test("coalesced rejection reaches every caller without wedging the queue", async () => {
+    let n = 0;
+    const { client } = makeHarness(() =>
+      n++ === 0 ? new Response("boom", { status: 500 }) : ok("fine"),
+    );
+    const results = await Promise.allSettled([
+      client.fetch("/a", { ttl: 0 }),
+      client.fetch("/a", { ttl: 0 }),
+    ]);
+    expect(results.map((r) => r.status)).toEqual(["rejected", "rejected"]);
+    const after = await client.fetch("/b", { ttl: 0 });
+    expect(after.body).toBe("fine");
+  });
+
+  test("peekFresh probes the cache without any request or metering", async () => {
+    let cacheNow = 5_000_000;
+    const cache = new DiskCache(tempDir(), () => cacheNow);
+    const { client, calls, meter } = makeHarness(() => ok("x"), { cache });
+    expect(client.peekFresh("/a", "infinite")).toBe(false);
+    await client.fetch("/a", { ttl: "infinite" });
+    const hitsBefore = meter.stats().cacheHits;
+    expect(client.peekFresh("/a", "infinite")).toBe(true);
+    cacheNow += 1_000;
+    expect(client.peekFresh("/a", 999)).toBe(false); // older than the ttl
+    expect(calls).toHaveLength(1);
+    expect(meter.stats().cacheHits).toBe(hitsBefore);
+  });
+
   test("bypassCache refetches but still stores", async () => {
     const cache = new DiskCache(tempDir());
     let n = 0;
