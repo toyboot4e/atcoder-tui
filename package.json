@@ -2,6 +2,7 @@
   "name": "atcoder-tui",
   "version": "0.1.0",
   "private": true,
+  "license": "CC0-1.0",
   "type": "module",
   "scripts": {
     "build": "bun build --compile src/index.tsx --outfile dist/atcoder-tui",
