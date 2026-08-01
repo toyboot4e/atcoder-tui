@@ -1,13 +1,13 @@
 import { type ContestListItem } from "./scrape/contests.js";
 
 const entry = (id: string, title: string): ContestListItem => ({
-  id,
-  title,
-  startsAt: null,
-  durationText: null,
   durationMin: null,
-  ratedRange: "",
+  durationText: null,
+  id,
   kind: null,
+  ratedRange: "",
+  startsAt: null,
+  title,
 });
 
 /**

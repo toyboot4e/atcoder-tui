@@ -1,14 +1,14 @@
-import { useMemo, useState } from "react";
-import { Text, useInput } from "ink";
-import chalk from "chalk";
-import { LoginRequiredError } from "../net/http.js";
-import { parseSubmissionsPage, type Submission } from "../scrape/submissions.js";
-import { useServices } from "../state/services.js";
-import { useAppDispatch, useAppState } from "../state/store.js";
-import { useData } from "../state/useData.js";
-import { useVimNav } from "../keys/useKeys.js";
 import { ScrollView, clampScroll } from "./ScrollView.js";
+import { type Submission, parseSubmissionsPage } from "../scrape/submissions.js";
+import { Text, useInput } from "ink";
+import { useAppDispatch, useAppState } from "../state/store.js";
+import { useMemo, useState } from "react";
+import { LoginRequiredError } from "../net/http.js";
+import chalk from "chalk";
 import { t } from "./strings.js";
+import { useData } from "../state/useData.js";
+import { useServices } from "../state/services.js";
+import { useVimNav } from "../keys/useKeys.js";
 
 const SUBMISSIONS_TTL_MS = 60 * 1000;
 
@@ -60,15 +60,15 @@ export function SubmissionsPane({
   const { state, refresh } = useData(
     `submissions-${contestId}-${userId ?? "anon"}`,
     async (bypassCache) => {
-      if (userId === undefined) return { data: null, stale: false, fetchedAt: 0 };
+      if (userId === undefined) return { data: null, fetchedAt: 0, stale: false };
       const outcome = await client.fetch(
         `/contests/${contestId}/submissions?f.User=${encodeURIComponent(userId)}`,
-        { ttl: SUBMISSIONS_TTL_MS, bypassCache },
+        { bypassCache, ttl: SUBMISSIONS_TTL_MS },
       );
       return {
         data: parseSubmissionsPage(outcome.body),
-        stale: outcome.stale,
         fetchedAt: outcome.fetchedAt,
+        stale: outcome.stale,
       };
     },
   );
@@ -96,22 +96,22 @@ export function SubmissionsPane({
 
   useVimNav(active, submissions.length, clampedCursor, viewHeight, {
     handleHorizontal: false, // h/l cycle tabs at the contest level
+    onBack,
     onMove: setCursor,
     onSelect: () => {
       const submission = submissions[clampedCursor];
       if (submission !== undefined && submission.id !== null) {
         dispatch({
-          type: "push",
           route: {
-            screen: "submission",
             contestId,
+            screen: "submission",
             submissionId: submission.id,
             summary: submission,
           },
+          type: "push",
         });
       }
     },
-    onBack,
   });
   useInput(
     (input) => {

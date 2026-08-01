@@ -1,5 +1,5 @@
+import { type Key, useInput } from "ink";
 import { useRef } from "react";
-import { useInput, type Key } from "ink";
 
 export interface ListNavActions {
   /** Move selection to the given index (already clamped). */

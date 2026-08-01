@@ -1,7 +1,7 @@
+import { type ParseError, applyEdits, modify, parse as parseJsonc } from "jsonc-parser";
+import { configDir } from "./platform.js";
 import fs from "node:fs";
 import path from "node:path";
-import { applyEdits, modify, parse as parseJsonc, type ParseError } from "jsonc-parser";
-import { configDir } from "./platform.js";
 
 export type Language = "en" | "ja";
 
@@ -20,10 +20,10 @@ export interface Config {
 }
 
 export const DEFAULT_CONFIG: Config = {
-  language: "en",
   cache: true,
-  requestsPerMinute: 20,
   favorites: [],
+  language: "en",
+  requestsPerMinute: 20,
 };
 
 export interface LoadedConfig {
@@ -46,7 +46,7 @@ export function loadConfig(filePath: string = configFilePath()): LoadedConfig {
   try {
     raw = fs.readFileSync(filePath, "utf8");
   } catch {
-    return { config, warnings, path: filePath };
+    return { config, path: filePath, warnings };
   }
 
   const errors: ParseError[] = [];
@@ -57,7 +57,7 @@ export function loadConfig(filePath: string = configFilePath()): LoadedConfig {
   }
   if (typeof data !== "object" || data === null) {
     warnings.push(`config: expected an object in ${filePath}, using defaults`);
-    return { config, warnings, path: filePath };
+    return { config, path: filePath, warnings };
   }
 
   const obj = data as Record<string, unknown>;
@@ -85,7 +85,7 @@ export function loadConfig(filePath: string = configFilePath()): LoadedConfig {
     config.requestsPerMinute = Math.min(30, Math.floor(obj["requestsPerMinute"]));
   }
 
-  return { config, warnings, path: filePath };
+  return { config, path: filePath, warnings };
 }
 
 /**

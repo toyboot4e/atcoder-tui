@@ -1,6 +1,6 @@
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { createHash } from "node:crypto";
 
 export type Ttl = number | "infinite";
 
@@ -52,7 +52,7 @@ export class DiskCache {
 
   put(url: string, body: string): void {
     fs.mkdirSync(this.dir, { recursive: true });
-    const entry: CacheEntry = { url, fetchedAt: this.clock(), body };
+    const entry: CacheEntry = { body, fetchedAt: this.clock(), url };
     fs.writeFileSync(this.filePath(url), JSON.stringify(entry));
   }
 }

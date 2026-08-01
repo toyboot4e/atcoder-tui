@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from "react";
-import { useApp, useInput } from "ink";
-import { autoImportSession } from "./autoSession.js";
-import { loadState, saveState } from "./state/persist.js";
-import { ServicesProvider, useServices, type Services } from "./state/services.js";
+import { type Services, ServicesProvider, useServices } from "./state/services.js";
 import { StoreProvider, useAppDispatch, useAppState, useCurrentRoute } from "./state/store.js";
+import { loadState, saveState } from "./state/persist.js";
+import { useApp, useInput } from "ink";
+import { useEffect, useRef, useState } from "react";
 import { ContestView } from "./ui/ContestView.js";
 import { Dashboard } from "./ui/Dashboard.js";
-import { SubmissionView } from "./ui/SubmissionView.js";
 import { HelpOverlay } from "./ui/HelpOverlay.js";
+import { SubmissionView } from "./ui/SubmissionView.js";
+import { autoImportSession } from "./autoSession.js";
 
 export function App({ services }: { services: Services }) {
   // Relaunch where the previous session quit, in the language last used.
@@ -41,7 +41,7 @@ function Root() {
       mounted.current = true;
       return;
     }
-    saveState({ routes, language });
+    saveState({ language, routes });
   }, [routes, language]);
 
   // Convenience: adopt a stored oj/acc session when none is configured.
@@ -49,8 +49,8 @@ function Root() {
   useEffect(() => {
     void autoImportSession({
       client: services.client,
-      notices: services.notices,
       configuredSession: services.config.revelSession,
+      notices: services.notices,
     }).then(() => {
       const cookie = services.client.getCookie();
       if (cookie !== undefined) services.config.revelSession = cookie;

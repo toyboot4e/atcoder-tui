@@ -1,6 +1,6 @@
+import { browserCommand, cacheDir, configDir } from "../src/platform.js";
 import { describe, expect, test } from "bun:test";
 import path from "node:path";
-import { browserCommand, cacheDir, configDir } from "../src/platform.js";
 
 describe("configDir", () => {
   test("honors XDG_CONFIG_HOME on linux", () => {

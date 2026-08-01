@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import fs from "node:fs";
-import path from "node:path";
-import stringWidth from "string-width";
-import { renderSections } from "../src/render/lines.js";
-import { parseStatement } from "../src/scrape/statement.js";
 import { type Section } from "../src/render/ast.js";
+import fs from "node:fs";
+import { parseStatement } from "../src/scrape/statement.js";
+import path from "node:path";
+import { renderSections } from "../src/render/lines.js";
+import stringWidth from "string-width";
 
 // Intentional control character: strips ANSI SGR sequences from chalk output.
 // eslint-disable-next-line no-control-regex
@@ -14,13 +14,13 @@ describe("renderSections", () => {
   test("wraps prose to width", () => {
     const sections: Section[] = [
       {
-        title: "Problem",
         blocks: [
           {
-            kind: "paragraph",
             inlines: [{ kind: "text", text: "word ".repeat(20).trim() }],
+            kind: "paragraph",
           },
         ],
+        title: "Problem",
       },
     ];
     const lines = renderSections(sections, 30);
@@ -33,13 +33,13 @@ describe("renderSections", () => {
   test("wraps CJK full-width text correctly", () => {
     const sections: Section[] = [
       {
-        title: "問題文",
         blocks: [
           {
-            kind: "paragraph",
             inlines: [{ kind: "text", text: "高橋君は".repeat(20) }],
+            kind: "paragraph",
           },
         ],
+        title: "問題文",
       },
     ];
     const lines = renderSections(sections, 20);
@@ -52,8 +52,8 @@ describe("renderSections", () => {
     const long = "1 ".repeat(40).trim();
     const sections: Section[] = [
       {
+        blocks: [{ inlines: [{ kind: "text", text: `${long}\n2 3\n` }], kind: "pre" }],
         title: "Sample Input 1",
-        blocks: [{ kind: "pre", inlines: [{ kind: "text", text: `${long}\n2 3\n` }] }],
       },
     ];
     const lines = renderSections(sections, 20).map((line) => strip(line));
@@ -66,17 +66,17 @@ describe("renderSections", () => {
   test("math inside pre is converted in place", () => {
     const sections: Section[] = [
       {
-        title: "Input",
         blocks: [
           {
-            kind: "pre",
             inlines: [
               { kind: "math", latex: "A_1" },
               { kind: "text", text: " " },
               { kind: "math", latex: "A_2" },
             ],
+            kind: "pre",
           },
         ],
+        title: "Input",
       },
     ];
     const lines = renderSections(sections, 40).map((line) => strip(line));
@@ -86,17 +86,17 @@ describe("renderSections", () => {
   test("ordered list markers with hanging indent", () => {
     const sections: Section[] = [
       {
-        title: "",
         blocks: [
           {
-            kind: "list",
-            ordered: true,
             items: [
               [{ kind: "text", text: "short" }],
               [{ kind: "text", text: "long ".repeat(10).trim() }],
             ],
+            kind: "list",
+            ordered: true,
           },
         ],
+        title: "",
       },
     ];
     const lines = renderSections(sections, 24).map((line) => strip(line));

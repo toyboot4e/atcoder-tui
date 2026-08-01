@@ -7,8 +7,8 @@
 // Logged-in recordings are forced into test/fixtures/private/ (gitignored) and
 // can never land in the committed fixture set — enforced here, not by care.
 import fs from "node:fs";
-import path from "node:path";
 import { loadConfig } from "../src/config.js";
+import path from "node:path";
 
 const args = process.argv.slice(2);
 const useSession = args.includes("--session");

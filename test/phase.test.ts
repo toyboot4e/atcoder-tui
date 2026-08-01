@@ -1,5 +1,5 @@
-import { describe, expect, test } from "bun:test";
 import { contestPhase, formatCountdown, formatStartLine } from "../src/phase.js";
+import { describe, expect, test } from "bun:test";
 
 const HOUR = 3_600_000;
 

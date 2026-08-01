@@ -1,7 +1,7 @@
+import { type Block, type Inline, type Section, unreachable } from "./ast.js";
 import chalk from "chalk";
-import wrapAnsi from "wrap-ansi";
-import { unreachable, type Block, type Inline, type Section } from "./ast.js";
 import { latexToUnicode } from "./latex.js";
+import wrapAnsi from "wrap-ansi";
 
 /**
  * Sections → styled, pre-wrapped terminal lines. Plain string[] output keeps
@@ -56,7 +56,7 @@ function renderBlock(block: Block, width: number): string[] {
 }
 
 function wrap(text: string, width: number): string[] {
-  return wrapAnsi(text, Math.max(10, width), { trim: false, hard: true })
+  return wrapAnsi(text, Math.max(10, width), { hard: true, trim: false })
     .split("\n")
     .map((line) => line.trimEnd());
 }

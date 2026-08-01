@@ -30,8 +30,8 @@ export function parseContestTop(html: string): ContestMeta {
   const ja = statement.find("span.lang-ja").first();
   const en = statement.find("span.lang-en").first();
   const statementHtml = {
-    ja: ja.length > 0 ? ja.html() : statement.length > 0 ? statement.html() : null,
     en: en.length > 0 ? en.html() : null,
+    ja: ja.length > 0 ? ja.html() : statement.length > 0 ? statement.html() : null,
   };
 
   // Writers/testers appear (when published) as list items like
@@ -54,12 +54,12 @@ export function parseContestTop(html: string): ContestMeta {
   });
 
   return {
-    title: $(".contest-title").first().text().trim(),
-    startText: times[0] ?? null,
     endText: times[1] ?? null,
     headerFacts,
-    writers: [...writers],
-    testers: [...testers],
+    startText: times[0] ?? null,
     statementHtml,
+    testers: [...testers],
+    title: $(".contest-title").first().text().trim(),
+    writers: [...writers],
   };
 }

@@ -65,9 +65,6 @@
     "eslint/no-ternary": "off",
     "eslint/no-nested-ternary": "off",
     "unicorn/no-nested-ternary": "off",
-    // Key/import order is semantic (grouped by meaning), not alphabetical.
-    "eslint/sort-keys": "off",
-    "eslint/sort-imports": "off",
     // Function declarations are used deliberately (components, hoisting).
     "eslint/func-style": "off",
     // React/Ink APIs speak null (render nothing, empty ref).

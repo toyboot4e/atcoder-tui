@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, type Dispatch, type ReactNode } from "react";
+import { type Dispatch, type ReactNode, createContext, useContext, useReducer } from "react";
 import { type Language } from "../config.js";
 import { type Submission } from "../scrape/submissions.js";
 
@@ -56,9 +56,9 @@ export function StoreProvider({
   children: ReactNode;
 }) {
   const [state, dispatch] = useReducer(reducer, {
-    routes: initialRoutes ?? [{ screen: "dashboard" }],
-    language,
     inputActive: false,
+    language,
+    routes: initialRoutes ?? [{ screen: "dashboard" }],
   });
   return (
     <StateContext.Provider value={state}>

@@ -1,8 +1,8 @@
-import os from "node:os";
-import { configFilePath } from "./config.js";
-import { LoginRequiredError, type AtcoderClient } from "./net/http.js";
-import { type Notices } from "./state/notices.js";
+import { type AtcoderClient, LoginRequiredError } from "./net/http.js";
 import { findSessionCandidates, saveSession } from "./session.js";
+import { type Notices } from "./state/notices.js";
+import { configFilePath } from "./config.js";
+import os from "node:os";
 
 export interface AutoImportDeps {
   client: AtcoderClient;
@@ -33,9 +33,9 @@ export async function autoImportSession(deps: AutoImportDeps): Promise<void> {
     try {
       // /settings is login-gated: 200 = session works, 302→/login = expired.
       await deps.client.fetch("/settings", {
-        ttl: 0,
         bypassCache: true,
         noStore: true,
+        ttl: 0,
       });
       saveSession(candidate.value, deps.configPath ?? configFilePath());
       deps.notices.push(

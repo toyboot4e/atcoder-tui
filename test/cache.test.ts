@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
+import { DiskCache } from "../src/cache.js";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { DiskCache } from "../src/cache.js";
 
 function tempDir(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), "atui-cache-"));

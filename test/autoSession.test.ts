@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
-import { autoImportSession } from "../src/autoSession.js";
 import { AtcoderClient } from "../src/net/http.js";
 import { LoadMeter } from "../src/net/load.js";
 import { Notices } from "../src/state/notices.js";
+import { autoImportSession } from "../src/autoSession.js";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
 function tempDir(prefix: string): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
@@ -26,13 +26,8 @@ function makeClient(validCookie: string | null) {
   let now = 1_000_000;
   const seen: (string | null)[] = [];
   const client = new AtcoderClient({
-    meter: new LoadMeter(null, () => now),
     cache: null,
     clock: () => now,
-    sleep: (ms) => {
-      now += ms;
-      return Promise.resolve();
-    },
     fetchImpl: (_url, init) => {
       const cookie = new Headers(init?.headers).get("cookie");
       seen.push(cookie);
@@ -41,10 +36,15 @@ function makeClient(validCookie: string | null) {
       }
       return Promise.resolve(
         new Response(null, {
-          status: 302,
           headers: { location: "https://atcoder.jp/login" },
+          status: 302,
         }),
       );
+    },
+    meter: new LoadMeter(null, () => now),
+    sleep: (ms) => {
+      now += ms;
+      return Promise.resolve();
     },
   });
   return { client, seen };
@@ -63,10 +63,10 @@ describe("autoImportSession", () => {
 
     await autoImportSession({
       client,
-      notices,
+      configPath,
       configuredSession: undefined,
       home,
-      configPath,
+      notices,
     });
 
     expect(client.getCookie()).toBe("goodcookie123");
@@ -85,10 +85,10 @@ describe("autoImportSession", () => {
 
     await autoImportSession({
       client,
-      notices,
+      configPath,
       configuredSession: undefined,
       home,
-      configPath,
+      notices,
     });
 
     expect(client.getCookie()).toBeUndefined(); // reverted
@@ -103,9 +103,9 @@ describe("autoImportSession", () => {
 
     await autoImportSession({
       client,
-      notices,
       configuredSession: "configured",
       home,
+      notices,
     });
 
     expect(seen).toHaveLength(0); // no network traffic at all
@@ -117,23 +117,23 @@ describe("autoImportSession", () => {
     const configPath = path.join(tempDir("atui-auto-cfg-"), "config.json");
     let now = 0;
     const client = new AtcoderClient({
-      meter: new LoadMeter(null, () => now),
       cache: null,
       clock: () => now,
+      fetchImpl: () => Promise.reject(new Error("offline")),
+      meter: new LoadMeter(null, () => now),
       sleep: (ms) => {
         now += ms;
         return Promise.resolve();
       },
-      fetchImpl: () => Promise.reject(new Error("offline")),
     });
     const notices = new Notices();
 
     await autoImportSession({
       client,
-      notices,
+      configPath,
       configuredSession: undefined,
       home,
-      configPath,
+      notices,
     });
 
     expect(notices.latest).toBeNull();
@@ -145,9 +145,9 @@ describe("autoImportSession", () => {
     const notices = new Notices();
     await autoImportSession({
       client,
-      notices,
       configuredSession: undefined,
       home: tempDir("atui-empty-"),
+      notices,
     });
     expect(seen).toHaveLength(0);
     expect(notices.latest).toBeNull();

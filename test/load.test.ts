@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
+import { LoadMeter } from "../src/net/load.js";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { LoadMeter } from "../src/net/load.js";
 
 function tempJournal(): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "atui-load-"));

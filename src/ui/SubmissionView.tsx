@@ -1,18 +1,18 @@
-import { useMemo, useState } from "react";
 import { Box, Text } from "ink";
-import chalk from "chalk";
 import { HttpError, LoginRequiredError } from "../net/http.js";
-import { parseSubmissionDetail } from "../scrape/submission.js";
-import { type Submission } from "../scrape/submissions.js";
-import { useServices } from "../state/services.js";
+import { ScrollView, clampScroll } from "./ScrollView.js";
 import { useAppDispatch, useAppState } from "../state/store.js";
+import { useMemo, useState } from "react";
+import { StatusBar } from "./StatusBar.js";
+import { type Submission } from "../scrape/submissions.js";
+import chalk from "chalk";
+import { openInBrowser } from "../platform.js";
+import { parseSubmissionDetail } from "../scrape/submission.js";
+import { t } from "./strings.js";
 import { useData } from "../state/useData.js";
 import { useScrollKeys } from "../keys/useKeys.js";
-import { openInBrowser } from "../platform.js";
+import { useServices } from "../state/services.js";
 import { useTerminalSize } from "./hooks.js";
-import { ScrollView, clampScroll } from "./ScrollView.js";
-import { StatusBar } from "./StatusBar.js";
-import { t } from "./strings.js";
 
 const SUBMISSION_TTL_MS = 5 * 60 * 1000;
 
@@ -41,11 +41,11 @@ export function SubmissionView({
   const { state, refresh } = useData(
     `submission-${contestId}-${submissionId}`,
     async (bypassCache) => {
-      const outcome = await client.fetch(path, { ttl: SUBMISSION_TTL_MS, bypassCache });
+      const outcome = await client.fetch(path, { bypassCache, ttl: SUBMISSION_TTL_MS });
       return {
         data: parseSubmissionDetail(outcome.body),
-        stale: outcome.stale,
         fetchedAt: outcome.fetchedAt,
+        stale: outcome.stale,
       };
     },
   );

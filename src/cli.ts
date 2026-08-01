@@ -1,6 +1,6 @@
-import readline from "node:readline";
-import { loadConfig } from "./config.js";
 import { checkSession, findSessionCandidates, maskSession, saveSession } from "./session.js";
+import { loadConfig } from "./config.js";
+import readline from "node:readline";
 
 const HELP = `atcoder-tui session — manage the AtCoder login cookie
 

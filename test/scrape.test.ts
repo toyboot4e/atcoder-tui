@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
+import { formatElapsed, parseStandingsJson, ratingColor } from "../src/scrape/standings.js";
 import fs from "node:fs";
-import path from "node:path";
 import { parseArchivePage } from "../src/scrape/contests.js";
 import { parseContestTop } from "../src/scrape/contest.js";
-import { parseSubmissionsPage } from "../src/scrape/submissions.js";
-import { formatElapsed, parseStandingsJson, ratingColor } from "../src/scrape/standings.js";
 import { parseSubmissionDetail } from "../src/scrape/submission.js";
+import { parseSubmissionsPage } from "../src/scrape/submissions.js";
 import { parseTasksPage } from "../src/scrape/tasks.js";
+import path from "node:path";
 
 const fixture2 = (name: string) =>
   fs.readFileSync(path.join(import.meta.dir, "fixtures", name), "utf8");
@@ -21,9 +21,9 @@ describe("parseTasksPage", () => {
     expect(tasks[0]).toEqual({
       id: "abc300_a",
       letter: "A",
-      title: "N-choice question",
-      timeLimit: "2 sec",
       memoryLimit: "1024 MiB",
+      timeLimit: "2 sec",
+      title: "N-choice question",
     });
     expect(tasks[7]!.letter).toBe("Ex");
   });
@@ -66,16 +66,16 @@ describe("parseSubmissionsPage", () => {
     expect(page.submissions).toHaveLength(3);
     const ac = page.submissions[0]!;
     expect(ac).toEqual({
+      execTime: "2 ms",
       id: "41039290",
-      timeText: "2023-04-29 21:02:32+0900",
-      taskId: "abc300_a",
-      taskLabel: "A - N-choice question",
-      user: "sample_user",
       language: "Haskell (GHC 9.4.5)",
+      memory: "4380 KB",
       score: "100",
       status: "AC",
-      execTime: "2 ms",
-      memory: "4380 KB",
+      taskId: "abc300_a",
+      taskLabel: "A - N-choice question",
+      timeText: "2023-04-29 21:02:32+0900",
+      user: "sample_user",
     });
   });
 
@@ -121,12 +121,12 @@ describe("parseStandingsJson", () => {
     expect(standings.tasks.map((t) => t.label)).toEqual(["A", "B"]);
     expect(standings.rows).toHaveLength(3);
     expect(standings.rows[0]).toEqual({
+      elapsedSec: 754,
+      penalty: 0,
       rank: 1,
-      user: "tourist_sample",
       rating: 3800,
       score: 600,
-      penalty: 0,
-      elapsedSec: 754,
+      user: "tourist_sample",
     });
   });
 

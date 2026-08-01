@@ -29,13 +29,13 @@ export function useData<T>(key: string, fetcher: (bypassCache: boolean) => Promi
       );
       fetcher(bypassCache).then(
         (loaded) => {
-          if (generation.current === gen) setState({ status: "ready", pending: false, ...loaded });
+          if (generation.current === gen) setState({ pending: false, status: "ready", ...loaded });
         },
         (error: unknown) => {
           if (generation.current === gen) {
             setState({
-              status: "error",
               error: error instanceof Error ? error : new Error(String(error)),
+              status: "error",
             });
           }
         },
@@ -50,5 +50,5 @@ export function useData<T>(key: string, fetcher: (bypassCache: boolean) => Promi
   }, [run]);
 
   const refresh = useCallback(() => run(true), [run]);
-  return { state, refresh };
+  return { refresh, state };
 }

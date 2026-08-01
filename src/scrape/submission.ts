@@ -29,5 +29,5 @@ export function parseSubmissionDetail(html: string): SubmissionDetail {
     }
   });
 
-  return { code, facts, compileError };
+  return { code, compileError, facts };
 }

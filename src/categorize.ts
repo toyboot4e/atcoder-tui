@@ -26,14 +26,14 @@ export const CATEGORY_ORDER: Category[] = [
 
 export const CATEGORY_LABELS: Record<Category, Record<Language, string>> = {
   abc: { en: "Beginner (ABC)", ja: "Beginner (ABC)" },
-  arc: { en: "Regular (ARC)", ja: "Regular (ARC)" },
   agc: { en: "Grand (AGC)", ja: "Grand (AGC)" },
   ahc: { en: "Heuristic (AHC)", ja: "Heuristic (AHC)" },
+  arc: { en: "Regular (ARC)", ja: "Regular (ARC)" },
   awc: { en: "Weekday (AWC)", ja: "平日コンテスト (AWC)" },
-  past: { en: "PAST", ja: "PAST（実用アルゴリズム検定）" },
-  learning: { en: "Learning (EDPC, Typical 90, …)", ja: "学習用 (EDPC・競プロ典型90…)" },
   joi: { en: "JOI", ja: "JOI（情報オリンピック）" },
+  learning: { en: "Learning (EDPC, Typical 90, …)", ja: "学習用 (EDPC・競プロ典型90…)" },
   other: { en: "Other", ja: "その他" },
+  past: { en: "PAST", ja: "PAST（実用アルゴリズム検定）" },
 };
 
 /** Ids of curated learning/educational contests (exact matches). */

@@ -81,7 +81,7 @@ export class LoadMeter {
   }
 
   recordRequest(url: string, bytes: number): void {
-    const event: LoadEvent = { ts: this.clock(), url, bytes };
+    const event: LoadEvent = { bytes, ts: this.clock(), url };
     this.history.push(event);
     this.sessionRequests += 1;
     this.sessionBytes += bytes;
@@ -124,14 +124,14 @@ export class LoadMeter {
     }
     const lookups = this.sessionRequests + this.cacheHits;
     return {
-      sessionRequests: this.sessionRequests,
-      sessionBytes: this.sessionBytes,
-      todayRequests,
-      todayBytes,
-      cacheHits: this.cacheHits,
       cacheHitRatio: lookups === 0 ? 0 : this.cacheHits / lookups,
+      cacheHits: this.cacheHits,
       inFlight: this.inFlight,
       queued: this.queued,
+      sessionBytes: this.sessionBytes,
+      sessionRequests: this.sessionRequests,
+      todayBytes,
+      todayRequests,
     };
   }
 

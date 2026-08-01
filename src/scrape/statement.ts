@@ -18,11 +18,11 @@ export function parseStatement(html: string): Statement {
   const en = root.find("span.lang-en").first();
 
   if (ja.length === 0 && en.length === 0) {
-    return { ja: parseSections($, root), en: null };
+    return { en: null, ja: parseSections($, root) };
   }
   return {
-    ja: ja.length > 0 ? parseSections($, ja) : [],
     en: en.length > 0 ? parseSections($, en) : null,
+    ja: ja.length > 0 ? parseSections($, ja) : [],
   };
 }
 
@@ -36,7 +36,7 @@ type Cheerio = ReturnType<cheerio.CheerioAPI>;
 
 function parseSections($: cheerio.CheerioAPI, container: Cheerio): Section[] {
   const sections: Section[] = [];
-  let current: Section = { title: "", blocks: [] };
+  let current: Section = { blocks: [], title: "" };
   const flush = () => {
     if (current.title !== "" || current.blocks.length > 0) sections.push(current);
   };
@@ -48,8 +48,8 @@ function parseSections($: cheerio.CheerioAPI, container: Cheerio): Section[] {
         const text = $(node).text().trim();
         if (text !== "")
           current.blocks.push({
-            kind: "paragraph",
             inlines: [{ kind: "text", text }],
+            kind: "paragraph",
           });
         continue;
       }
@@ -58,7 +58,7 @@ function parseSections($: cheerio.CheerioAPI, container: Cheerio): Section[] {
       if (name === "h3") {
         // Both generations: an h3 (wherever it sits) starts a new section.
         flush();
-        current = { title: $(el).text().trim(), blocks: [] };
+        current = { blocks: [], title: $(el).text().trim() };
       } else if (name === "section" || name === "div" || name === "span") {
         walk($(el).contents().toArray());
       } else {
@@ -78,13 +78,13 @@ function parseBlock($: cheerio.CheerioAPI, el: Element): Block[] | null {
   switch (name) {
     case "p": {
       const inlines = parseInlines($, $(el).contents().toArray());
-      return inlines.length > 0 ? [{ kind: "paragraph", inlines }] : null;
+      return inlines.length > 0 ? [{ inlines, kind: "paragraph" }] : null;
     }
     case "pre": {
       return [
         {
-          kind: "pre",
           inlines: parseInlines($, $(el).contents().toArray(), true),
+          kind: "pre",
         },
       ];
     }
@@ -96,7 +96,7 @@ function parseBlock($: cheerio.CheerioAPI, el: Element): Block[] | null {
         .each((_, li) => {
           items.push(parseInlines($, $(li).contents().toArray()));
         });
-      return [{ kind: "list", ordered: name === "ol", items }];
+      return [{ items, kind: "list", ordered: name === "ol" }];
     }
     case "h4":
     case "h5": {
@@ -126,8 +126,8 @@ function parseBlock($: cheerio.CheerioAPI, el: Element): Block[] | null {
       // Rare in statements; degrade to text so nothing is silently dropped.
       return [
         {
-          kind: "paragraph",
           inlines: [{ kind: "text", text: $(el).text().replaceAll(/\s+/gu, " ").trim() }],
+          kind: "paragraph",
         },
       ];
     }
@@ -137,7 +137,7 @@ function parseBlock($: cheerio.CheerioAPI, el: Element): Block[] | null {
     }
     default: {
       const inlines = parseInlines($, [el]);
-      return inlines.length > 0 ? [{ kind: "paragraph", inlines }] : null;
+      return inlines.length > 0 ? [{ inlines, kind: "paragraph" }] : null;
     }
   }
 }
@@ -167,12 +167,12 @@ function parseInlines($: cheerio.CheerioAPI, nodes: AnyNode[], verbatim = false)
       }
       case "strong":
       case "b": {
-        inlines.push({ kind: "strong", inlines: children() });
+        inlines.push({ inlines: children(), kind: "strong" });
         break;
       }
       case "em":
       case "i": {
-        inlines.push({ kind: "em", inlines: children() });
+        inlines.push({ inlines: children(), kind: "em" });
         break;
       }
       case "br": {

@@ -46,16 +46,16 @@ export function parseSubmissionsPage(html: string): SubmissionsPage {
     // size, 6 status; full rows append 7 exec time and 8 memory.
     const full = tds.length >= 9;
     submissions.push({
+      execTime: full ? tds.eq(7).text().trim() : null,
       id: detailHref !== undefined ? detailHref.split("/submissions/")[1]! : null,
-      timeText: tds.eq(0).find("time").text().trim() || tds.eq(0).text().trim(),
-      taskId: taskHref.split("/tasks/")[1]?.split(/[/?#]/u)[0] ?? null,
-      taskLabel: taskLink.text().trim(),
-      user: $(tr).find("a[href^='/users/']").first().text().trim(),
       language: tds.eq(3).text().trim(),
+      memory: full ? tds.eq(8).text().trim() : null,
       score: tds.eq(4).text().trim(),
       status,
-      execTime: full ? tds.eq(7).text().trim() : null,
-      memory: full ? tds.eq(8).text().trim() : null,
+      taskId: taskHref.split("/tasks/")[1]?.split(/[/?#]/u)[0] ?? null,
+      taskLabel: taskLink.text().trim(),
+      timeText: tds.eq(0).find("time").text().trim() || tds.eq(0).text().trim(),
+      user: $(tr).find("a[href^='/users/']").first().text().trim(),
     });
   });
 
@@ -64,5 +64,5 @@ export function parseSubmissionsPage(html: string): SubmissionsPage {
     const m = /[?&]page=(?<page>\d+)/u.exec($(a).attr("href") ?? "");
     if (m !== null) maxPage = Math.max(maxPage, Number(m.groups!["page"]));
   });
-  return { submissions, maxPage };
+  return { maxPage, submissions };
 }

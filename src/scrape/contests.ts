@@ -54,16 +54,16 @@ function parseRow($: cheerio.CheerioAPI, tr: AnyNode): ContestListItem | null {
 
   const durationText = hasTime ? tds.eq(2).text().trim() : null;
   return {
-    id: contestId,
-    title: link.text().trim(),
-    startsAt: hasTime ? parseStart(tds.eq(0).find("time").text()) : null,
-    durationText,
     durationMin: durationText === null ? null : parseDuration(durationText),
+    durationText,
+    id: contestId,
+    kind,
     ratedRange: tds
       .eq(hasTime ? 3 : 1)
       .text()
       .trim(),
-    kind,
+    startsAt: hasTime ? parseStart(tds.eq(0).find("time").text()) : null,
+    title: link.text().trim(),
   };
 }
 
@@ -85,7 +85,7 @@ export function parseContestsPage(html: string): ContestSection[] {
       const item = parseRow($, tr);
       if (item !== null) contests.push(item);
     });
-    sections.push({ id, title, contests });
+    sections.push({ contests, id, title });
   });
 
   return sections;

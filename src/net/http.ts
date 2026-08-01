@@ -1,5 +1,5 @@
-import { Buffer } from "node:buffer";
 import { type DiskCache, type Ttl } from "../cache.js";
+import { Buffer } from "node:buffer";
 import { type LoadMeter } from "./load.js";
 
 export class LoginRequiredError extends Error {
@@ -115,9 +115,9 @@ export class AtcoderClient {
         this.meter.recordCacheHit();
         return Promise.resolve({
           body: hit.body,
+          fetchedAt: hit.fetchedAt,
           fromCache: true,
           stale: false,
-          fetchedAt: hit.fetchedAt,
         });
       }
     }
@@ -201,7 +201,7 @@ export class AtcoderClient {
     }
 
     if (!noStore) this.cache?.put(url, body);
-    return { body, fromCache: false, stale: false, fetchedAt: this.clock() };
+    return { body, fetchedAt: this.clock(), fromCache: false, stale: false };
   }
 
   private staleFallback(url: string): FetchOutcome | null {
@@ -209,9 +209,9 @@ export class AtcoderClient {
     if (entry === null) return null;
     return {
       body: entry.body,
+      fetchedAt: entry.fetchedAt,
       fromCache: true,
       stale: true,
-      fetchedAt: entry.fetchedAt,
     };
   }
 }

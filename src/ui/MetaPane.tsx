@@ -1,16 +1,16 @@
+import { ScrollView, clampScroll } from "./ScrollView.js";
 import { useMemo, useState } from "react";
 import { Text } from "ink";
-import chalk from "chalk";
 import { type Ttl } from "../cache.js";
-import { renderSections } from "../render/lines.js";
+import chalk from "chalk";
 import { parseContestTop } from "../scrape/contest.js";
 import { parseFragmentSections } from "../scrape/statement.js";
-import { useServices } from "../state/services.js";
+import { renderSections } from "../render/lines.js";
+import { t } from "./strings.js";
 import { useAppState } from "../state/store.js";
 import { useData } from "../state/useData.js";
 import { useScrollKeys } from "../keys/useKeys.js";
-import { ScrollView, clampScroll } from "./ScrollView.js";
-import { t } from "./strings.js";
+import { useServices } from "../state/services.js";
 
 export function MetaPane({
   contestId,
@@ -36,13 +36,13 @@ export function MetaPane({
 
   const { state, refresh } = useData(`meta-${contestId}-${language}`, async (bypassCache) => {
     const outcome = await client.fetch(`/contests/${contestId}?lang=${language}`, {
-      ttl,
       bypassCache,
+      ttl,
     });
     return {
       data: parseContestTop(outcome.body),
-      stale: outcome.stale,
       fetchedAt: outcome.fetchedAt,
+      stale: outcome.stale,
     };
   });
 

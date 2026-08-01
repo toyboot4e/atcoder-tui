@@ -1,7 +1,7 @@
+import { configFilePath, updateConfigField } from "./config.js";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { configFilePath, updateConfigField } from "./config.js";
 
 export interface SessionCandidate {
   /** Human-readable origin, e.g. "oj (~/.local/share/…/cookie.jar)". */
@@ -77,9 +77,9 @@ export function maskSession(value: string): string {
 export async function checkSession(value: string): Promise<boolean> {
   const response = await fetch("https://atcoder.jp/settings", {
     headers: {
+      Cookie: `REVEL_SESSION=${value}`,
       "User-Agent":
         "atcoder-tui/0.1 (unofficial read-only viewer; +https://github.com/toyboot4e/atcoder-tui)",
-      Cookie: `REVEL_SESSION=${value}`,
     },
     redirect: "manual",
   });

@@ -1,8 +1,8 @@
+import { type Language } from "../config.js";
+import { type Route } from "./store.js";
 import fs from "node:fs";
 import path from "node:path";
-import { type Language } from "../config.js";
 import { stateFilePath } from "../platform.js";
-import { type Route } from "./store.js";
 
 export interface PersistedState {
   routes: Route[];
@@ -66,7 +66,7 @@ export function saveState(state: PersistedState, file: string = stateFilePath())
     if (debugPath !== undefined && debugPath !== "") {
       fs.appendFileSync(
         debugPath,
-        `${JSON.stringify({ t: Date.now(), routes: state.routes.map((r) => r.screen) })}\n${new Error("trace").stack}\n`,
+        `${JSON.stringify({ routes: state.routes.map((r) => r.screen), t: Date.now() })}\n${new Error("trace").stack}\n`,
       );
     }
     fs.mkdirSync(path.dirname(file), { recursive: true });

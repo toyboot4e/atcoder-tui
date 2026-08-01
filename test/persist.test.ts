@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
+import { loadState, saveState } from "../src/state/persist.js";
+import { type Route } from "../src/state/store.js";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { loadState, saveState } from "../src/state/persist.js";
-import { type Route } from "../src/state/store.js";
 
 const tempFile = () =>
   path.join(fs.mkdtempSync(path.join(os.tmpdir(), "atui-state-")), "state.json");
@@ -13,11 +13,11 @@ describe("route persistence", () => {
     const file = tempFile();
     const routes: Route[] = [
       { screen: "dashboard" },
-      { screen: "contest", contestId: "abc300", startsAt: 1, endsAt: 2 },
-      { screen: "submission", contestId: "abc300", submissionId: "41039290" },
+      { contestId: "abc300", endsAt: 2, screen: "contest", startsAt: 1 },
+      { contestId: "abc300", screen: "submission", submissionId: "41039290" },
     ];
-    saveState({ routes, language: "ja" }, file);
-    expect(loadState(file)).toEqual({ routes, language: "ja" });
+    saveState({ language: "ja", routes }, file);
+    expect(loadState(file)).toEqual({ language: "ja", routes });
   });
 
   test("missing file yields null", () => {
@@ -33,7 +33,7 @@ describe("route persistence", () => {
     fs.writeFileSync(
       file,
       JSON.stringify({
-        routes: [{ screen: "contest", contestId: "x", startsAt: null, endsAt: null }],
+        routes: [{ contestId: "x", endsAt: null, screen: "contest", startsAt: null }],
       }),
     );
     expect(loadState(file)).toBeNull(); // stack must be rooted at the dashboard

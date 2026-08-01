@@ -4,15 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "bun run src/index.tsx",
-    "dev": "bun --watch run src/index.tsx",
     "build": "bun build --compile src/index.tsx --outfile dist/atcoder-tui",
+    "check": "bun run fmt:check && bun run lint && bun run typecheck && bun run test",
+    "dev": "bun --watch run src/index.tsx",
     "fmt": "oxfmt src scripts test/*.ts",
     "fmt:check": "oxfmt --check src scripts test/*.ts",
     "lint": "oxlint --deny-warnings .",
-    "typecheck": "tsc --noEmit",
+    "start": "bun run src/index.tsx",
     "test": "bun test",
-    "check": "bun run fmt:check && bun run lint && bun run typecheck && bun run test"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "chalk": "^6.0.0",

@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
+import { findSessionCandidates, maskSession, saveSession } from "../src/session.js";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { findSessionCandidates, maskSession, saveSession } from "../src/session.js";
 
 const OJ_JAR = `#LWP-Cookies-2.0
 Set-Cookie3: REVEL_SESSION="0123456789abcdef%00fake%3Dvalue"; path="/"; domain="atcoder.jp"; path_spec; domain_dot; secure; expires="2026-12-31 00:00:00Z"; version=0
@@ -72,12 +72,12 @@ describe("saveSession", () => {
 
   test("preserves existing fields", () => {
     const file = path.join(tempHome(), "config.json");
-    fs.writeFileSync(file, JSON.stringify({ userId: "example_user", language: "ja" }));
+    fs.writeFileSync(file, JSON.stringify({ language: "ja", userId: "example_user" }));
     saveSession("abc", file);
     expect(JSON.parse(fs.readFileSync(file, "utf8"))).toEqual({
-      userId: "example_user",
       language: "ja",
       revelSession: "abc",
+      userId: "example_user",
     });
   });
 });

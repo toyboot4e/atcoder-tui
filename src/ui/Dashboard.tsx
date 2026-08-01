@@ -1,16 +1,16 @@
-import { useMemo, useRef, useState } from "react";
 import { Box, Text, useInput, useStdout } from "ink";
-import TextInput from "ink-text-input";
-import { CATEGORY_LABELS, CATEGORY_ORDER, categorize, type Category } from "../categorize.js";
-import { openInBrowser } from "../platform.js";
-import { parseArchivePage, parseContestsPage, type ContestListItem } from "../scrape/contests.js";
-import { UNLISTED_CONTESTS } from "../unlisted.js";
-import { useServices } from "../state/services.js";
+import { CATEGORY_LABELS, CATEGORY_ORDER, type Category, categorize } from "../categorize.js";
+import { type ContestListItem, parseArchivePage, parseContestsPage } from "../scrape/contests.js";
 import { useAppDispatch, useAppState } from "../state/store.js";
-import { useData } from "../state/useData.js";
-import { useVimNav } from "../keys/useKeys.js";
-import { t } from "./strings.js";
+import { useMemo, useRef, useState } from "react";
 import { StatusBar } from "./StatusBar.js";
+import TextInput from "ink-text-input";
+import { UNLISTED_CONTESTS } from "../unlisted.js";
+import { openInBrowser } from "../platform.js";
+import { t } from "./strings.js";
+import { useData } from "../state/useData.js";
+import { useServices } from "../state/services.js";
+import { useVimNav } from "../keys/useKeys.js";
 
 const FRONT_PAGE_TTL_MS = 30 * 60 * 1000;
 
@@ -22,12 +22,12 @@ export type DashView =
 // Survives unmount so returning from a contest restores the cursor, filter,
 // view and any loaded archive pages (module-level: only one dashboard).
 const remembered = {
-  selected: 0,
-  filter: "",
-  view: { kind: "sections" } as DashView,
   archive: [] as ContestListItem[],
-  archivePage: 0,
   archiveMax: null as number | null,
+  archivePage: 0,
+  filter: "",
+  selected: 0,
+  view: { kind: "sections" } as DashView,
 };
 
 type Row =
@@ -76,13 +76,13 @@ export function Dashboard() {
 
   const { state, refresh } = useData(`contests-${language}`, async (bypassCache) => {
     const outcome = await client.fetch(`/contests/?lang=${language}`, {
-      ttl: FRONT_PAGE_TTL_MS,
       bypassCache,
+      ttl: FRONT_PAGE_TTL_MS,
     });
     return {
       data: parseContestsPage(outcome.body),
-      stale: outcome.stale,
       fetchedAt: outcome.fetchedAt,
+      stale: outcome.stale,
     };
   });
 
@@ -98,9 +98,9 @@ export function Dashboard() {
     const pushSection = (title: string, contests: ContestListItem[]) => {
       const filtered = contests.filter((contest) => matches(contest));
       if (filtered.length === 0) return;
-      out.push({ type: "header", title });
+      out.push({ title, type: "header" });
       for (const contest of filtered) {
-        out.push({ type: "contest", contest, index });
+        out.push({ contest, index, type: "contest" });
         index += 1;
       }
     };
@@ -129,14 +129,14 @@ export function Dashboard() {
         ? `${pool.size}`
         : `${pool.size}${language === "ja" ? "（アーカイブ取得中…）" : " (loading archive…)"}`;
       out.push({
-        type: "header",
         title:
           language === "ja" ? `カテゴリ — 全${note}件` : `Categories — ${note} contests indexed`,
+        type: "header",
       });
       for (const category of CATEGORY_ORDER) {
         const count = counts.get(category) ?? 0;
         if (count === 0) continue;
-        out.push({ type: "category", category, count, index });
+        out.push({ category, count, index, type: "category" });
         index += 1;
       }
     } else if (view.kind === "category") {
@@ -165,25 +165,25 @@ export function Dashboard() {
     (state.status === "ready" && state.stale ? 1 : 0) + (filtering ? 1 : 0) + warnings.length;
   const height = (stdout?.rows ?? 24) - 4 - extraRows;
   useVimNav(!filtering && !inputActive, selectableCount, clampedSelected, height, {
+    onBack: () => {
+      if (view.kind === "category") setView({ kind: "categories" });
+      else if (view.kind === "categories") setView({ kind: "sections" });
+    },
     onMove: setSelected,
     onSelect: () => {
       const row = rows.find((r) => r.type !== "header" && r.index === clampedSelected);
       if (row?.type === "category") {
-        setView({ kind: "category", category: row.category });
+        setView({ category: row.category, kind: "category" });
       } else if (row?.type === "contest") {
         const { startsAt, durationMin } = row.contest;
         // endsAt lets the contest view choose immutable caching for ended contests.
         const endsAt =
           startsAt !== null && durationMin !== null ? startsAt + durationMin * 60_000 : null;
         dispatch({
+          route: { contestId: row.contest.id, endsAt, screen: "contest", startsAt },
           type: "push",
-          route: { screen: "contest", contestId: row.contest.id, startsAt, endsAt },
         });
       }
-    },
-    onBack: () => {
-      if (view.kind === "category") setView({ kind: "categories" });
-      else if (view.kind === "categories") setView({ kind: "sections" });
     },
   });
 

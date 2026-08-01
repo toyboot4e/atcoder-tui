@@ -1,15 +1,15 @@
+import {
+  AtcoderClient,
+  type ClientOptions,
+  HttpError,
+  LoginRequiredError,
+} from "../src/net/http.js";
 import { describe, expect, test } from "bun:test";
+import { DiskCache } from "../src/cache.js";
+import { LoadMeter } from "../src/net/load.js";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { DiskCache } from "../src/cache.js";
-import {
-  AtcoderClient,
-  HttpError,
-  LoginRequiredError,
-  type ClientOptions,
-} from "../src/net/http.js";
-import { LoadMeter } from "../src/net/load.js";
 
 interface Recorded {
   url: string;
@@ -27,24 +27,24 @@ function makeHarness(
   const clock = () => now;
   const meter = overrides.meter ?? new LoadMeter(null, clock);
   const client = new AtcoderClient({
-    meter,
-    cache: null,
     baseUrl: "https://atcoder.jp",
+    cache: null,
     clock,
+    fetchImpl: (input: string | URL | Request, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+      const headers = new Headers(init?.headers);
+      calls.push({ at: now, cookie: headers.get("cookie"), url });
+      return Promise.resolve(respond(url));
+    },
+    meter,
     sleep: (ms) => {
       now += ms;
       return Promise.resolve();
     },
-    fetchImpl: (input: string | URL | Request, init?: RequestInit) => {
-      const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
-      const headers = new Headers(init?.headers);
-      calls.push({ url, at: now, cookie: headers.get("cookie") });
-      return Promise.resolve(respond(url));
-    },
     ...overrides,
     ...(overrides.meter === undefined ? { meter } : {}),
   });
-  return { client, calls, meter, clock: () => now };
+  return { calls, client, clock: () => now, meter };
 }
 
 const ok = (body: string) => new Response(body, { status: 200 });
@@ -81,8 +81,8 @@ describe("AtcoderClient", () => {
 
   test("rolling-window budget delays past the window", async () => {
     const { client, calls } = makeHarness(() => ok("x"), {
-      requestsPerMinute: 3,
       minIntervalMs: 0,
+      requestsPerMinute: 3,
     });
     for (let i = 0; i < 4; i++) {
       await client.fetch(`/p${i}`, { ttl: 0 });
@@ -102,13 +102,13 @@ describe("AtcoderClient", () => {
     const fetchImpl = () => Promise.resolve(ok("x"));
 
     const first = new AtcoderClient({
-      meter: new LoadMeter(journal, clock),
       cache: null,
-      requestsPerMinute: 2,
-      minIntervalMs: 0,
       clock,
-      sleep,
       fetchImpl,
+      meter: new LoadMeter(journal, clock),
+      minIntervalMs: 0,
+      requestsPerMinute: 2,
+      sleep,
     });
     await first.fetch("/a", { ttl: 0 });
     await first.fetch("/b", { ttl: 0 });
@@ -116,16 +116,16 @@ describe("AtcoderClient", () => {
     // New client, same journal: the budget is already spent.
     const calls: number[] = [];
     const second = new AtcoderClient({
-      meter: new LoadMeter(journal, clock),
       cache: null,
-      requestsPerMinute: 2,
-      minIntervalMs: 0,
       clock,
-      sleep,
       fetchImpl: () => {
         calls.push(now);
         return Promise.resolve(ok("x"));
       },
+      meter: new LoadMeter(journal, clock),
+      minIntervalMs: 0,
+      requestsPerMinute: 2,
+      sleep,
     });
     await second.fetch("/c", { ttl: 0 });
     expect(calls[0]! - 1_000_000).toBeGreaterThanOrEqual(60_000);
@@ -187,8 +187,8 @@ describe("AtcoderClient", () => {
     const { client, calls } = makeHarness(() => ok(`v${n++}`), { cache });
     await client.fetch("/a", { ttl: "infinite" });
     const refreshed = await client.fetch("/a", {
-      ttl: "infinite",
       bypassCache: true,
+      ttl: "infinite",
     });
     expect(refreshed.body).toBe("v1");
     expect(calls).toHaveLength(2);
@@ -200,8 +200,8 @@ describe("AtcoderClient", () => {
     const { client } = makeHarness(
       () =>
         new Response(null, {
-          status: 302,
           headers: { location: "https://atcoder.jp/login" },
+          status: 302,
         }),
     );
     return expect(client.fetch("/contests/x/tasks", { ttl: 0 })).rejects.toBeInstanceOf(

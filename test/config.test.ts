@@ -1,8 +1,8 @@
+import { DEFAULT_CONFIG, loadConfig, saveFavorites } from "../src/config.js";
 import { describe, expect, test } from "bun:test";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { DEFAULT_CONFIG, loadConfig, saveFavorites } from "../src/config.js";
 
 function tempConfig(content: string): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "atui-config-"));
@@ -21,21 +21,21 @@ describe("loadConfig", () => {
   test("full valid config", () => {
     const file = tempConfig(
       JSON.stringify({
-        userId: "example_user",
-        language: "ja",
-        revelSession: "abc123",
         cache: false,
+        language: "ja",
         requestsPerMinute: 10,
+        revelSession: "abc123",
+        userId: "example_user",
       }),
     );
     const { config, warnings } = loadConfig(file);
     expect(config).toEqual({
-      userId: "example_user",
-      language: "ja",
-      revelSession: "abc123",
       cache: false,
-      requestsPerMinute: 10,
       favorites: [],
+      language: "ja",
+      requestsPerMinute: 10,
+      revelSession: "abc123",
+      userId: "example_user",
     });
     expect(warnings).toEqual([]);
   });
@@ -69,12 +69,12 @@ test("favorites keeps only non-empty strings", () => {
 });
 
 test("saveFavorites persists and preserves other fields", () => {
-  const file = tempConfig(JSON.stringify({ userId: "example_user", language: "ja" }));
+  const file = tempConfig(JSON.stringify({ language: "ja", userId: "example_user" }));
   saveFavorites(["rival"], file);
   expect(JSON.parse(fs.readFileSync(file, "utf8"))).toEqual({
-    userId: "example_user",
-    language: "ja",
     favorites: ["rival"],
+    language: "ja",
+    userId: "example_user",
   });
   expect(loadConfig(file).config.favorites).toEqual(["rival"]);
 });

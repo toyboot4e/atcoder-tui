@@ -41,15 +41,15 @@ export function parseStandingsJson(json: string): Standings {
     const total = entry.TotalResult ?? {};
     const elapsedNs = total.Elapsed ?? 0;
     return {
+      elapsedSec: elapsedNs > 0 ? Math.floor(elapsedNs / 1e9) : null,
+      penalty: total.Penalty ?? 0,
       rank: entry.Rank ?? 0,
-      user: entry.UserScreenName ?? "?",
       rating: entry.Rating ?? 0,
       score: (total.Score ?? 0) / 100,
-      penalty: total.Penalty ?? 0,
-      elapsedSec: elapsedNs > 0 ? Math.floor(elapsedNs / 1e9) : null,
+      user: entry.UserScreenName ?? "?",
     };
   });
-  return { tasks, rows };
+  return { rows, tasks };
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");

@@ -1,11 +1,11 @@
-import { createContext, useContext, type ReactNode } from "react";
-import path from "node:path";
-import { DiskCache } from "../cache.js";
-import { loadConfig, type Config } from "../config.js";
-import { cacheDir } from "../platform.js";
+import { type Config, loadConfig } from "../config.js";
+import { type ReactNode, createContext, useContext } from "react";
 import { AtcoderClient } from "../net/http.js";
+import { DiskCache } from "../cache.js";
 import { LoadMeter } from "../net/load.js";
 import { Notices } from "./notices.js";
+import { cacheDir } from "../platform.js";
+import path from "node:path";
 
 export interface Services {
   config: Config;
@@ -20,12 +20,12 @@ export function buildServices(): Services {
   const dir = cacheDir();
   const meter = new LoadMeter(path.join(dir, "requests.jsonl"));
   const client = new AtcoderClient({
-    meter,
     cache: config.cache ? new DiskCache(dir) : null,
     cookie: config.revelSession,
+    meter,
     requestsPerMinute: config.requestsPerMinute,
   });
-  return { config, client, meter, notices: new Notices(), warnings };
+  return { client, config, meter, notices: new Notices(), warnings };
 }
 
 const ServicesContext = createContext<Services | null>(null);

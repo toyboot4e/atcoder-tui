@@ -1,8 +1,8 @@
+import { type Block, inlineText } from "../src/render/ast.js";
 import { describe, expect, test } from "bun:test";
 import fs from "node:fs";
-import path from "node:path";
-import { inlineText, type Block } from "../src/render/ast.js";
 import { parseStatement } from "../src/scrape/statement.js";
+import path from "node:path";
 
 const fixture = (name: string) =>
   fs.readFileSync(path.join(import.meta.dir, "fixtures", `${name}.html`), "utf8");

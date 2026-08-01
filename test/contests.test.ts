@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import fs from "node:fs";
-import path from "node:path";
 import { parseContestsPage } from "../src/scrape/contests.js";
+import path from "node:path";
 
 const fixture = (name: string) =>
   fs.readFileSync(path.join(import.meta.dir, "fixtures", `${name}.html`), "utf8");

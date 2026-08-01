@@ -1,17 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { ScrollView, clampScroll } from "./ScrollView.js";
 import { Text, useInput } from "ink";
-import chalk from "chalk";
-import { LoginRequiredError } from "../net/http.js";
 import { formatElapsed, parseStandingsJson, ratingColor } from "../scrape/standings.js";
-import { saveFavorites } from "../config.js";
 import { loadServerFavs, saveServerFavs } from "../favstore.js";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { LoginRequiredError } from "../net/http.js";
+import chalk from "chalk";
 import { parseFavList } from "../scrape/fav.js";
-import { useServices } from "../state/services.js";
+import { saveFavorites } from "../config.js";
+import { t } from "./strings.js";
 import { useAppState } from "../state/store.js";
 import { useData } from "../state/useData.js";
+import { useServices } from "../state/services.js";
 import { useVimNav } from "../keys/useKeys.js";
-import { ScrollView, clampScroll } from "./ScrollView.js";
-import { t } from "./strings.js";
 
 const ACTIVE_STANDINGS_TTL_MS = 2 * 60 * 1000;
 const FAV_SYNC_INTERVAL_MS = 24 * 60 * 60 * 1000;
@@ -46,13 +46,13 @@ export function RankingPane({
 
   const { state, refresh } = useData(`standings-${contestId}`, async (bypassCache) => {
     const outcome = await client.fetch(`/contests/${contestId}/standings/json`, {
-      ttl: ended ? "infinite" : ACTIVE_STANDINGS_TTL_MS,
       bypassCache,
+      ttl: ended ? "infinite" : ACTIVE_STANDINGS_TTL_MS,
     });
     return {
       data: parseStandingsJson(outcome.body),
-      stale: outcome.stale,
       fetchedAt: outcome.fetchedAt,
+      stale: outcome.stale,
     };
   });
 
@@ -87,14 +87,14 @@ export function RankingPane({
     try {
       // Personal page: never cached to disk.
       const { body } = await client.fetch("/settings/fav", {
-        ttl: 0,
         bypassCache: true,
         noStore: true,
+        ttl: 0,
       });
       const imported = parseFavList(body);
       const previous = new Set((serverFavs?.users ?? []).map((u) => u.toLowerCase()));
       const added = imported.filter((u) => !previous.has(u.toLowerCase())).length;
-      const next = { users: imported, syncedAt: Date.now() };
+      const next = { syncedAt: Date.now(), users: imported };
       setServerFavs(next);
       saveServerFavs(next);
       if (announce || added > 0) {
@@ -182,8 +182,8 @@ export function RankingPane({
 
   useVimNav(active, rowCount, clampedCursor, viewHeight, {
     handleHorizontal: false, // h/l cycle tabs at the contest level
-    onMove: setCursor,
     onBack,
+    onMove: setCursor,
   });
   useInput(
     (input) => {

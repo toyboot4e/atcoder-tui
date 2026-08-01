@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
 import { Box, Text } from "ink";
-import { useServices } from "../state/services.js";
-import { useAppState } from "../state/store.js";
+import { useEffect, useState } from "react";
 import { type LoadStats } from "../net/load.js";
+import { useAppState } from "../state/store.js";
+import { useServices } from "../state/services.js";
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes}B`;

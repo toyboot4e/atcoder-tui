@@ -1,6 +1,6 @@
+import { cacheDir } from "./platform.js";
 import fs from "node:fs";
 import path from "node:path";
-import { cacheDir } from "./platform.js";
 
 /**
  * Favorites imported from atcoder.jp are a cache of server state (re-fetched
@@ -22,8 +22,8 @@ export function loadServerFavs(file: string = serverFavsPath()): ServerFavs | nu
     const raw = parsed as { users?: unknown; syncedAt?: unknown };
     if (!Array.isArray(raw.users) || typeof raw.syncedAt !== "number") return null;
     return {
-      users: raw.users.filter((u): u is string => typeof u === "string" && u !== ""),
       syncedAt: raw.syncedAt,
+      users: raw.users.filter((u): u is string => typeof u === "string" && u !== ""),
     };
   } catch {
     return null;

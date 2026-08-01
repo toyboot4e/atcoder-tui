@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { categorize } from "../src/categorize.js";
 import { UNLISTED_CONTESTS } from "../src/unlisted.js";
+import { categorize } from "../src/categorize.js";
 
 describe("UNLISTED_CONTESTS seed", () => {
   test("ids are unique", () => {

@@ -26,9 +26,9 @@ export function parseTasksPage(html: string): TaskListItem[] {
     tasks.push({
       id,
       letter: letterLink.text().trim(),
-      title: titleLink.text().trim(),
-      timeLimit: tds.eq(2).text().trim(),
       memoryLimit: tds.eq(3).text().trim(),
+      timeLimit: tds.eq(2).text().trim(),
+      title: titleLink.text().trim(),
     });
   });
   return tasks;

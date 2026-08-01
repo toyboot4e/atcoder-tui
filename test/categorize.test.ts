@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import fs from "node:fs";
-import path from "node:path";
 import { categorize } from "../src/categorize.js";
+import fs from "node:fs";
 import { parseContestsPage } from "../src/scrape/contests.js";
+import path from "node:path";
 
 const c = (id: string, title = "") => categorize({ id, title });
 

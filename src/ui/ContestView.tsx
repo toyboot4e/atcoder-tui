@@ -1,21 +1,21 @@
-import { useEffect, useMemo, useRef, useState } from "react";
 import { Box, Text, useInput } from "ink";
-import { renderSections } from "../render/lines.js";
-import { parseStatement } from "../scrape/statement.js";
-import { parseTasksPage } from "../scrape/tasks.js";
 import { HttpError, LoginRequiredError } from "../net/http.js";
+import { ScrollView, clampScroll } from "./ScrollView.js";
 import { contestPhase, formatStartLine } from "../phase.js";
-import { useServices } from "../state/services.js";
 import { useAppDispatch, useAppState } from "../state/store.js";
-import { useData } from "../state/useData.js";
-import { openInBrowser } from "../platform.js";
-import { useTerminalSize } from "./hooks.js";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MetaPane } from "./MetaPane.js";
 import { RankingPane } from "./RankingPane.js";
-import { ScrollView, clampScroll } from "./ScrollView.js";
 import { StatusBar } from "./StatusBar.js";
 import { SubmissionsPane } from "./SubmissionsPane.js";
+import { openInBrowser } from "../platform.js";
+import { parseStatement } from "../scrape/statement.js";
+import { parseTasksPage } from "../scrape/tasks.js";
+import { renderSections } from "../render/lines.js";
 import { t } from "./strings.js";
+import { useData } from "../state/useData.js";
+import { useServices } from "../state/services.js";
+import { useTerminalSize } from "./hooks.js";
 
 const SIDEBAR_WIDTH = 26;
 // Narrow: problem letters plus the contest id header ("abc420" — 6 cells
@@ -79,8 +79,8 @@ export function ContestView({
   const mem = useRef<RememberedContest>(
     rememberedContest.get(contestId) ?? {
       cursor: 1, // land on the first problem, ready to read
-      tab: "statement",
       scrollByTask: new Map<string, number>(),
+      tab: "statement",
     },
   );
   rememberedContest.set(contestId, mem.current);
@@ -104,15 +104,15 @@ export function ContestView({
   const sidebarWidth = sidebarNarrow ? NARROW_SIDEBAR_WIDTH : SIDEBAR_WIDTH;
 
   const tasksData = useData(`tasks-${contestId}-${language}-${phase}`, async (bypassCache) => {
-    if (phase === "upcoming") return { data: [], stale: false, fetchedAt: 0 };
+    if (phase === "upcoming") return { data: [], fetchedAt: 0, stale: false };
     const outcome = await client.fetch(`/contests/${contestId}/tasks?lang=${language}`, {
-      ttl,
       bypassCache,
+      ttl,
     });
     return {
       data: parseTasksPage(outcome.body),
-      stale: outcome.stale,
       fetchedAt: outcome.fetchedAt,
+      stale: outcome.stale,
     };
   });
   const tasks = tasksData.state.status === "ready" ? tasksData.state.data : [];
@@ -140,15 +140,15 @@ export function ContestView({
   const statementData = useData(
     `statement-${contestId}-${settledTask?.id ?? "none"}`,
     async (bypassCache) => {
-      if (settledTask === undefined) return { data: null, stale: false, fetchedAt: 0 };
+      if (settledTask === undefined) return { data: null, fetchedAt: 0, stale: false };
       const outcome = await client.fetch(`/contests/${contestId}/tasks/${settledTask.id}`, {
-        ttl,
         bypassCache,
+        ttl,
       });
       return {
         data: parseStatement(outcome.body),
-        stale: outcome.stale,
         fetchedAt: outcome.fetchedAt,
+        stale: outcome.stale,
       };
     },
   );
@@ -157,11 +157,11 @@ export function ContestView({
   const statement = statementData.state.status === "ready" ? statementData.state.data : null;
   const englishMissing = statement !== null && statement.en === null;
   const { lines, fallbackNotice } = useMemo(() => {
-    if (statement === null) return { lines: [] as string[], fallbackNotice: false };
+    if (statement === null) return { fallbackNotice: false, lines: [] as string[] };
     const sections = language === "en" ? (statement.en ?? statement.ja) : statement.ja;
     return {
-      lines: renderSections(sections, contentWidth),
       fallbackNotice: language === "en" && englishMissing,
+      lines: renderSections(sections, contentWidth),
     };
   }, [statement, language, contentWidth, englishMissing]);
 
