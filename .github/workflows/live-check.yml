@@ -1,9 +1,9 @@
 name: Live HTML check
 on:
   schedule:
-    # Daily, off-peak for AtCoder (12:34 UTC = 21:34 JST is post-contest lull;
-    # pick an uncommon minute to avoid the top-of-hour cron stampede).
-    - cron: "34 12 * * *"
+    # Daily at 11:00 UTC = 20:00 JST: before the usual 21:00 JST contest
+    # start, so the four probe requests never overlap a running contest.
+    - cron: "0 11 * * *"
   workflow_dispatch:
 permissions:
   contents: read
